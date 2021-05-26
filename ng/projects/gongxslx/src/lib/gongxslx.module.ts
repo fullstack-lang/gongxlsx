@@ -37,6 +37,11 @@ import { XLFileSortingComponent } from './xlfile-sorting/xlfile-sorting.componen
 import { XLFileDetailComponent } from './xlfile-detail/xlfile-detail.component'
 import { XLFilePresentationComponent } from './xlfile-presentation/xlfile-presentation.component'
 
+import { XLSheetsTableComponent } from './xlsheets-table/xlsheets-table.component'
+import { XLSheetSortingComponent } from './xlsheet-sorting/xlsheet-sorting.component'
+import { XLSheetDetailComponent } from './xlsheet-detail/xlsheet-detail.component'
+import { XLSheetPresentationComponent } from './xlsheet-presentation/xlsheet-presentation.component'
+
 
 @NgModule({
 	declarations: [
@@ -45,6 +50,11 @@ import { XLFilePresentationComponent } from './xlfile-presentation/xlfile-presen
 		XLFileSortingComponent,
 		XLFileDetailComponent,
 		XLFilePresentationComponent,
+
+		XLSheetsTableComponent,
+		XLSheetSortingComponent,
+		XLSheetDetailComponent,
+		XLSheetPresentationComponent,
 
 
 		SplitterComponent,
@@ -85,6 +95,11 @@ import { XLFilePresentationComponent } from './xlfile-presentation/xlfile-presen
 		XLFileSortingComponent,
 		XLFileDetailComponent,
 		XLFilePresentationComponent,
+
+		XLSheetsTableComponent,
+		XLSheetSortingComponent,
+		XLSheetDetailComponent,
+		XLSheetPresentationComponent,
 
 
 		SplitterComponent,

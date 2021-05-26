@@ -205,6 +205,18 @@ definitions:
         $ref: '#/definitions/Pane'
     type: object
     x-go-package: github.com/tealeg/xlsx/v3
+  XLSheet:
+    properties:
+      MaxCol:
+        format: int64
+        type: integer
+      MaxRow:
+        format: int64
+        type: integer
+      Name:
+        type: string
+    type: object
+    x-go-package: github.com/fullstack-lang/gongxslx/go/models
   xlfileAPI:
     description: |-
       for POST, API, one needs the fields of the model as well as the fields
@@ -220,6 +232,10 @@ definitions:
         type: integer
       NbSheets_Data:
         $ref: '#/definitions/NullInt64'
+      Sheets:
+        items:
+          $ref: '#/definitions/XLSheet'
+        type: array
     title: XLFileAPI is the input in POST API
     type: object
     x-go-name: XLFileAPI
@@ -246,12 +262,82 @@ definitions:
         type: integer
       NbSheets_Data:
         $ref: '#/definitions/NullInt64'
+      Sheets:
+        items:
+          $ref: '#/definitions/XLSheet'
+        type: array
       UpdatedAt:
         format: date-time
         type: string
     title: XLFileDB describes a xlfile in the database
     type: object
     x-go-name: XLFileDB
+    x-go-package: github.com/fullstack-lang/gongxslx/go/orm
+  xlsheetAPI:
+    description: |-
+      for POST, API, one needs the fields of the model as well as the fields
+      from associations ("Has One" and "Has Many") that are generated to
+      fullfill the ORM requirements for associations
+    properties:
+      MaxCol:
+        format: int64
+        type: integer
+      MaxCol_Data:
+        $ref: '#/definitions/NullInt64'
+      MaxRow:
+        format: int64
+        type: integer
+      MaxRow_Data:
+        $ref: '#/definitions/NullInt64'
+      Name:
+        type: string
+      Name_Data:
+        $ref: '#/definitions/NullString'
+      XLFile_SheetsDBID:
+        $ref: '#/definitions/NullInt64'
+      XLFile_SheetsDBID_Index:
+        $ref: '#/definitions/NullInt64'
+    title: XLSheetAPI is the input in POST API
+    type: object
+    x-go-name: XLSheetAPI
+    x-go-package: github.com/fullstack-lang/gongxslx/go/orm
+  xlsheetDB:
+    description: 'It incorporates all fields : from the model, from the generated
+      field for the API and the GORM ID'
+    properties:
+      CreatedAt:
+        format: date-time
+        type: string
+      DeletedAt:
+        format: date-time
+        type: string
+      ID:
+        format: uint64
+        type: integer
+      MaxCol:
+        format: int64
+        type: integer
+      MaxCol_Data:
+        $ref: '#/definitions/NullInt64'
+      MaxRow:
+        format: int64
+        type: integer
+      MaxRow_Data:
+        $ref: '#/definitions/NullInt64'
+      Name:
+        type: string
+      Name_Data:
+        $ref: '#/definitions/NullString'
+      UpdatedAt:
+        format: date-time
+        type: string
+      XLFile_SheetsDBID:
+        $ref: '#/definitions/NullInt64'
+      XLFile_SheetsDBID_Index:
+        $ref: '#/definitions/NullInt64'
+    title: XLSheetDB describes a xlsheet in the database
+    type: object
+    x-go-name: XLSheetDB
     x-go-package: github.com/fullstack-lang/gongxslx/go/orm
   xlsxDataValidation:
     description: |-
@@ -461,6 +547,90 @@ paths:
           $ref: '#/responses/genericError'
       tags:
       - xlfiles
+  /xlsheets:
+    get:
+      description: Get all xlsheets
+      operationId: getXLSheets
+      responses:
+        "200":
+          $ref: '#/responses/xlsheetDBsResponse'
+        default:
+          $ref: '#/responses/genericError'
+      tags:
+      - xlsheets
+    post:
+      consumes:
+      - application/json
+      description: Creates a xlsheet
+      operationId: postXLSheet
+      parameters:
+      - description: The XLSheet to submit or modify
+        in: body
+        name: XLSheet
+        schema:
+          $ref: '#/definitions/xlsheetAPI'
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/xlsheetDBResponse'
+      tags:
+      - xlsheets
+  /xlsheets/{ID}:
+    delete:
+      description: Delete a xlsheet
+      operationId: deleteXLSheet
+      parameters:
+      - description: The ID of the order
+        format: int64
+        in: path
+        name: ID
+        required: true
+        type: integer
+      responses:
+        default:
+          $ref: '#/responses/genericError'
+      tags:
+      - xlsheets
+    get:
+      operationId: getXLSheet
+      parameters:
+      - description: The ID of the order
+        format: int64
+        in: path
+        name: ID
+        required: true
+        type: integer
+      responses:
+        "200":
+          $ref: '#/responses/xlsheetDBResponse'
+        default:
+          $ref: '#/responses/genericError'
+      summary: Gets the details for a xlsheet.
+      tags:
+      - xlsheets
+    patch:
+      description: Update a xlsheet
+      operationId: updateXLSheet
+      parameters:
+      - description: The ID of the order
+        format: int64
+        in: path
+        name: ID
+        required: true
+        type: integer
+      - description: The XLSheet to submit or modify
+        in: body
+        name: XLSheet
+        schema:
+          $ref: '#/definitions/xlsheetAPI'
+      responses:
+        "200":
+          $ref: '#/responses/xlsheetDBResponse'
+        default:
+          $ref: '#/responses/genericError'
+      tags:
+      - xlsheets
 produces:
 - application/json
 responses:
@@ -519,6 +689,10 @@ responses:
       NbSheets_Data:
         description: Declation for basic field xlfileDB.NbSheets {{BasicKind}} (to
           be completed)
+      Sheets:
+        items:
+          $ref: '#/definitions/XLSheet'
+        type: array
       UpdatedAt:
         format: date-time
         type: string
@@ -530,6 +704,51 @@ responses:
     schema:
       items:
         $ref: '#/definitions/xlfileDB'
+      type: array
+  xlsheetDBResponse:
+    description: XLSheetDBResponse provides response
+    headers:
+      CreatedAt:
+        format: date-time
+        type: string
+      DeletedAt:
+        format: date-time
+        type: string
+      ID:
+        format: uint64
+        type: integer
+      MaxCol:
+        format: int64
+        type: integer
+      MaxCol_Data:
+        description: Declation for basic field xlsheetDB.MaxCol {{BasicKind}} (to
+          be completed)
+      MaxRow:
+        format: int64
+        type: integer
+      MaxRow_Data:
+        description: Declation for basic field xlsheetDB.MaxRow {{BasicKind}} (to
+          be completed)
+      Name:
+        type: string
+      Name_Data:
+        description: |-
+          insertion for fields declaration
+          Declation for basic field xlsheetDB.Name {{BasicKind}} (to be completed)
+      UpdatedAt:
+        format: date-time
+        type: string
+      XLFile_SheetsDBID:
+        description: Implementation of a reverse ID for field XLFile{}.Sheets []*XLSheet
+      XLFile_SheetsDBID_Index: {}
+      sheet: {}
+    schema:
+      $ref: '#/definitions/NullInt64'
+  xlsheetDBsResponse:
+    description: XLSheetDBs arrays xlsheetDBs
+    schema:
+      items:
+        $ref: '#/definitions/xlsheetDB'
       type: array
 schemes:
 - http

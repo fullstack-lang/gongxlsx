@@ -19,4 +19,11 @@ export * from './lib/xlfile-db'
 export * from './lib/xlfile-api'
 export * from './lib/xlfile.service'
 
+export * from './lib/xlsheet-detail/xlsheet-detail.component'
+export * from './lib/xlsheet-presentation/xlsheet-presentation.component'
+export * from './lib/xlsheets-table/xlsheets-table.component'
+export * from './lib/xlsheet-db'
+export * from './lib/xlsheet-api'
+export * from './lib/xlsheet.service'
+
 

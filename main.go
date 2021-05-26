@@ -41,7 +41,7 @@ func main() {
 	r.Use(cors.Default())
 
 	// setup GORM
-	db := orm.SetupModels(*logDBFlag, ".:memory:")
+	db := orm.SetupModels(*logDBFlag, ":memory:")
 	// mandatory, otherwise, bizarre errors occurs
 	db.DB().SetMaxOpenConns(1)
 	orm.BackRepo.Init(db)

@@ -14,6 +14,8 @@ var __member __void
 type StageStruct struct { // insertion point for definition of arrays registering instances
 	XLFiles map[*XLFile]struct{}
 
+	XLSheets map[*XLSheet]struct{}
+
 	AllModelsStructCreateCallback AllModelsStructCreateInterface
 
 	AllModelsStructDeleteCallback AllModelsStructDeleteInterface
@@ -34,12 +36,16 @@ type BackRepoInterface interface {
 	// insertion point for Commit and Checkout signatures
 	CommitXLFile(xlfile *XLFile)
 	CheckoutXLFile(xlfile *XLFile)
+	CommitXLSheet(xlsheet *XLSheet)
+	CheckoutXLSheet(xlsheet *XLSheet)
 	GetLastCommitNb() uint
 }
 
 // swagger:ignore instructs the gong compiler (gongc) to avoid this particular struct
 var Stage StageStruct = StageStruct{ // insertion point for array initiatialisation
 	XLFiles: make(map[*XLFile]struct{}, 0),
+
+	XLSheets: make(map[*XLSheet]struct{}, 0),
 
 }
 
@@ -155,19 +161,122 @@ func DeleteORMXLFile(xlfile *XLFile) {
 	}
 }
 
+func (stage *StageStruct) getXLSheetOrderedStructWithNameField() []*XLSheet {
+	// have alphabetical order generation
+	xlsheetOrdered := []*XLSheet{}
+	for xlsheet := range stage.XLSheets {
+		xlsheetOrdered = append(xlsheetOrdered, xlsheet)
+	}
+	sort.Slice(xlsheetOrdered[:], func(i, j int) bool {
+		return xlsheetOrdered[i].Name < xlsheetOrdered[j].Name
+	})
+	return xlsheetOrdered
+}
+
+// Stage puts xlsheet to the model stage
+func (xlsheet *XLSheet) Stage() *XLSheet {
+	Stage.XLSheets[xlsheet] = __member
+	return xlsheet
+}
+
+// Unstage removes xlsheet off the model stage
+func (xlsheet *XLSheet) Unstage() *XLSheet {
+	delete(Stage.XLSheets, xlsheet)
+	return xlsheet
+}
+
+// commit xlsheet to the back repo (if it is already staged)
+func (xlsheet *XLSheet) Commit() *XLSheet {
+	if _, ok := Stage.XLSheets[xlsheet]; ok {
+		if Stage.BackRepo != nil {
+			Stage.BackRepo.CommitXLSheet(xlsheet)
+		}
+	}
+	return xlsheet
+}
+
+// Checkout xlsheet to the back repo (if it is already staged)
+func (xlsheet *XLSheet) Checkout() *XLSheet {
+	if _, ok := Stage.XLSheets[xlsheet]; ok {
+		if Stage.BackRepo != nil {
+			Stage.BackRepo.CheckoutXLSheet(xlsheet)
+		}
+	}
+	return xlsheet
+}
+
+//
+// Legacy, to be deleted
+//
+
+// StageCopy appends a copy of xlsheet to the model stage
+func (xlsheet *XLSheet) StageCopy() *XLSheet {
+	_xlsheet := new(XLSheet)
+	*_xlsheet = *xlsheet
+	_xlsheet.Stage()
+	return _xlsheet
+}
+
+// StageAndCommit appends xlsheet to the model stage and commit to the orm repo
+func (xlsheet *XLSheet) StageAndCommit() *XLSheet {
+	xlsheet.Stage()
+	if Stage.AllModelsStructCreateCallback != nil {
+		Stage.AllModelsStructCreateCallback.CreateORMXLSheet(xlsheet)
+	}
+	return xlsheet
+}
+
+// DeleteStageAndCommit appends xlsheet to the model stage and commit to the orm repo
+func (xlsheet *XLSheet) DeleteStageAndCommit() *XLSheet {
+	xlsheet.Unstage()
+	DeleteORMXLSheet(xlsheet)
+	return xlsheet
+}
+
+// StageCopyAndCommit appends a copy of xlsheet to the model stage and commit to the orm repo
+func (xlsheet *XLSheet) StageCopyAndCommit() *XLSheet {
+	_xlsheet := new(XLSheet)
+	*_xlsheet = *xlsheet
+	_xlsheet.Stage()
+	if Stage.AllModelsStructCreateCallback != nil {
+		Stage.AllModelsStructCreateCallback.CreateORMXLSheet(xlsheet)
+	}
+	return _xlsheet
+}
+
+// CreateORMXLSheet enables dynamic staging of a XLSheet instance
+func CreateORMXLSheet(xlsheet *XLSheet) {
+	xlsheet.Stage()
+	if Stage.AllModelsStructCreateCallback != nil {
+		Stage.AllModelsStructCreateCallback.CreateORMXLSheet(xlsheet)
+	}
+}
+
+// DeleteORMXLSheet enables dynamic staging of a XLSheet instance
+func DeleteORMXLSheet(xlsheet *XLSheet) {
+	xlsheet.Unstage()
+	if Stage.AllModelsStructDeleteCallback != nil {
+		Stage.AllModelsStructDeleteCallback.DeleteORMXLSheet(xlsheet)
+	}
+}
+
 // swagger:ignore
 type AllModelsStructCreateInterface interface { // insertion point for Callbacks on creation
 	CreateORMXLFile(XLFile *XLFile)
+	CreateORMXLSheet(XLSheet *XLSheet)
 }
 
 type AllModelsStructDeleteInterface interface { // insertion point for Callbacks on deletion
 	DeleteORMXLFile(XLFile *XLFile)
+	DeleteORMXLSheet(XLSheet *XLSheet)
 }
 
 func (stage *StageStruct) Reset() { // insertion point for array reset
 	stage.XLFiles = make(map[*XLFile]struct{}, 0)
+	stage.XLSheets = make(map[*XLSheet]struct{}, 0)
 }
 
 func (stage *StageStruct) Nil() { // insertion point for array nil
 	stage.XLFiles = nil
+	stage.XLSheets = nil
 }

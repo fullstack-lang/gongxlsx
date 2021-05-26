@@ -7,12 +7,18 @@ import { Observable, combineLatest } from 'rxjs';
 import { XLFileDB } from './xlfile-db'
 import { XLFileService } from './xlfile.service'
 
+import { XLSheetDB } from './xlsheet-db'
+import { XLSheetService } from './xlsheet.service'
+
 
 // FrontRepo stores all instances in a front repository (design pattern repository)
 export class FrontRepo { // insertion point sub template 
   XLFiles_array = new Array<XLFileDB>(); // array of repo instances
   XLFiles = new Map<number, XLFileDB>(); // map of repo instances
   XLFiles_batch = new Map<number, XLFileDB>(); // same but only in last GET (for finding repo instances to delete)
+  XLSheets_array = new Array<XLSheetDB>(); // array of repo instances
+  XLSheets = new Map<number, XLSheetDB>(); // map of repo instances
+  XLSheets_batch = new Map<number, XLSheetDB>(); // same but only in last GET (for finding repo instances to delete)
 }
 
 //
@@ -49,13 +55,16 @@ export class FrontRepoService {
   constructor(
     private http: HttpClient, // insertion point sub template 
     private xlfileService: XLFileService,
+    private xlsheetService: XLSheetService,
   ) { }
 
   // typing of observable can be messy in typescript. Therefore, one force the type
   observableFrontRepo: [ // insertion point sub template 
     Observable<XLFileDB[]>,
+    Observable<XLSheetDB[]>,
   ] = [ // insertion point sub template 
       this.xlfileService.getXLFiles(),
+      this.xlsheetService.getXLSheets(),
     ];
 
   //
@@ -72,11 +81,14 @@ export class FrontRepoService {
         ).subscribe(
           ([ // insertion point sub template for declarations 
             xlfiles_,
+            xlsheets_,
           ]) => {
             // Typing can be messy with many items. Therefore, type casting is necessary here
             // insertion point sub template for type casting 
             var xlfiles: XLFileDB[]
             xlfiles = xlfiles_
+            var xlsheets: XLSheetDB[]
+            xlsheets = xlsheets_
 
             // 
             // First Step: init map of instances
@@ -114,6 +126,39 @@ export class FrontRepoService {
               return 0;
             });
             
+            // init the array
+            FrontRepoSingloton.XLSheets_array = xlsheets
+
+            // clear the map that counts XLSheet in the GET
+            FrontRepoSingloton.XLSheets_batch.clear()
+            
+            xlsheets.forEach(
+              xlsheet => {
+                FrontRepoSingloton.XLSheets.set(xlsheet.ID, xlsheet)
+                FrontRepoSingloton.XLSheets_batch.set(xlsheet.ID, xlsheet)
+              }
+            )
+            
+            // clear xlsheets that are absent from the batch
+            FrontRepoSingloton.XLSheets.forEach(
+              xlsheet => {
+                if (FrontRepoSingloton.XLSheets_batch.get(xlsheet.ID) == undefined) {
+                  FrontRepoSingloton.XLSheets.delete(xlsheet.ID)
+                }
+              }
+            )
+            
+            // sort XLSheets_array array
+            FrontRepoSingloton.XLSheets_array.sort((t1, t2) => {
+              if (t1.Name > t2.Name) {
+                return 1;
+              }
+              if (t1.Name < t2.Name) {
+                return -1;
+              }
+              return 0;
+            });
+            
 
             // 
             // Second Step: redeem pointers between instances (thanks to maps in the First Step)
@@ -123,6 +168,26 @@ export class FrontRepoService {
                 // insertion point sub sub template for ONE-/ZERO-ONE associations pointers redeeming
 
                 // insertion point for redeeming ONE-MANY associations
+              }
+            )
+            xlsheets.forEach(
+              xlsheet => {
+                // insertion point sub sub template for ONE-/ZERO-ONE associations pointers redeeming
+
+                // insertion point for redeeming ONE-MANY associations
+                // insertion point for slice of pointer field XLFile.Sheets redeeming
+                {
+                  let _xlfile = FrontRepoSingloton.XLFiles.get(xlsheet.XLFile_SheetsDBID.Int64)
+                  if (_xlfile) {
+                    if (_xlfile.Sheets == undefined) {
+                      _xlfile.Sheets = new Array<XLSheetDB>()
+                    }
+                    _xlfile.Sheets.push(xlsheet)
+                    if (xlsheet.XLFile_Sheets_reverse == undefined) {
+                      xlsheet.XLFile_Sheets_reverse = _xlfile
+                    }
+                  }
+                }
               }
             )
 
@@ -186,9 +251,76 @@ export class FrontRepoService {
       }
     )
   }
+
+  // XLSheetPull performs a GET on XLSheet of the stack and redeem association pointers 
+  XLSheetPull(): Observable<FrontRepo> {
+    return new Observable<FrontRepo>(
+      (observer) => {
+        combineLatest([
+          this.xlsheetService.getXLSheets()
+        ]).subscribe(
+          ([ // insertion point sub template 
+            xlsheets,
+          ]) => {
+            // init the array
+            FrontRepoSingloton.XLSheets_array = xlsheets
+
+            // clear the map that counts XLSheet in the GET
+            FrontRepoSingloton.XLSheets_batch.clear()
+
+            // 
+            // First Step: init map of instances
+            // insertion point sub template 
+            xlsheets.forEach(
+              xlsheet => {
+                FrontRepoSingloton.XLSheets.set(xlsheet.ID, xlsheet)
+                FrontRepoSingloton.XLSheets_batch.set(xlsheet.ID, xlsheet)
+
+                // insertion point for redeeming ONE/ZERO-ONE associations 
+
+                // insertion point for redeeming ONE-MANY associations 
+                // insertion point for slice of pointer field XLFile.Sheets redeeming
+                {
+                  let _xlfile = FrontRepoSingloton.XLFiles.get(xlsheet.XLFile_SheetsDBID.Int64)
+                  if (_xlfile) {
+                    if (_xlfile.Sheets == undefined) {
+                      _xlfile.Sheets = new Array<XLSheetDB>()
+                    }
+                    _xlfile.Sheets.push(xlsheet)
+                    if (xlsheet.XLFile_Sheets_reverse == undefined) {
+                      xlsheet.XLFile_Sheets_reverse = _xlfile
+                    }
+                  }
+                }
+              }
+            )
+
+            // clear xlsheets that are absent from the GET
+            FrontRepoSingloton.XLSheets.forEach(
+              xlsheet => {
+                if (FrontRepoSingloton.XLSheets_batch.get(xlsheet.ID) == undefined) {
+                  FrontRepoSingloton.XLSheets.delete(xlsheet.ID)
+                }
+              }
+            )
+
+            // 
+            // Second Step: redeem pointers between instances (thanks to maps in the First Step)
+            // insertion point sub template 
+
+            // hand over control flow to observer
+            observer.next(FrontRepoSingloton)
+          }
+        )
+      }
+    )
+  }
 }
 
 // insertion point for get unique ID per struct 
 export function getXLFileUniqueID(id: number): number {
   return 31 * id
+}
+export function getXLSheetUniqueID(id: number): number {
+  return 37 * id
 }

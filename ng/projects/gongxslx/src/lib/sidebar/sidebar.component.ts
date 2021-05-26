@@ -10,6 +10,8 @@ import { CommitNbService } from '../commitnb.service'
 // insertion point for per struct import code
 import { XLFileService } from '../xlfile.service'
 import { getXLFileUniqueID } from '../front-repo.service'
+import { XLSheetService } from '../xlsheet.service'
+import { getXLSheetUniqueID } from '../front-repo.service'
 
 /**
  * Types of a GongNode / GongFlatNode
@@ -143,6 +145,7 @@ export class SidebarComponent implements OnInit {
 
     // insertion point for per struct service declaration
     private xlfileService: XLFileService,
+    private xlsheetService: XLSheetService,
   ) { }
 
   ngOnInit(): void {
@@ -151,6 +154,14 @@ export class SidebarComponent implements OnInit {
     // insertion point for per struct observable for refresh trigger
     // observable for changes in structs
     this.xlfileService.XLFileServiceChanged.subscribe(
+      message => {
+        if (message == "post" || message == "update" || message == "delete") {
+          this.refresh()
+        }
+      }
+    )
+    // observable for changes in structs
+    this.xlsheetService.XLSheetServiceChanged.subscribe(
       message => {
         if (message == "post" || message == "update" || message == "delete") {
           this.refresh()
@@ -219,6 +230,78 @@ export class SidebarComponent implements OnInit {
             children: new Array<GongNode>()
           }
           xlfileGongNodeStruct.children.push(xlfileGongNodeInstance)
+
+          // insertion point for per field code
+          /**
+          * let append a node for the slide of pointer Sheets
+          */
+          let SheetsGongNodeAssociation: GongNode = {
+            name: "(XLSheet) Sheets",
+            type: GongNodeType.ONE__ZERO_MANY_ASSOCIATION,
+            id: xlfileDB.ID,
+            uniqueIdPerStack: 19 * nonInstanceNodeId,
+            structName: "XLFile",
+            associatedStructName: "XLSheet",
+            children: new Array<GongNode>()
+          }
+          nonInstanceNodeId = nonInstanceNodeId + 1
+          xlfileGongNodeInstance.children.push(SheetsGongNodeAssociation)
+
+          xlfileDB.Sheets?.forEach(xlsheetDB => {
+            let xlsheetNode: GongNode = {
+              name: xlsheetDB.Name,
+              type: GongNodeType.INSTANCE,
+              id: xlsheetDB.ID,
+              uniqueIdPerStack: // godel numbering (thank you kurt)
+                7 * getXLFileUniqueID(xlfileDB.ID)
+                + 11 * getXLSheetUniqueID(xlsheetDB.ID),
+              structName: "XLSheet",
+              associatedStructName: "",
+              children: new Array<GongNode>()
+            }
+            SheetsGongNodeAssociation.children.push(xlsheetNode)
+          })
+
+        }
+      )
+
+      /**
+      * fill up the XLSheet part of the mat tree
+      */
+      let xlsheetGongNodeStruct: GongNode = {
+        name: "XLSheet",
+        type: GongNodeType.STRUCT,
+        id: 0,
+        uniqueIdPerStack: 13 * nonInstanceNodeId,
+        structName: "XLSheet",
+        associatedStructName: "",
+        children: new Array<GongNode>()
+      }
+      nonInstanceNodeId = nonInstanceNodeId + 1
+      this.gongNodeTree.push(xlsheetGongNodeStruct)
+
+      this.frontRepo.XLSheets_array.sort((t1, t2) => {
+        if (t1.Name > t2.Name) {
+          return 1;
+        }
+        if (t1.Name < t2.Name) {
+          return -1;
+        }
+        return 0;
+      });
+
+      this.frontRepo.XLSheets_array.forEach(
+        xlsheetDB => {
+          let xlsheetGongNodeInstance: GongNode = {
+            name: xlsheetDB.Name,
+            type: GongNodeType.INSTANCE,
+            id: xlsheetDB.ID,
+            uniqueIdPerStack: getXLSheetUniqueID(xlsheetDB.ID),
+            structName: "XLSheet",
+            associatedStructName: "",
+            children: new Array<GongNode>()
+          }
+          xlsheetGongNodeStruct.children.push(xlsheetGongNodeInstance)
 
           // insertion point for per field code
         }

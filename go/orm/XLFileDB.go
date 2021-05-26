@@ -196,6 +196,23 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseTwoInstance(backRepo *Bac
 				xlfileDB.NbSheets_Data.Int64 = int64(xlfile.NbSheets)
 				xlfileDB.NbSheets_Data.Valid = true
 
+				// commit a slice of pointer translates to update reverse pointer to XLSheet, i.e.
+				index_Sheets := 0
+				for _, xlsheet := range xlfile.Sheets {
+					if xlsheetDBID, ok := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet]; ok {
+						if xlsheetDB, ok := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDBID]; ok {
+							xlsheetDB.XLFile_SheetsDBID.Int64 = int64(xlfileDB.ID)
+							xlsheetDB.XLFile_SheetsDBID.Valid = true
+							xlsheetDB.XLFile_SheetsDBID_Index.Int64 = int64(index_Sheets)
+							index_Sheets = index_Sheets + 1
+							xlsheetDB.XLFile_SheetsDBID_Index.Valid = true
+							if q := backRepoXLFile.db.Save(&xlsheetDB); q.Error != nil {
+								return q.Error
+							}
+						}
+					}
+				}
+
 			}
 		}
 		query := backRepoXLFile.db.Save(&xlfileDB)
@@ -278,6 +295,27 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseTwoInstance(backRepo *B
 			xlfile.Name = xlfileDB.Name_Data.String
 
 			xlfile.NbSheets = int(xlfileDB.NbSheets_Data.Int64)
+
+			// parse all XLSheetDB and redeem the array of poiners to XLFile
+			// first reset the slice
+			xlfile.Sheets = xlfile.Sheets[:0]
+			for _, XLSheetDB := range *backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
+				if XLSheetDB.XLFile_SheetsDBID.Int64 == int64(xlfileDB.ID) {
+					XLSheet := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[XLSheetDB.ID]
+					xlfile.Sheets = append(xlfile.Sheets, XLSheet)
+				}
+			}
+			
+			// sort the array according to the order
+			sort.Slice(xlfile.Sheets, func(i, j int) bool {
+				xlsheetDB_i_ID := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlfile.Sheets[i]]
+				xlsheetDB_j_ID := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlfile.Sheets[j]]
+
+				xlsheetDB_i := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB_i_ID]
+				xlsheetDB_j := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB_j_ID]
+
+				return xlsheetDB_i.XLFile_SheetsDBID_Index.Int64 < xlsheetDB_j.XLFile_SheetsDBID_Index.Int64
+			})
 
 		}
 	}

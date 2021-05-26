@@ -56,6 +56,7 @@ export class XLFileService {
   postXLFile(xlfiledb: XLFileDB): Observable<XLFileDB> {
 
 		// insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    xlfiledb.Sheets = []
 
 		return this.http.post<XLFileDB>(this.xlfilesUrl, xlfiledb, this.httpOptions).pipe(
 			tap(_ => {
@@ -83,6 +84,7 @@ export class XLFileService {
     const url = `${this.xlfilesUrl}/${id}`;
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    xlfiledb.Sheets = []
 
     return this.http.put(url, xlfiledb, this.httpOptions).pipe(
       tap(_ => {

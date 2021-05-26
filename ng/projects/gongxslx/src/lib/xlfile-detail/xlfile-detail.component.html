@@ -19,6 +19,23 @@
             </mat-form-field>
         </form>
     </div>
+    <mat-grid-list cols="2" rowHeight="6:1">
+        <mat-grid-tile>
+            <div style="width: 100vw; text-align: right;">
+                <button mat-raised-button
+                    (click)="openReverseSelection('XLSheet', 'XLFile_SheetsDBID')">Sheets</button>
+            </div>
+        </mat-grid-tile>
+        <mat-grid-tile>
+            <div style="width: 100vw; text-align: left;">
+                <button mat-raised-button (click)="openDragAndDropOrdering('XLSheet', 'XLFile_SheetsDBID')">
+                    <mat-icon>
+                        shuffle
+                    </mat-icon>
+                </button>
+            </div>
+        </mat-grid-tile>
+    </mat-grid-list>
     <div class="details__save">
         <button mat-raised-button color="primary" (click)="save()">
 			Save xlfile

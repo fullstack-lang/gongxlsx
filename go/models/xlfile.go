@@ -12,6 +12,7 @@ type XLFile struct {
 	file *xlsx.File
 
 	NbSheets int
+	Sheets   []*XLSheet
 }
 
 func (xlfile *XLFile) Open(path string) {
@@ -28,6 +29,14 @@ func (xlfile *XLFile) Open(path string) {
 	fmt.Println("Sheets in this file:")
 	for i, sh := range xlfile.file.Sheets {
 		fmt.Println(i, sh.Name)
+
+		sheet := new(XLSheet).Stage()
+		sheet.Name = sh.Name
+		sheet.sheet = sh
+		sheet.MaxCol = sh.MaxCol
+		sheet.MaxRow = sh.MaxRow
+
+		xlfile.Sheets = append(xlfile.Sheets, sheet)
 	}
 	fmt.Println("----")
 
