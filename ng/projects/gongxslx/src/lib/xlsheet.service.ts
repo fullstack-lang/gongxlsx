@@ -56,6 +56,7 @@ export class XLSheetService {
   postXLSheet(xlsheetdb: XLSheetDB): Observable<XLSheetDB> {
 
 		// insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    xlsheetdb.Rows = []
     let _XLFile_Sheets_reverse = xlsheetdb.XLFile_Sheets_reverse
     xlsheetdb.XLFile_Sheets_reverse = {}
 
@@ -86,6 +87,7 @@ export class XLSheetService {
     const url = `${this.xlsheetsUrl}/${id}`;
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    xlsheetdb.Rows = []
     let _XLFile_Sheets_reverse = xlsheetdb.XLFile_Sheets_reverse
     xlsheetdb.XLFile_Sheets_reverse = {}
 

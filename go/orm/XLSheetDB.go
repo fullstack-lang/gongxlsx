@@ -212,6 +212,23 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 				xlsheetDB.NbRows_Data.Int64 = int64(xlsheet.NbRows)
 				xlsheetDB.NbRows_Data.Valid = true
 
+				// commit a slice of pointer translates to update reverse pointer to XLRow, i.e.
+				index_Rows := 0
+				for _, xlrow := range xlsheet.Rows {
+					if xlrowDBID, ok := (*backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlrow]; ok {
+						if xlrowDB, ok := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB)[xlrowDBID]; ok {
+							xlrowDB.XLSheet_RowsDBID.Int64 = int64(xlsheetDB.ID)
+							xlrowDB.XLSheet_RowsDBID.Valid = true
+							xlrowDB.XLSheet_RowsDBID_Index.Int64 = int64(index_Rows)
+							index_Rows = index_Rows + 1
+							xlrowDB.XLSheet_RowsDBID_Index.Valid = true
+							if q := backRepoXLSheet.db.Save(&xlrowDB); q.Error != nil {
+								return q.Error
+							}
+						}
+					}
+				}
+
 			}
 		}
 		query := backRepoXLSheet.db.Save(&xlsheetDB)
@@ -298,6 +315,27 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseTwoInstance(backRepo 
 			xlsheet.MaxCol = int(xlsheetDB.MaxCol_Data.Int64)
 
 			xlsheet.NbRows = int(xlsheetDB.NbRows_Data.Int64)
+
+			// parse all XLRowDB and redeem the array of poiners to XLSheet
+			// first reset the slice
+			xlsheet.Rows = xlsheet.Rows[:0]
+			for _, XLRowDB := range *backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB {
+				if XLRowDB.XLSheet_RowsDBID.Int64 == int64(xlsheetDB.ID) {
+					XLRow := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[XLRowDB.ID]
+					xlsheet.Rows = append(xlsheet.Rows, XLRow)
+				}
+			}
+			
+			// sort the array according to the order
+			sort.Slice(xlsheet.Rows, func(i, j int) bool {
+				xlrowDB_i_ID := (*backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlsheet.Rows[i]]
+				xlrowDB_j_ID := (*backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlsheet.Rows[j]]
+
+				xlrowDB_i := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB)[xlrowDB_i_ID]
+				xlrowDB_j := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB)[xlrowDB_j_ID]
+
+				return xlrowDB_i.XLSheet_RowsDBID_Index.Int64 < xlrowDB_j.XLSheet_RowsDBID_Index.Int64
+			})
 
 		}
 	}

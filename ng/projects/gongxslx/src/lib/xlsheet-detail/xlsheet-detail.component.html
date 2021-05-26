@@ -37,6 +37,23 @@
             </mat-form-field>
         </form>
     </div>
+    <mat-grid-list cols="2" rowHeight="6:1">
+        <mat-grid-tile>
+            <div style="width: 100vw; text-align: right;">
+                <button mat-raised-button
+                    (click)="openReverseSelection('XLRow', 'XLSheet_RowsDBID')">Rows</button>
+            </div>
+        </mat-grid-tile>
+        <mat-grid-tile>
+            <div style="width: 100vw; text-align: left;">
+                <button mat-raised-button (click)="openDragAndDropOrdering('XLRow', 'XLSheet_RowsDBID')">
+                    <mat-icon>
+                        shuffle
+                    </mat-icon>
+                </button>
+            </div>
+        </mat-grid-tile>
+    </mat-grid-list>
     <div class="details__item">
     <mat-form-field>
         <mat-label><- Sheets</mat-label>

@@ -33,6 +33,7 @@ func SetupModels(logMode bool, filepath string) *gorm.DB {
 func AutoMigrate(db *gorm.DB) {
 	_db := db.AutoMigrate( // insertion point for reference to structs 
 	  &XLFileDB{},
+	  &XLRowDB{},
 	  &XLSheetDB{},
 	)
 
@@ -45,5 +46,6 @@ func AutoMigrate(db *gorm.DB) {
 
 func ResetDB(db *gorm.DB) { // insertion point for reference to structs 
 	  db.Delete(&XLFileDB{})
+	  db.Delete(&XLRowDB{})
 	  db.Delete(&XLSheetDB{})
 }

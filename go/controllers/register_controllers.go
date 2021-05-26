@@ -51,6 +51,13 @@ func RegisterControllers(r *gin.Engine) {
 		v1.PUT("/v1/xlfiles/:id", UpdateXLFile)
 		v1.DELETE("/v1/xlfiles/:id", DeleteXLFile)
 
+		v1.GET("/v1/xlrows", GetXLRows)
+		v1.GET("/v1/xlrows/:id", GetXLRow)
+		v1.POST("/v1/xlrows", PostXLRow)
+		v1.PATCH("/v1/xlrows/:id", UpdateXLRow)
+		v1.PUT("/v1/xlrows/:id", UpdateXLRow)
+		v1.DELETE("/v1/xlrows/:id", DeleteXLRow)
+
 		v1.GET("/v1/xlsheets", GetXLSheets)
 		v1.GET("/v1/xlsheets/:id", GetXLSheet)
 		v1.POST("/v1/xlsheets", PostXLSheet)

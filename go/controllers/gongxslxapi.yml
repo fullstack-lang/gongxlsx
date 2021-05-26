@@ -144,6 +144,15 @@ definitions:
   RelationshipType:
     type: string
     x-go-package: github.com/tealeg/xlsx/v3
+  Row:
+    properties:
+      Hidden:
+        type: boolean
+      Sheet:
+        $ref: '#/definitions/Sheet'
+    title: Row represents a single Row in the current Sheet.
+    type: object
+    x-go-package: github.com/tealeg/xlsx/v3
   Sheet:
     description: |-
       Sheet is a high level structure intended to provide user access to
@@ -205,6 +214,18 @@ definitions:
         $ref: '#/definitions/Pane'
     type: object
     x-go-package: github.com/tealeg/xlsx/v3
+  XLRow:
+    properties:
+      Name:
+        type: string
+      NbCols:
+        format: int64
+        type: integer
+      RowIndex:
+        format: int64
+        type: integer
+    type: object
+    x-go-package: github.com/fullstack-lang/gongxslx/go/models
   XLSheet:
     properties:
       MaxCol:
@@ -218,6 +239,10 @@ definitions:
       NbRows:
         format: int64
         type: integer
+      Rows:
+        items:
+          $ref: '#/definitions/XLRow'
+        type: array
     type: object
     x-go-package: github.com/fullstack-lang/gongxslx/go/models
   xlfileAPI:
@@ -276,6 +301,72 @@ definitions:
     type: object
     x-go-name: XLFileDB
     x-go-package: github.com/fullstack-lang/gongxslx/go/orm
+  xlrowAPI:
+    description: |-
+      for POST, API, one needs the fields of the model as well as the fields
+      from associations ("Has One" and "Has Many") that are generated to
+      fullfill the ORM requirements for associations
+    properties:
+      Name:
+        type: string
+      Name_Data:
+        $ref: '#/definitions/NullString'
+      NbCols:
+        format: int64
+        type: integer
+      NbCols_Data:
+        $ref: '#/definitions/NullInt64'
+      RowIndex:
+        format: int64
+        type: integer
+      RowIndex_Data:
+        $ref: '#/definitions/NullInt64'
+      XLSheet_RowsDBID:
+        $ref: '#/definitions/NullInt64'
+      XLSheet_RowsDBID_Index:
+        $ref: '#/definitions/NullInt64'
+    title: XLRowAPI is the input in POST API
+    type: object
+    x-go-name: XLRowAPI
+    x-go-package: github.com/fullstack-lang/gongxslx/go/orm
+  xlrowDB:
+    description: 'It incorporates all fields : from the model, from the generated
+      field for the API and the GORM ID'
+    properties:
+      CreatedAt:
+        format: date-time
+        type: string
+      DeletedAt:
+        format: date-time
+        type: string
+      ID:
+        format: uint64
+        type: integer
+      Name:
+        type: string
+      Name_Data:
+        $ref: '#/definitions/NullString'
+      NbCols:
+        format: int64
+        type: integer
+      NbCols_Data:
+        $ref: '#/definitions/NullInt64'
+      RowIndex:
+        format: int64
+        type: integer
+      RowIndex_Data:
+        $ref: '#/definitions/NullInt64'
+      UpdatedAt:
+        format: date-time
+        type: string
+      XLSheet_RowsDBID:
+        $ref: '#/definitions/NullInt64'
+      XLSheet_RowsDBID_Index:
+        $ref: '#/definitions/NullInt64'
+    title: XLRowDB describes a xlrow in the database
+    type: object
+    x-go-name: XLRowDB
+    x-go-package: github.com/fullstack-lang/gongxslx/go/orm
   xlsheetAPI:
     description: |-
       for POST, API, one needs the fields of the model as well as the fields
@@ -301,6 +392,10 @@ definitions:
         type: integer
       NbRows_Data:
         $ref: '#/definitions/NullInt64'
+      Rows:
+        items:
+          $ref: '#/definitions/XLRow'
+        type: array
       XLFile_SheetsDBID:
         $ref: '#/definitions/NullInt64'
       XLFile_SheetsDBID_Index:
@@ -341,6 +436,10 @@ definitions:
         type: integer
       NbRows_Data:
         $ref: '#/definitions/NullInt64'
+      Rows:
+        items:
+          $ref: '#/definitions/XLRow'
+        type: array
       UpdatedAt:
         format: date-time
         type: string
@@ -560,6 +659,90 @@ paths:
           $ref: '#/responses/genericError'
       tags:
       - xlfiles
+  /xlrows:
+    get:
+      description: Get all xlrows
+      operationId: getXLRows
+      responses:
+        "200":
+          $ref: '#/responses/xlrowDBsResponse'
+        default:
+          $ref: '#/responses/genericError'
+      tags:
+      - xlrows
+    post:
+      consumes:
+      - application/json
+      description: Creates a xlrow
+      operationId: postXLRow
+      parameters:
+      - description: The XLRow to submit or modify
+        in: body
+        name: XLRow
+        schema:
+          $ref: '#/definitions/xlrowAPI'
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/xlrowDBResponse'
+      tags:
+      - xlrows
+  /xlrows/{ID}:
+    delete:
+      description: Delete a xlrow
+      operationId: deleteXLRow
+      parameters:
+      - description: The ID of the order
+        format: int64
+        in: path
+        name: ID
+        required: true
+        type: integer
+      responses:
+        default:
+          $ref: '#/responses/genericError'
+      tags:
+      - xlrows
+    get:
+      operationId: getXLRow
+      parameters:
+      - description: The ID of the order
+        format: int64
+        in: path
+        name: ID
+        required: true
+        type: integer
+      responses:
+        "200":
+          $ref: '#/responses/xlrowDBResponse'
+        default:
+          $ref: '#/responses/genericError'
+      summary: Gets the details for a xlrow.
+      tags:
+      - xlrows
+    patch:
+      description: Update a xlrow
+      operationId: updateXLRow
+      parameters:
+      - description: The ID of the order
+        format: int64
+        in: path
+        name: ID
+        required: true
+        type: integer
+      - description: The XLRow to submit or modify
+        in: body
+        name: XLRow
+        schema:
+          $ref: '#/definitions/xlrowAPI'
+      responses:
+        "200":
+          $ref: '#/responses/xlrowDBResponse'
+        default:
+          $ref: '#/responses/genericError'
+      tags:
+      - xlrows
   /xlsheets:
     get:
       description: Get all xlsheets
@@ -718,6 +901,51 @@ responses:
       items:
         $ref: '#/definitions/xlfileDB'
       type: array
+  xlrowDBResponse:
+    description: XLRowDBResponse provides response
+    headers:
+      CreatedAt:
+        format: date-time
+        type: string
+      DeletedAt:
+        format: date-time
+        type: string
+      ID:
+        format: uint64
+        type: integer
+      Name:
+        type: string
+      Name_Data:
+        description: |-
+          insertion for fields declaration
+          Declation for basic field xlrowDB.Name {{BasicKind}} (to be completed)
+      NbCols:
+        format: int64
+        type: integer
+      NbCols_Data:
+        description: Declation for basic field xlrowDB.NbCols {{BasicKind}} (to be
+          completed)
+      RowIndex:
+        format: int64
+        type: integer
+      RowIndex_Data:
+        description: Declation for basic field xlrowDB.RowIndex {{BasicKind}} (to
+          be completed)
+      UpdatedAt:
+        format: date-time
+        type: string
+      XLSheet_RowsDBID:
+        description: Implementation of a reverse ID for field XLSheet{}.Rows []*XLRow
+      XLSheet_RowsDBID_Index: {}
+      row: {}
+    schema:
+      $ref: '#/definitions/NullInt64'
+  xlrowDBsResponse:
+    description: XLRowDBs arrays xlrowDBs
+    schema:
+      items:
+        $ref: '#/definitions/xlrowDB'
+      type: array
   xlsheetDBResponse:
     description: XLSheetDBResponse provides response
     headers:
@@ -754,6 +982,10 @@ responses:
       NbRows_Data:
         description: Declation for basic field xlsheetDB.NbRows {{BasicKind}} (to
           be completed)
+      Rows:
+        items:
+          $ref: '#/definitions/XLRow'
+        type: array
       UpdatedAt:
         format: date-time
         type: string

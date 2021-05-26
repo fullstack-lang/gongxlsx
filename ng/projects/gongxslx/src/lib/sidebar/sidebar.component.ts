@@ -10,6 +10,8 @@ import { CommitNbService } from '../commitnb.service'
 // insertion point for per struct import code
 import { XLFileService } from '../xlfile.service'
 import { getXLFileUniqueID } from '../front-repo.service'
+import { XLRowService } from '../xlrow.service'
+import { getXLRowUniqueID } from '../front-repo.service'
 import { XLSheetService } from '../xlsheet.service'
 import { getXLSheetUniqueID } from '../front-repo.service'
 
@@ -145,6 +147,7 @@ export class SidebarComponent implements OnInit {
 
     // insertion point for per struct service declaration
     private xlfileService: XLFileService,
+    private xlrowService: XLRowService,
     private xlsheetService: XLSheetService,
   ) { }
 
@@ -154,6 +157,14 @@ export class SidebarComponent implements OnInit {
     // insertion point for per struct observable for refresh trigger
     // observable for changes in structs
     this.xlfileService.XLFileServiceChanged.subscribe(
+      message => {
+        if (message == "post" || message == "update" || message == "delete") {
+          this.refresh()
+        }
+      }
+    )
+    // observable for changes in structs
+    this.xlrowService.XLRowServiceChanged.subscribe(
       message => {
         if (message == "post" || message == "update" || message == "delete") {
           this.refresh()
@@ -266,6 +277,48 @@ export class SidebarComponent implements OnInit {
       )
 
       /**
+      * fill up the XLRow part of the mat tree
+      */
+      let xlrowGongNodeStruct: GongNode = {
+        name: "XLRow",
+        type: GongNodeType.STRUCT,
+        id: 0,
+        uniqueIdPerStack: 13 * nonInstanceNodeId,
+        structName: "XLRow",
+        associatedStructName: "",
+        children: new Array<GongNode>()
+      }
+      nonInstanceNodeId = nonInstanceNodeId + 1
+      this.gongNodeTree.push(xlrowGongNodeStruct)
+
+      this.frontRepo.XLRows_array.sort((t1, t2) => {
+        if (t1.Name > t2.Name) {
+          return 1;
+        }
+        if (t1.Name < t2.Name) {
+          return -1;
+        }
+        return 0;
+      });
+
+      this.frontRepo.XLRows_array.forEach(
+        xlrowDB => {
+          let xlrowGongNodeInstance: GongNode = {
+            name: xlrowDB.Name,
+            type: GongNodeType.INSTANCE,
+            id: xlrowDB.ID,
+            uniqueIdPerStack: getXLRowUniqueID(xlrowDB.ID),
+            structName: "XLRow",
+            associatedStructName: "",
+            children: new Array<GongNode>()
+          }
+          xlrowGongNodeStruct.children.push(xlrowGongNodeInstance)
+
+          // insertion point for per field code
+        }
+      )
+
+      /**
       * fill up the XLSheet part of the mat tree
       */
       let xlsheetGongNodeStruct: GongNode = {
@@ -304,6 +357,36 @@ export class SidebarComponent implements OnInit {
           xlsheetGongNodeStruct.children.push(xlsheetGongNodeInstance)
 
           // insertion point for per field code
+          /**
+          * let append a node for the slide of pointer Rows
+          */
+          let RowsGongNodeAssociation: GongNode = {
+            name: "(XLRow) Rows",
+            type: GongNodeType.ONE__ZERO_MANY_ASSOCIATION,
+            id: xlsheetDB.ID,
+            uniqueIdPerStack: 19 * nonInstanceNodeId,
+            structName: "XLSheet",
+            associatedStructName: "XLRow",
+            children: new Array<GongNode>()
+          }
+          nonInstanceNodeId = nonInstanceNodeId + 1
+          xlsheetGongNodeInstance.children.push(RowsGongNodeAssociation)
+
+          xlsheetDB.Rows?.forEach(xlrowDB => {
+            let xlrowNode: GongNode = {
+              name: xlrowDB.Name,
+              type: GongNodeType.INSTANCE,
+              id: xlrowDB.ID,
+              uniqueIdPerStack: // godel numbering (thank you kurt)
+                7 * getXLSheetUniqueID(xlsheetDB.ID)
+                + 11 * getXLRowUniqueID(xlrowDB.ID),
+              structName: "XLRow",
+              associatedStructName: "",
+              children: new Array<GongNode>()
+            }
+            RowsGongNodeAssociation.children.push(xlrowNode)
+          })
+
         }
       )
 

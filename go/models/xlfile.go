@@ -51,6 +51,13 @@ func (xlfile *XLFile) Open(path string) {
 				emptyRow = true
 				continue
 			}
+			row, _ := sh.Row(rowIndex)
+			xlrow := new(XLRow).Stage()
+			xlrow.row = row
+			//			xlrow.Name = xlsheet.Name + "-" + fmt.Sprintf("%4d", rowIndex)
+			xlrow.Name = cell.Value
+			xlsheet.Rows = append(xlsheet.Rows, xlrow)
+
 			xlsheet.NbRows = rowIndex
 		}
 		fmt.Println("Sheet ", xlsheet.Name, "Nb Rows", xlsheet.NbRows)
