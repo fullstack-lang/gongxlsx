@@ -76,6 +76,10 @@ func GetXLSheets(c *gin.Context) {
 			xlsheet.MaxCol = int(xlsheet.MaxCol_Data.Int64)
 		}
 
+		if xlsheet.NbRows_Data.Valid {
+			xlsheet.NbRows = int(xlsheet.NbRows_Data.Int64)
+		}
+
 	}
 
 	c.JSON(http.StatusOK, xlsheets)
@@ -121,6 +125,9 @@ func PostXLSheet(c *gin.Context) {
 
 	xlsheetDB.MaxCol_Data.Int64 = int64(input.MaxCol)
 	xlsheetDB.MaxCol_Data.Valid = true
+
+	xlsheetDB.NbRows_Data.Int64 = int64(input.NbRows)
+	xlsheetDB.NbRows_Data.Valid = true
 
 	query := db.Create(&xlsheetDB)
 	if query.Error != nil {
@@ -173,6 +180,10 @@ func GetXLSheet(c *gin.Context) {
 		xlsheet.MaxCol = int(xlsheet.MaxCol_Data.Int64)
 	}
 
+	if xlsheet.NbRows_Data.Valid {
+		xlsheet.NbRows = int(xlsheet.NbRows_Data.Int64)
+	}
+
 	c.JSON(http.StatusOK, xlsheet)
 }
 
@@ -219,6 +230,9 @@ func UpdateXLSheet(c *gin.Context) {
 
 	input.MaxCol_Data.Int64 = int64(input.MaxCol)
 	input.MaxCol_Data.Valid = true
+
+	input.NbRows_Data.Int64 = int64(input.NbRows)
+	input.NbRows_Data.Valid = true
 
 	query = db.Model(&xlsheetDB).Updates(input)
 	if query.Error != nil {

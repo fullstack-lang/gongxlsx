@@ -85,6 +85,7 @@ export class XLSheetsTableComponent implements OnInit {
         "Name",
         "MaxRow",
         "MaxCol",
+        "NbRows",
         "Sheets",
       ]
     } else {
@@ -92,6 +93,7 @@ export class XLSheetsTableComponent implements OnInit {
         "Name",
         "MaxRow",
         "MaxCol",
+        "NbRows",
         "Sheets",
       ]
       this.selection = new SelectionModel<XLSheetDB>(allowMultiSelect, this.initialSelection);

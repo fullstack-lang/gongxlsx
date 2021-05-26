@@ -39,6 +39,9 @@ type XLSheetAPI struct {
 	// Declation for basic field xlsheetDB.MaxCol {{BasicKind}} (to be completed)
 	MaxCol_Data sql.NullInt64
 
+	// Declation for basic field xlsheetDB.NbRows {{BasicKind}} (to be completed)
+	NbRows_Data sql.NullInt64
+
 	// Implementation of a reverse ID for field XLFile{}.Sheets []*XLSheet
 	XLFile_SheetsDBID sql.NullInt64
 	XLFile_SheetsDBID_Index sql.NullInt64
@@ -206,6 +209,9 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 				xlsheetDB.MaxCol_Data.Int64 = int64(xlsheet.MaxCol)
 				xlsheetDB.MaxCol_Data.Valid = true
 
+				xlsheetDB.NbRows_Data.Int64 = int64(xlsheet.NbRows)
+				xlsheetDB.NbRows_Data.Valid = true
+
 			}
 		}
 		query := backRepoXLSheet.db.Save(&xlsheetDB)
@@ -290,6 +296,8 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseTwoInstance(backRepo 
 			xlsheet.MaxRow = int(xlsheetDB.MaxRow_Data.Int64)
 
 			xlsheet.MaxCol = int(xlsheetDB.MaxCol_Data.Int64)
+
+			xlsheet.NbRows = int(xlsheetDB.NbRows_Data.Int64)
 
 		}
 	}

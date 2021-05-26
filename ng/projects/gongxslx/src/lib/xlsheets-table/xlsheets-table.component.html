@@ -40,6 +40,13 @@
             </td>
         </ng-container>
         <!-- -->
+        <ng-container matColumnDef="NbRows">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> NbRows </th>
+            <td mat-cell *matCellDef="let XLSheet">
+                {{XLSheet.NbRows}}
+            </td>
+        </ng-container>
+        <!-- -->
         <ng-container matColumnDef="Sheets">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> <-- (XLFile) Sheets </th>
             <td mat-cell *matCellDef="let xlsheet">

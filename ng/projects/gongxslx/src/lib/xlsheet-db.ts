@@ -13,6 +13,7 @@ export class XLSheetDB {
 	Name?: string
 	MaxRow?: number
 	MaxCol?: number
+	NbRows?: number
 
 	// insertion point for other declarations
 	XLFile_SheetsDBID?: NullInt64

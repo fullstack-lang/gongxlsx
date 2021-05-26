@@ -3,4 +3,5 @@ export class XLSheetAPI {
 	Name?: string
 	MaxRow?: number
 	MaxCol?: number
+	NbRows?: number
 }

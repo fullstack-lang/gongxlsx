@@ -215,6 +215,9 @@ definitions:
         type: integer
       Name:
         type: string
+      NbRows:
+        format: int64
+        type: integer
     type: object
     x-go-package: github.com/fullstack-lang/gongxslx/go/models
   xlfileAPI:
@@ -293,6 +296,11 @@ definitions:
         type: string
       Name_Data:
         $ref: '#/definitions/NullString'
+      NbRows:
+        format: int64
+        type: integer
+      NbRows_Data:
+        $ref: '#/definitions/NullInt64'
       XLFile_SheetsDBID:
         $ref: '#/definitions/NullInt64'
       XLFile_SheetsDBID_Index:
@@ -328,6 +336,11 @@ definitions:
         type: string
       Name_Data:
         $ref: '#/definitions/NullString'
+      NbRows:
+        format: int64
+        type: integer
+      NbRows_Data:
+        $ref: '#/definitions/NullInt64'
       UpdatedAt:
         format: date-time
         type: string
@@ -735,6 +748,12 @@ responses:
         description: |-
           insertion for fields declaration
           Declation for basic field xlsheetDB.Name {{BasicKind}} (to be completed)
+      NbRows:
+        format: int64
+        type: integer
+      NbRows_Data:
+        description: Declation for basic field xlsheetDB.NbRows {{BasicKind}} (to
+          be completed)
       UpdatedAt:
         format: date-time
         type: string

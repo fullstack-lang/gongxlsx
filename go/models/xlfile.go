@@ -30,15 +30,39 @@ func (xlfile *XLFile) Open(path string) {
 	for i, sh := range xlfile.file.Sheets {
 		fmt.Println(i, sh.Name)
 
-		sheet := new(XLSheet).Stage()
-		sheet.Name = sh.Name
-		sheet.sheet = sh
-		sheet.MaxCol = sh.MaxCol
-		sheet.MaxRow = sh.MaxRow
+		xlsheet := new(XLSheet).Stage()
+		xlsheet.Name = sh.Name
+		xlsheet.sheet = sh
+		xlsheet.MaxCol = sh.MaxCol
+		xlsheet.MaxRow = sh.MaxRow
 
-		xlfile.Sheets = append(xlfile.Sheets, sheet)
+		xlfile.Sheets = append(xlfile.Sheets, xlsheet)
+
+		emptyRow := false
+		rowIndex := 0
+		for !emptyRow {
+
+			cell, err := sh.Cell(rowIndex, 0)
+			rowIndex = rowIndex + 1
+			if err != nil {
+				continue
+			}
+			if cell.Value == "" {
+				emptyRow = true
+				continue
+			}
+			xlsheet.NbRows = rowIndex
+		}
+		fmt.Println("Sheet ", xlsheet.Name, "Nb Rows", xlsheet.NbRows)
 	}
 	fmt.Println("----")
 
 	xlfile.NbSheets = len(xlfile.file.Sheets)
+}
+
+var nbRows int
+
+func rowVisitor(r *xlsx.Row) error {
+	nbRows = nbRows + 1
+	return nil
 }

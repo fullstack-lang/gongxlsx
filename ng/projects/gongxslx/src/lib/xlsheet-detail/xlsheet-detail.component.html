@@ -28,6 +28,15 @@
             </mat-form-field>
         </form>
     </div>
+    <!-- -->
+    <div class="details__item">
+        <form>
+            <mat-form-field>
+                <mat-label>NbRows</mat-label>
+                <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlsheet.NbRows">
+            </mat-form-field>
+        </form>
+    </div>
     <div class="details__item">
     <mat-form-field>
         <mat-label><- Sheets</mat-label>

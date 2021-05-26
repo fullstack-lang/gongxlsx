@@ -9,5 +9,6 @@ type XLSheet struct {
 	MaxRow int
 	MaxCol int
 
-	sheet *xlsx.Sheet
+	sheet  *xlsx.Sheet
+	NbRows int
 }
