@@ -1,17 +1,17 @@
 // insertion point sub template for components imports 
-  import { XslxsTableComponent } from './xslxs-table/xslxs-table.component'
-  import { XslxSortingComponent } from './xslx-sorting/xslx-sorting.component'
+  import { XLFilesTableComponent } from './xlfiles-table/xlfiles-table.component'
+  import { XLFileSortingComponent } from './xlfile-sorting/xlfile-sorting.component'
 
 // insertion point sub template for map of components per struct 
-  export const MapOfXslxsComponents: Map<string, any> = new Map([["XslxsTableComponent", XslxsTableComponent],])
-  export const MapOfXslxSortingComponents: Map<string, any> = new Map([["XslxSortingComponent", XslxSortingComponent],])
+  export const MapOfXLFilesComponents: Map<string, any> = new Map([["XLFilesTableComponent", XLFilesTableComponent],])
+  export const MapOfXLFileSortingComponents: Map<string, any> = new Map([["XLFileSortingComponent", XLFileSortingComponent],])
 
 // map of all ng components of the stacks
 export const MapOfComponents: Map<string, any> =
   new Map(
     [
       // insertion point sub template for map of components 
-      ["Xslx", MapOfXslxsComponents],
+      ["XLFile", MapOfXLFilesComponents],
     ]
   )
 
@@ -20,6 +20,6 @@ export const MapOfSortingComponents: Map<string, any> =
   new Map(
     [
     // insertion point sub template for map of sorting components 
-      ["Xslx", MapOfXslxSortingComponents],
+      ["XLFile", MapOfXLFileSortingComponents],
     ]
   )

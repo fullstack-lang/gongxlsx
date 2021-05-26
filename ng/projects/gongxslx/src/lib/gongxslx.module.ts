@@ -32,19 +32,19 @@ import { SplitterComponent } from './splitter/splitter.component'
 import { SidebarComponent } from './sidebar/sidebar.component';
 
 // insertion point for imports 
-import { XslxsTableComponent } from './xslxs-table/xslxs-table.component'
-import { XslxSortingComponent } from './xslx-sorting/xslx-sorting.component'
-import { XslxDetailComponent } from './xslx-detail/xslx-detail.component'
-import { XslxPresentationComponent } from './xslx-presentation/xslx-presentation.component'
+import { XLFilesTableComponent } from './xlfiles-table/xlfiles-table.component'
+import { XLFileSortingComponent } from './xlfile-sorting/xlfile-sorting.component'
+import { XLFileDetailComponent } from './xlfile-detail/xlfile-detail.component'
+import { XLFilePresentationComponent } from './xlfile-presentation/xlfile-presentation.component'
 
 
 @NgModule({
 	declarations: [
 		// insertion point for declarations 
-		XslxsTableComponent,
-		XslxSortingComponent,
-		XslxDetailComponent,
-		XslxPresentationComponent,
+		XLFilesTableComponent,
+		XLFileSortingComponent,
+		XLFileDetailComponent,
+		XLFilePresentationComponent,
 
 
 		SplitterComponent,
@@ -81,10 +81,10 @@ import { XslxPresentationComponent } from './xslx-presentation/xslx-presentation
 	],
 	exports: [
 		// insertion point for declarations 
-		XslxsTableComponent,
-		XslxSortingComponent,
-		XslxDetailComponent,
-		XslxPresentationComponent,
+		XLFilesTableComponent,
+		XLFileSortingComponent,
+		XLFileDetailComponent,
+		XLFilePresentationComponent,
 
 
 		SplitterComponent,

@@ -12,11 +12,11 @@ export * from './lib/front-repo.service'
 export * from './lib/commitnb.service'
 
 
-export * from './lib/xslx-detail/xslx-detail.component'
-export * from './lib/xslx-presentation/xslx-presentation.component'
-export * from './lib/xslxs-table/xslxs-table.component'
-export * from './lib/xslx-db'
-export * from './lib/xslx-api'
-export * from './lib/xslx.service'
+export * from './lib/xlfile-detail/xlfile-detail.component'
+export * from './lib/xlfile-presentation/xlfile-presentation.component'
+export * from './lib/xlfiles-table/xlfiles-table.component'
+export * from './lib/xlfile-db'
+export * from './lib/xlfile-api'
+export * from './lib/xlfile.service'
 
 

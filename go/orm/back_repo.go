@@ -9,7 +9,7 @@ import (
 // BackRepoStruct supports callback functions
 type BackRepoStruct struct {
 	// insertion point for per struct back repo declarations
-	BackRepoXslx BackRepoXslxStruct
+	BackRepoXLFile BackRepoXLFileStruct
 
 	CommitNb uint // this ng is updated at the BackRepo level but also at the BackRepo<GongStruct> level
 }
@@ -29,7 +29,7 @@ func (backRepo *BackRepoStruct) IncrementCommitNb() uint {
 // Init the BackRepoStruct inner variables and link to the database
 func (backRepo *BackRepoStruct) Init(db *gorm.DB) {
 	// insertion point for per struct back repo declarations
-	backRepo.BackRepoXslx.Init(db)
+	backRepo.BackRepoXLFile.Init(db)
 
 	models.Stage.BackRepo = backRepo
 }
@@ -37,10 +37,10 @@ func (backRepo *BackRepoStruct) Init(db *gorm.DB) {
 // Commit the BackRepoStruct inner variables and link to the database
 func (backRepo *BackRepoStruct) Commit(stage *models.StageStruct) {
 	// insertion point for per struct back repo phase one commit
-	backRepo.BackRepoXslx.CommitPhaseOne(stage)
+	backRepo.BackRepoXLFile.CommitPhaseOne(stage)
 
 	// insertion point for per struct back repo phase two commit
-	backRepo.BackRepoXslx.CommitPhaseTwo(backRepo)
+	backRepo.BackRepoXLFile.CommitPhaseTwo(backRepo)
 
 	backRepo.IncrementCommitNb()
 }
@@ -48,10 +48,10 @@ func (backRepo *BackRepoStruct) Commit(stage *models.StageStruct) {
 // Checkout the database into the stage
 func (backRepo *BackRepoStruct) Checkout(stage *models.StageStruct) {
 	// insertion point for per struct back repo phase one commit
-	backRepo.BackRepoXslx.CheckoutPhaseOne()
+	backRepo.BackRepoXLFile.CheckoutPhaseOne()
 
 	// insertion point for per struct back repo phase two commit
-	backRepo.BackRepoXslx.CheckoutPhaseTwo(backRepo)
+	backRepo.BackRepoXLFile.CheckoutPhaseTwo(backRepo)
 }
 
 var BackRepo BackRepoStruct

@@ -41,9 +41,10 @@ func main() {
 	r.Use(cors.Default())
 
 	// setup GORM
-	db := orm.SetupModels(*logDBFlag, "./test.db")
+	db := orm.SetupModels(*logDBFlag, ".:memory:")
 	// mandatory, otherwise, bizarre errors occurs
 	db.DB().SetMaxOpenConns(1)
+	orm.BackRepo.Init(db)
 
 	// Provide db variable to controllers
 	r.Use(func(c *gin.Context) {
@@ -65,8 +66,10 @@ func main() {
 		log.Panicf("should be a file")
 	}
 
-	file := new(models.Xslx)
+	file := new(models.XLFile).Stage()
 	file.Open(flag.Arg(0))
+
+	models.Stage.Commit()
 
 	log.Printf("Server ready serve on localhost:8080")
 	r.Run()

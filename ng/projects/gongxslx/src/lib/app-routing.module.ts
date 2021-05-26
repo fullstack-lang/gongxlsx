@@ -2,18 +2,18 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 // insertion point for imports
-import { XslxsTableComponent } from './xslxs-table/xslxs-table.component'
-import { XslxDetailComponent } from './xslx-detail/xslx-detail.component'
-import { XslxPresentationComponent } from './xslx-presentation/xslx-presentation.component'
+import { XLFilesTableComponent } from './xlfiles-table/xlfiles-table.component'
+import { XLFileDetailComponent } from './xlfile-detail/xlfile-detail.component'
+import { XLFilePresentationComponent } from './xlfile-presentation/xlfile-presentation.component'
 
 
 const routes: Routes = [ // insertion point for routes declarations
-	{ path: 'xslxs', component: XslxsTableComponent, outlet: 'table' },
-	{ path: 'xslx-adder', component: XslxDetailComponent, outlet: 'editor' },
-	{ path: 'xslx-adder/:id/:association', component: XslxDetailComponent, outlet: 'editor' },
-	{ path: 'xslx-detail/:id', component: XslxDetailComponent, outlet: 'editor' },
-	{ path: 'xslx-presentation/:id', component: XslxPresentationComponent, outlet: 'presentation' },
-	{ path: 'xslx-presentation-special/:id', component: XslxPresentationComponent, outlet: 'xslxpres' },
+	{ path: 'xlfiles', component: XLFilesTableComponent, outlet: 'table' },
+	{ path: 'xlfile-adder', component: XLFileDetailComponent, outlet: 'editor' },
+	{ path: 'xlfile-adder/:id/:association', component: XLFileDetailComponent, outlet: 'editor' },
+	{ path: 'xlfile-detail/:id', component: XLFileDetailComponent, outlet: 'editor' },
+	{ path: 'xlfile-presentation/:id', component: XLFilePresentationComponent, outlet: 'presentation' },
+	{ path: 'xlfile-presentation-special/:id', component: XLFilePresentationComponent, outlet: 'xlfilepres' },
 
 ];
 

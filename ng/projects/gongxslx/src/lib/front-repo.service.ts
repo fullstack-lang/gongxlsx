@@ -4,15 +4,15 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, combineLatest } from 'rxjs';
 
 // insertion point sub template for services imports 
-import { XslxDB } from './xslx-db'
-import { XslxService } from './xslx.service'
+import { XLFileDB } from './xlfile-db'
+import { XLFileService } from './xlfile.service'
 
 
 // FrontRepo stores all instances in a front repository (design pattern repository)
 export class FrontRepo { // insertion point sub template 
-  Xslxs_array = new Array<XslxDB>(); // array of repo instances
-  Xslxs = new Map<number, XslxDB>(); // map of repo instances
-  Xslxs_batch = new Map<number, XslxDB>(); // same but only in last GET (for finding repo instances to delete)
+  XLFiles_array = new Array<XLFileDB>(); // array of repo instances
+  XLFiles = new Map<number, XLFileDB>(); // map of repo instances
+  XLFiles_batch = new Map<number, XLFileDB>(); // same but only in last GET (for finding repo instances to delete)
 }
 
 //
@@ -48,14 +48,14 @@ export class FrontRepoService {
 
   constructor(
     private http: HttpClient, // insertion point sub template 
-    private xslxService: XslxService,
+    private xlfileService: XLFileService,
   ) { }
 
   // typing of observable can be messy in typescript. Therefore, one force the type
   observableFrontRepo: [ // insertion point sub template 
-    Observable<XslxDB[]>,
+    Observable<XLFileDB[]>,
   ] = [ // insertion point sub template 
-      this.xslxService.getXslxs(),
+      this.xlfileService.getXLFiles(),
     ];
 
   //
@@ -71,40 +71,40 @@ export class FrontRepoService {
           this.observableFrontRepo
         ).subscribe(
           ([ // insertion point sub template for declarations 
-            xslxs_,
+            xlfiles_,
           ]) => {
             // Typing can be messy with many items. Therefore, type casting is necessary here
             // insertion point sub template for type casting 
-            var xslxs: XslxDB[]
-            xslxs = xslxs_
+            var xlfiles: XLFileDB[]
+            xlfiles = xlfiles_
 
             // 
             // First Step: init map of instances
             // insertion point sub template for init 
             // init the array
-            FrontRepoSingloton.Xslxs_array = xslxs
+            FrontRepoSingloton.XLFiles_array = xlfiles
 
-            // clear the map that counts Xslx in the GET
-            FrontRepoSingloton.Xslxs_batch.clear()
+            // clear the map that counts XLFile in the GET
+            FrontRepoSingloton.XLFiles_batch.clear()
             
-            xslxs.forEach(
-              xslx => {
-                FrontRepoSingloton.Xslxs.set(xslx.ID, xslx)
-                FrontRepoSingloton.Xslxs_batch.set(xslx.ID, xslx)
+            xlfiles.forEach(
+              xlfile => {
+                FrontRepoSingloton.XLFiles.set(xlfile.ID, xlfile)
+                FrontRepoSingloton.XLFiles_batch.set(xlfile.ID, xlfile)
               }
             )
             
-            // clear xslxs that are absent from the batch
-            FrontRepoSingloton.Xslxs.forEach(
-              xslx => {
-                if (FrontRepoSingloton.Xslxs_batch.get(xslx.ID) == undefined) {
-                  FrontRepoSingloton.Xslxs.delete(xslx.ID)
+            // clear xlfiles that are absent from the batch
+            FrontRepoSingloton.XLFiles.forEach(
+              xlfile => {
+                if (FrontRepoSingloton.XLFiles_batch.get(xlfile.ID) == undefined) {
+                  FrontRepoSingloton.XLFiles.delete(xlfile.ID)
                 }
               }
             )
             
-            // sort Xslxs_array array
-            FrontRepoSingloton.Xslxs_array.sort((t1, t2) => {
+            // sort XLFiles_array array
+            FrontRepoSingloton.XLFiles_array.sort((t1, t2) => {
               if (t1.Name > t2.Name) {
                 return 1;
               }
@@ -118,8 +118,8 @@ export class FrontRepoService {
             // 
             // Second Step: redeem pointers between instances (thanks to maps in the First Step)
             // insertion point sub template for redeem 
-            xslxs.forEach(
-              xslx => {
+            xlfiles.forEach(
+              xlfile => {
                 // insertion point sub sub template for ONE-/ZERO-ONE associations pointers redeeming
 
                 // insertion point for redeeming ONE-MANY associations
@@ -136,29 +136,29 @@ export class FrontRepoService {
 
   // insertion point for pull per struct 
 
-  // XslxPull performs a GET on Xslx of the stack and redeem association pointers 
-  XslxPull(): Observable<FrontRepo> {
+  // XLFilePull performs a GET on XLFile of the stack and redeem association pointers 
+  XLFilePull(): Observable<FrontRepo> {
     return new Observable<FrontRepo>(
       (observer) => {
         combineLatest([
-          this.xslxService.getXslxs()
+          this.xlfileService.getXLFiles()
         ]).subscribe(
           ([ // insertion point sub template 
-            xslxs,
+            xlfiles,
           ]) => {
             // init the array
-            FrontRepoSingloton.Xslxs_array = xslxs
+            FrontRepoSingloton.XLFiles_array = xlfiles
 
-            // clear the map that counts Xslx in the GET
-            FrontRepoSingloton.Xslxs_batch.clear()
+            // clear the map that counts XLFile in the GET
+            FrontRepoSingloton.XLFiles_batch.clear()
 
             // 
             // First Step: init map of instances
             // insertion point sub template 
-            xslxs.forEach(
-              xslx => {
-                FrontRepoSingloton.Xslxs.set(xslx.ID, xslx)
-                FrontRepoSingloton.Xslxs_batch.set(xslx.ID, xslx)
+            xlfiles.forEach(
+              xlfile => {
+                FrontRepoSingloton.XLFiles.set(xlfile.ID, xlfile)
+                FrontRepoSingloton.XLFiles_batch.set(xlfile.ID, xlfile)
 
                 // insertion point for redeeming ONE/ZERO-ONE associations 
 
@@ -166,11 +166,11 @@ export class FrontRepoService {
               }
             )
 
-            // clear xslxs that are absent from the GET
-            FrontRepoSingloton.Xslxs.forEach(
-              xslx => {
-                if (FrontRepoSingloton.Xslxs_batch.get(xslx.ID) == undefined) {
-                  FrontRepoSingloton.Xslxs.delete(xslx.ID)
+            // clear xlfiles that are absent from the GET
+            FrontRepoSingloton.XLFiles.forEach(
+              xlfile => {
+                if (FrontRepoSingloton.XLFiles_batch.get(xlfile.ID) == undefined) {
+                  FrontRepoSingloton.XLFiles.delete(xlfile.ID)
                 }
               }
             )
@@ -189,6 +189,6 @@ export class FrontRepoService {
 }
 
 // insertion point for get unique ID per struct 
-export function getXslxUniqueID(id: number): number {
+export function getXLFileUniqueID(id: number): number {
   return 31 * id
 }

@@ -12,7 +12,7 @@ var __member __void
 // StageStruct enables storage of staged instances
 // swagger:ignore
 type StageStruct struct { // insertion point for definition of arrays registering instances
-	Xslxs map[*Xslx]struct{}
+	XLFiles map[*XLFile]struct{}
 
 	AllModelsStructCreateCallback AllModelsStructCreateInterface
 
@@ -32,14 +32,14 @@ type BackRepoInterface interface {
 	Commit(stage *StageStruct)
 	Checkout(stage *StageStruct)
 	// insertion point for Commit and Checkout signatures
-	CommitXslx(xslx *Xslx)
-	CheckoutXslx(xslx *Xslx)
+	CommitXLFile(xlfile *XLFile)
+	CheckoutXLFile(xlfile *XLFile)
 	GetLastCommitNb() uint
 }
 
 // swagger:ignore instructs the gong compiler (gongc) to avoid this particular struct
 var Stage StageStruct = StageStruct{ // insertion point for array initiatialisation
-	Xslxs: make(map[*Xslx]struct{}, 0),
+	XLFiles: make(map[*XLFile]struct{}, 0),
 
 }
 
@@ -56,118 +56,118 @@ func (stage *StageStruct) Checkout() {
 }
 
 // insertion point for cumulative sub template with model space calls
-func (stage *StageStruct) getXslxOrderedStructWithNameField() []*Xslx {
+func (stage *StageStruct) getXLFileOrderedStructWithNameField() []*XLFile {
 	// have alphabetical order generation
-	xslxOrdered := []*Xslx{}
-	for xslx := range stage.Xslxs {
-		xslxOrdered = append(xslxOrdered, xslx)
+	xlfileOrdered := []*XLFile{}
+	for xlfile := range stage.XLFiles {
+		xlfileOrdered = append(xlfileOrdered, xlfile)
 	}
-	sort.Slice(xslxOrdered[:], func(i, j int) bool {
-		return xslxOrdered[i].Name < xslxOrdered[j].Name
+	sort.Slice(xlfileOrdered[:], func(i, j int) bool {
+		return xlfileOrdered[i].Name < xlfileOrdered[j].Name
 	})
-	return xslxOrdered
+	return xlfileOrdered
 }
 
-// Stage puts xslx to the model stage
-func (xslx *Xslx) Stage() *Xslx {
-	Stage.Xslxs[xslx] = __member
-	return xslx
+// Stage puts xlfile to the model stage
+func (xlfile *XLFile) Stage() *XLFile {
+	Stage.XLFiles[xlfile] = __member
+	return xlfile
 }
 
-// Unstage removes xslx off the model stage
-func (xslx *Xslx) Unstage() *Xslx {
-	delete(Stage.Xslxs, xslx)
-	return xslx
+// Unstage removes xlfile off the model stage
+func (xlfile *XLFile) Unstage() *XLFile {
+	delete(Stage.XLFiles, xlfile)
+	return xlfile
 }
 
-// commit xslx to the back repo (if it is already staged)
-func (xslx *Xslx) Commit() *Xslx {
-	if _, ok := Stage.Xslxs[xslx]; ok {
+// commit xlfile to the back repo (if it is already staged)
+func (xlfile *XLFile) Commit() *XLFile {
+	if _, ok := Stage.XLFiles[xlfile]; ok {
 		if Stage.BackRepo != nil {
-			Stage.BackRepo.CommitXslx(xslx)
+			Stage.BackRepo.CommitXLFile(xlfile)
 		}
 	}
-	return xslx
+	return xlfile
 }
 
-// Checkout xslx to the back repo (if it is already staged)
-func (xslx *Xslx) Checkout() *Xslx {
-	if _, ok := Stage.Xslxs[xslx]; ok {
+// Checkout xlfile to the back repo (if it is already staged)
+func (xlfile *XLFile) Checkout() *XLFile {
+	if _, ok := Stage.XLFiles[xlfile]; ok {
 		if Stage.BackRepo != nil {
-			Stage.BackRepo.CheckoutXslx(xslx)
+			Stage.BackRepo.CheckoutXLFile(xlfile)
 		}
 	}
-	return xslx
+	return xlfile
 }
 
 //
 // Legacy, to be deleted
 //
 
-// StageCopy appends a copy of xslx to the model stage
-func (xslx *Xslx) StageCopy() *Xslx {
-	_xslx := new(Xslx)
-	*_xslx = *xslx
-	_xslx.Stage()
-	return _xslx
+// StageCopy appends a copy of xlfile to the model stage
+func (xlfile *XLFile) StageCopy() *XLFile {
+	_xlfile := new(XLFile)
+	*_xlfile = *xlfile
+	_xlfile.Stage()
+	return _xlfile
 }
 
-// StageAndCommit appends xslx to the model stage and commit to the orm repo
-func (xslx *Xslx) StageAndCommit() *Xslx {
-	xslx.Stage()
+// StageAndCommit appends xlfile to the model stage and commit to the orm repo
+func (xlfile *XLFile) StageAndCommit() *XLFile {
+	xlfile.Stage()
 	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXslx(xslx)
+		Stage.AllModelsStructCreateCallback.CreateORMXLFile(xlfile)
 	}
-	return xslx
+	return xlfile
 }
 
-// DeleteStageAndCommit appends xslx to the model stage and commit to the orm repo
-func (xslx *Xslx) DeleteStageAndCommit() *Xslx {
-	xslx.Unstage()
-	DeleteORMXslx(xslx)
-	return xslx
+// DeleteStageAndCommit appends xlfile to the model stage and commit to the orm repo
+func (xlfile *XLFile) DeleteStageAndCommit() *XLFile {
+	xlfile.Unstage()
+	DeleteORMXLFile(xlfile)
+	return xlfile
 }
 
-// StageCopyAndCommit appends a copy of xslx to the model stage and commit to the orm repo
-func (xslx *Xslx) StageCopyAndCommit() *Xslx {
-	_xslx := new(Xslx)
-	*_xslx = *xslx
-	_xslx.Stage()
+// StageCopyAndCommit appends a copy of xlfile to the model stage and commit to the orm repo
+func (xlfile *XLFile) StageCopyAndCommit() *XLFile {
+	_xlfile := new(XLFile)
+	*_xlfile = *xlfile
+	_xlfile.Stage()
 	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXslx(xslx)
+		Stage.AllModelsStructCreateCallback.CreateORMXLFile(xlfile)
 	}
-	return _xslx
+	return _xlfile
 }
 
-// CreateORMXslx enables dynamic staging of a Xslx instance
-func CreateORMXslx(xslx *Xslx) {
-	xslx.Stage()
+// CreateORMXLFile enables dynamic staging of a XLFile instance
+func CreateORMXLFile(xlfile *XLFile) {
+	xlfile.Stage()
 	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXslx(xslx)
+		Stage.AllModelsStructCreateCallback.CreateORMXLFile(xlfile)
 	}
 }
 
-// DeleteORMXslx enables dynamic staging of a Xslx instance
-func DeleteORMXslx(xslx *Xslx) {
-	xslx.Unstage()
+// DeleteORMXLFile enables dynamic staging of a XLFile instance
+func DeleteORMXLFile(xlfile *XLFile) {
+	xlfile.Unstage()
 	if Stage.AllModelsStructDeleteCallback != nil {
-		Stage.AllModelsStructDeleteCallback.DeleteORMXslx(xslx)
+		Stage.AllModelsStructDeleteCallback.DeleteORMXLFile(xlfile)
 	}
 }
 
 // swagger:ignore
 type AllModelsStructCreateInterface interface { // insertion point for Callbacks on creation
-	CreateORMXslx(Xslx *Xslx)
+	CreateORMXLFile(XLFile *XLFile)
 }
 
 type AllModelsStructDeleteInterface interface { // insertion point for Callbacks on deletion
-	DeleteORMXslx(Xslx *Xslx)
+	DeleteORMXLFile(XLFile *XLFile)
 }
 
 func (stage *StageStruct) Reset() { // insertion point for array reset
-	stage.Xslxs = make(map[*Xslx]struct{}, 0)
+	stage.XLFiles = make(map[*XLFile]struct{}, 0)
 }
 
 func (stage *StageStruct) Nil() { // insertion point for array nil
-	stage.Xslxs = nil
+	stage.XLFiles = nil
 }

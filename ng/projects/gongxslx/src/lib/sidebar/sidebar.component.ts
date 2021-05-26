@@ -8,8 +8,8 @@ import { FrontRepoService, FrontRepo } from '../front-repo.service'
 import { CommitNbService } from '../commitnb.service'
 
 // insertion point for per struct import code
-import { XslxService } from '../xslx.service'
-import { getXslxUniqueID } from '../front-repo.service'
+import { XLFileService } from '../xlfile.service'
+import { getXLFileUniqueID } from '../front-repo.service'
 
 /**
  * Types of a GongNode / GongFlatNode
@@ -142,7 +142,7 @@ export class SidebarComponent implements OnInit {
     private commitNbService: CommitNbService,
 
     // insertion point for per struct service declaration
-    private xslxService: XslxService,
+    private xlfileService: XLFileService,
   ) { }
 
   ngOnInit(): void {
@@ -150,7 +150,7 @@ export class SidebarComponent implements OnInit {
 
     // insertion point for per struct observable for refresh trigger
     // observable for changes in structs
-    this.xslxService.XslxServiceChanged.subscribe(
+    this.xlfileService.XLFileServiceChanged.subscribe(
       message => {
         if (message == "post" || message == "update" || message == "delete") {
           this.refresh()
@@ -183,21 +183,21 @@ export class SidebarComponent implements OnInit {
 
       // insertion point for per struct tree construction
       /**
-      * fill up the Xslx part of the mat tree
+      * fill up the XLFile part of the mat tree
       */
-      let xslxGongNodeStruct: GongNode = {
-        name: "Xslx",
+      let xlfileGongNodeStruct: GongNode = {
+        name: "XLFile",
         type: GongNodeType.STRUCT,
         id: 0,
         uniqueIdPerStack: 13 * nonInstanceNodeId,
-        structName: "Xslx",
+        structName: "XLFile",
         associatedStructName: "",
         children: new Array<GongNode>()
       }
       nonInstanceNodeId = nonInstanceNodeId + 1
-      this.gongNodeTree.push(xslxGongNodeStruct)
+      this.gongNodeTree.push(xlfileGongNodeStruct)
 
-      this.frontRepo.Xslxs_array.sort((t1, t2) => {
+      this.frontRepo.XLFiles_array.sort((t1, t2) => {
         if (t1.Name > t2.Name) {
           return 1;
         }
@@ -207,18 +207,18 @@ export class SidebarComponent implements OnInit {
         return 0;
       });
 
-      this.frontRepo.Xslxs_array.forEach(
-        xslxDB => {
-          let xslxGongNodeInstance: GongNode = {
-            name: xslxDB.Name,
+      this.frontRepo.XLFiles_array.forEach(
+        xlfileDB => {
+          let xlfileGongNodeInstance: GongNode = {
+            name: xlfileDB.Name,
             type: GongNodeType.INSTANCE,
-            id: xslxDB.ID,
-            uniqueIdPerStack: getXslxUniqueID(xslxDB.ID),
-            structName: "Xslx",
+            id: xlfileDB.ID,
+            uniqueIdPerStack: getXLFileUniqueID(xlfileDB.ID),
+            structName: "XLFile",
             associatedStructName: "",
             children: new Array<GongNode>()
           }
-          xslxGongNodeStruct.children.push(xslxGongNodeInstance)
+          xlfileGongNodeStruct.children.push(xlfileGongNodeInstance)
 
           // insertion point for per field code
         }

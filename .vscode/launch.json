@@ -28,7 +28,9 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}",
-            "args": []
+            "args": [
+                "samplefile.xlsx"
+            ]
         },
         {
             "name": "Launch firefox localhost:4200",
