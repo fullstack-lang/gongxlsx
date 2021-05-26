@@ -1,4 +1,4 @@
-module github.com/fullstack-lang/gongxslx
+module github.com/fullstack-lang/gongxlsx
 
 go 1.16
 

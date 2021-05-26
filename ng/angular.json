@@ -121,38 +121,38 @@
         }
       }
     },
-    "gongxslx": {
+    "gongxlsx": {
       "projectType": "library",
-      "root": "projects/gongxslx",
-      "sourceRoot": "projects/gongxslx/src",
+      "root": "projects/gongxlsx",
+      "sourceRoot": "projects/gongxlsx/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/gongxslx/tsconfig.lib.json",
-            "project": "projects/gongxslx/ng-package.json"
+            "tsConfig": "projects/gongxlsx/tsconfig.lib.json",
+            "project": "projects/gongxlsx/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/gongxslx/tsconfig.lib.prod.json"
+              "tsConfig": "projects/gongxlsx/tsconfig.lib.prod.json"
             }
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/gongxslx/src/test.ts",
-            "tsConfig": "projects/gongxslx/tsconfig.spec.json",
-            "karmaConfig": "projects/gongxslx/karma.conf.js"
+            "main": "projects/gongxlsx/src/test.ts",
+            "tsConfig": "projects/gongxlsx/tsconfig.spec.json",
+            "karmaConfig": "projects/gongxlsx/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/gongxslx/tsconfig.lib.json",
-              "projects/gongxslx/tsconfig.spec.json"
+              "projects/gongxlsx/tsconfig.lib.json",
+              "projects/gongxlsx/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"

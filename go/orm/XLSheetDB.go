@@ -11,7 +11,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/fullstack-lang/gongxslx/go/models"
+	"github.com/fullstack-lang/gongxlsx/go/models"
 )
 
 // dummy variable to have the import declaration wihthout compile failure (even if no code needing this import is generated)
@@ -229,6 +229,23 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 					}
 				}
 
+				// commit a slice of pointer translates to update reverse pointer to XLCell, i.e.
+				index_SheetCells := 0
+				for _, xlcell := range xlsheet.SheetCells {
+					if xlcellDBID, ok := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlcell]; ok {
+						if xlcellDB, ok := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDBID]; ok {
+							xlcellDB.XLSheet_SheetCellsDBID.Int64 = int64(xlsheetDB.ID)
+							xlcellDB.XLSheet_SheetCellsDBID.Valid = true
+							xlcellDB.XLSheet_SheetCellsDBID_Index.Int64 = int64(index_SheetCells)
+							index_SheetCells = index_SheetCells + 1
+							xlcellDB.XLSheet_SheetCellsDBID_Index.Valid = true
+							if q := backRepoXLSheet.db.Save(&xlcellDB); q.Error != nil {
+								return q.Error
+							}
+						}
+					}
+				}
+
 			}
 		}
 		query := backRepoXLSheet.db.Save(&xlsheetDB)
@@ -335,6 +352,27 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseTwoInstance(backRepo 
 				xlrowDB_j := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB)[xlrowDB_j_ID]
 
 				return xlrowDB_i.XLSheet_RowsDBID_Index.Int64 < xlrowDB_j.XLSheet_RowsDBID_Index.Int64
+			})
+
+			// parse all XLCellDB and redeem the array of poiners to XLSheet
+			// first reset the slice
+			xlsheet.SheetCells = xlsheet.SheetCells[:0]
+			for _, XLCellDB := range *backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB {
+				if XLCellDB.XLSheet_SheetCellsDBID.Int64 == int64(xlsheetDB.ID) {
+					XLCell := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[XLCellDB.ID]
+					xlsheet.SheetCells = append(xlsheet.SheetCells, XLCell)
+				}
+			}
+			
+			// sort the array according to the order
+			sort.Slice(xlsheet.SheetCells, func(i, j int) bool {
+				xlcellDB_i_ID := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlsheet.SheetCells[i]]
+				xlcellDB_j_ID := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlsheet.SheetCells[j]]
+
+				xlcellDB_i := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB_i_ID]
+				xlcellDB_j := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB_j_ID]
+
+				return xlcellDB_i.XLSheet_SheetCellsDBID_Index.Int64 < xlcellDB_j.XLSheet_SheetCellsDBID_Index.Int64
 			})
 
 		}

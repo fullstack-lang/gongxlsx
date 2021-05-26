@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { GongxslxModule } from 'gongxslx'
+import { GongxlsxModule } from 'gongxlsx'
 
 // mandatory
 import { HttpClientModule } from '@angular/common/http';
@@ -18,7 +18,7 @@ import { HttpClientModule } from '@angular/common/http';
     BrowserAnimationsModule,
 
     HttpClientModule,
-    GongxslxModule
+    GongxlsxModule
   ],
   providers: [],
   bootstrap: [AppComponent]

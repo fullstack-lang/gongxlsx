@@ -13,9 +13,9 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 
-	"github.com/fullstack-lang/gongxslx/go/controllers"
-	"github.com/fullstack-lang/gongxslx/go/models"
-	"github.com/fullstack-lang/gongxslx/go/orm"
+	"github.com/fullstack-lang/gongxlsx/go/controllers"
+	"github.com/fullstack-lang/gongxlsx/go/models"
+	"github.com/fullstack-lang/gongxlsx/go/orm"
 )
 
 var (

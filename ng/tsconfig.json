@@ -7,10 +7,10 @@
     "sourceMap": true,
     "declaration": false,
     "paths": {
-      "gongxslx": [
-        "projects/gongxslx/src/public-api.ts",
-        "dist/gongxslx/gongxslx",
-        "dist/gongxslx"
+      "gongxlsx": [
+        "projects/gongxlsx/src/public-api.ts",
+        "dist/gongxlsx/gongxlsx",
+        "dist/gongxlsx"
       ]
     },
     "downlevelIteration": true,

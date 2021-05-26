@@ -11,7 +11,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/fullstack-lang/gongxslx/go/models"
+	"github.com/fullstack-lang/gongxlsx/go/models"
 )
 
 // dummy variable to have the import declaration wihthout compile failure (even if no code needing this import is generated)
@@ -206,6 +206,23 @@ func (backRepoXLRow *BackRepoXLRowStruct) CommitPhaseTwoInstance(backRepo *BackR
 				xlrowDB.NbCols_Data.Int64 = int64(xlrow.NbCols)
 				xlrowDB.NbCols_Data.Valid = true
 
+				// commit a slice of pointer translates to update reverse pointer to XLCell, i.e.
+				index_Cells := 0
+				for _, xlcell := range xlrow.Cells {
+					if xlcellDBID, ok := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlcell]; ok {
+						if xlcellDB, ok := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDBID]; ok {
+							xlcellDB.XLRow_CellsDBID.Int64 = int64(xlrowDB.ID)
+							xlcellDB.XLRow_CellsDBID.Valid = true
+							xlcellDB.XLRow_CellsDBID_Index.Int64 = int64(index_Cells)
+							index_Cells = index_Cells + 1
+							xlcellDB.XLRow_CellsDBID_Index.Valid = true
+							if q := backRepoXLRow.db.Save(&xlcellDB); q.Error != nil {
+								return q.Error
+							}
+						}
+					}
+				}
+
 			}
 		}
 		query := backRepoXLRow.db.Save(&xlrowDB)
@@ -290,6 +307,27 @@ func (backRepoXLRow *BackRepoXLRowStruct) CheckoutPhaseTwoInstance(backRepo *Bac
 			xlrow.RowIndex = int(xlrowDB.RowIndex_Data.Int64)
 
 			xlrow.NbCols = int(xlrowDB.NbCols_Data.Int64)
+
+			// parse all XLCellDB and redeem the array of poiners to XLRow
+			// first reset the slice
+			xlrow.Cells = xlrow.Cells[:0]
+			for _, XLCellDB := range *backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB {
+				if XLCellDB.XLRow_CellsDBID.Int64 == int64(xlrowDB.ID) {
+					XLCell := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[XLCellDB.ID]
+					xlrow.Cells = append(xlrow.Cells, XLCell)
+				}
+			}
+			
+			// sort the array according to the order
+			sort.Slice(xlrow.Cells, func(i, j int) bool {
+				xlcellDB_i_ID := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlrow.Cells[i]]
+				xlcellDB_j_ID := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlrow.Cells[j]]
+
+				xlcellDB_i := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB_i_ID]
+				xlcellDB_j := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB_j_ID]
+
+				return xlcellDB_i.XLRow_CellsDBID_Index.Int64 < xlcellDB_j.XLRow_CellsDBID_Index.Int64
+			})
 
 		}
 	}

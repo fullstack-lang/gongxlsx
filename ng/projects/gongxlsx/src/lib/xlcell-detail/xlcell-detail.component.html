@@ -1,0 +1,58 @@
+<div *ngIf="xlcell" class="details">
+    <h1 class="details__title">xlcell</h1>
+    <!-- insertion point for fields specific code -->
+    <!-- -->
+    <div class="details__item">
+        <form>
+            <mat-form-field>
+                <mat-label>Name</mat-label>
+                <input name="" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlcell.Name">
+            </mat-form-field>
+        </form>
+    </div>
+    <!-- -->
+    <div class="details__item">
+        <form>
+            <mat-form-field>
+                <mat-label>X</mat-label>
+                <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlcell.X">
+            </mat-form-field>
+        </form>
+    </div>
+    <!-- -->
+    <div class="details__item">
+        <form>
+            <mat-form-field>
+                <mat-label>Y</mat-label>
+                <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlcell.Y">
+            </mat-form-field>
+        </form>
+    </div>
+    <div class="details__item">
+    <mat-form-field>
+        <mat-label><- Cells</mat-label>
+        <mat-select [(ngModel)]="xlcell.XLRow_Cells_reverse">
+            <mat-option>None</mat-option>
+            <mat-option *ngFor="let xlrow of frontRepo.XLRows_array" [value]="xlrow">
+                {{xlrow.Name}}
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
+</div>
+    <div class="details__item">
+    <mat-form-field>
+        <mat-label><- SheetCells</mat-label>
+        <mat-select [(ngModel)]="xlcell.XLSheet_SheetCells_reverse">
+            <mat-option>None</mat-option>
+            <mat-option *ngFor="let xlsheet of frontRepo.XLSheets_array" [value]="xlsheet">
+                {{xlsheet.Name}}
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
+</div>
+    <div class="details__save">
+        <button mat-raised-button color="primary" (click)="save()">
+			Save xlcell
+		</button>
+    </div>
+</div>

@@ -12,5 +12,6 @@ type XLSheet struct {
 	sheet  *xlsx.Sheet
 	NbRows int
 
-	Rows []*XLRow
+	Rows       []*XLRow
+	SheetCells []*XLCell
 }

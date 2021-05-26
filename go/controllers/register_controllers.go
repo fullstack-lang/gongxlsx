@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/fullstack-lang/gongxslx/go/orm"
+	"github.com/fullstack-lang/gongxlsx/go/orm"
 )
 
 // genQuery return the name of the column
@@ -42,8 +42,15 @@ type ValidationError struct {
 
 // RegisterControllers register controllers
 func RegisterControllers(r *gin.Engine) {
-	v1 := r.Group("/api/github.com/fullstack-lang/gongxslx/go")
+	v1 := r.Group("/api/github.com/fullstack-lang/gongxlsx/go")
 	{// insertion point for registrations
+		v1.GET("/v1/xlcells", GetXLCells)
+		v1.GET("/v1/xlcells/:id", GetXLCell)
+		v1.POST("/v1/xlcells", PostXLCell)
+		v1.PATCH("/v1/xlcells/:id", UpdateXLCell)
+		v1.PUT("/v1/xlcells/:id", UpdateXLCell)
+		v1.DELETE("/v1/xlcells/:id", DeleteXLCell)
+
 		v1.GET("/v1/xlfiles", GetXLFiles)
 		v1.GET("/v1/xlfiles/:id", GetXLFile)
 		v1.POST("/v1/xlfiles", PostXLFile)

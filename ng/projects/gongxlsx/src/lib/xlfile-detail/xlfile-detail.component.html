@@ -1,0 +1,44 @@
+<div *ngIf="xlfile" class="details">
+    <h1 class="details__title">xlfile</h1>
+    <!-- insertion point for fields specific code -->
+    <!-- -->
+    <div class="details__item">
+        <form>
+            <mat-form-field>
+                <mat-label>Name</mat-label>
+                <input name="" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlfile.Name">
+            </mat-form-field>
+        </form>
+    </div>
+    <!-- -->
+    <div class="details__item">
+        <form>
+            <mat-form-field>
+                <mat-label>NbSheets</mat-label>
+                <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlfile.NbSheets">
+            </mat-form-field>
+        </form>
+    </div>
+    <mat-grid-list cols="2" rowHeight="6:1">
+        <mat-grid-tile>
+            <div style="width: 100vw; text-align: right;">
+                <button mat-raised-button
+                    (click)="openReverseSelection('XLSheet', 'XLFile_SheetsDBID')">Sheets</button>
+            </div>
+        </mat-grid-tile>
+        <mat-grid-tile>
+            <div style="width: 100vw; text-align: left;">
+                <button mat-raised-button (click)="openDragAndDropOrdering('XLSheet', 'XLFile_SheetsDBID')">
+                    <mat-icon>
+                        shuffle
+                    </mat-icon>
+                </button>
+            </div>
+        </mat-grid-tile>
+    </mat-grid-list>
+    <div class="details__save">
+        <button mat-raised-button color="primary" (click)="save()">
+			Save xlfile
+		</button>
+    </div>
+</div>

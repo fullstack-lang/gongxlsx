@@ -1,0 +1,64 @@
+<div *ngIf="xlrow" class="details">
+    <h1 class="details__title">xlrow</h1>
+    <!-- insertion point for fields specific code -->
+    <!-- -->
+    <div class="details__item">
+        <form>
+            <mat-form-field>
+                <mat-label>Name</mat-label>
+                <input name="" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlrow.Name">
+            </mat-form-field>
+        </form>
+    </div>
+    <!-- -->
+    <div class="details__item">
+        <form>
+            <mat-form-field>
+                <mat-label>RowIndex</mat-label>
+                <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlrow.RowIndex">
+            </mat-form-field>
+        </form>
+    </div>
+    <!-- -->
+    <div class="details__item">
+        <form>
+            <mat-form-field>
+                <mat-label>NbCols</mat-label>
+                <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlrow.NbCols">
+            </mat-form-field>
+        </form>
+    </div>
+    <mat-grid-list cols="2" rowHeight="6:1">
+        <mat-grid-tile>
+            <div style="width: 100vw; text-align: right;">
+                <button mat-raised-button
+                    (click)="openReverseSelection('XLCell', 'XLRow_CellsDBID')">Cells</button>
+            </div>
+        </mat-grid-tile>
+        <mat-grid-tile>
+            <div style="width: 100vw; text-align: left;">
+                <button mat-raised-button (click)="openDragAndDropOrdering('XLCell', 'XLRow_CellsDBID')">
+                    <mat-icon>
+                        shuffle
+                    </mat-icon>
+                </button>
+            </div>
+        </mat-grid-tile>
+    </mat-grid-list>
+    <div class="details__item">
+    <mat-form-field>
+        <mat-label><- Rows</mat-label>
+        <mat-select [(ngModel)]="xlrow.XLSheet_Rows_reverse">
+            <mat-option>None</mat-option>
+            <mat-option *ngFor="let xlsheet of frontRepo.XLSheets_array" [value]="xlsheet">
+                {{xlsheet.Name}}
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
+</div>
+    <div class="details__save">
+        <button mat-raised-button color="primary" (click)="save()">
+			Save xlrow
+		</button>
+    </div>
+</div>

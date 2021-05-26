@@ -3,12 +3,14 @@ package orm
 
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/fullstack-lang/gongxslx/go/models"
+	"github.com/fullstack-lang/gongxlsx/go/models"
 )
 
 // BackRepoStruct supports callback functions
 type BackRepoStruct struct {
 	// insertion point for per struct back repo declarations
+	BackRepoXLCell BackRepoXLCellStruct
+
 	BackRepoXLFile BackRepoXLFileStruct
 
 	BackRepoXLRow BackRepoXLRowStruct
@@ -33,6 +35,7 @@ func (backRepo *BackRepoStruct) IncrementCommitNb() uint {
 // Init the BackRepoStruct inner variables and link to the database
 func (backRepo *BackRepoStruct) Init(db *gorm.DB) {
 	// insertion point for per struct back repo declarations
+	backRepo.BackRepoXLCell.Init(db)
 	backRepo.BackRepoXLFile.Init(db)
 	backRepo.BackRepoXLRow.Init(db)
 	backRepo.BackRepoXLSheet.Init(db)
@@ -43,11 +46,13 @@ func (backRepo *BackRepoStruct) Init(db *gorm.DB) {
 // Commit the BackRepoStruct inner variables and link to the database
 func (backRepo *BackRepoStruct) Commit(stage *models.StageStruct) {
 	// insertion point for per struct back repo phase one commit
+	backRepo.BackRepoXLCell.CommitPhaseOne(stage)
 	backRepo.BackRepoXLFile.CommitPhaseOne(stage)
 	backRepo.BackRepoXLRow.CommitPhaseOne(stage)
 	backRepo.BackRepoXLSheet.CommitPhaseOne(stage)
 
 	// insertion point for per struct back repo phase two commit
+	backRepo.BackRepoXLCell.CommitPhaseTwo(backRepo)
 	backRepo.BackRepoXLFile.CommitPhaseTwo(backRepo)
 	backRepo.BackRepoXLRow.CommitPhaseTwo(backRepo)
 	backRepo.BackRepoXLSheet.CommitPhaseTwo(backRepo)
@@ -58,11 +63,13 @@ func (backRepo *BackRepoStruct) Commit(stage *models.StageStruct) {
 // Checkout the database into the stage
 func (backRepo *BackRepoStruct) Checkout(stage *models.StageStruct) {
 	// insertion point for per struct back repo phase one commit
+	backRepo.BackRepoXLCell.CheckoutPhaseOne()
 	backRepo.BackRepoXLFile.CheckoutPhaseOne()
 	backRepo.BackRepoXLRow.CheckoutPhaseOne()
 	backRepo.BackRepoXLSheet.CheckoutPhaseOne()
 
 	// insertion point for per struct back repo phase two commit
+	backRepo.BackRepoXLCell.CheckoutPhaseTwo(backRepo)
 	backRepo.BackRepoXLFile.CheckoutPhaseTwo(backRepo)
 	backRepo.BackRepoXLRow.CheckoutPhaseTwo(backRepo)
 	backRepo.BackRepoXLSheet.CheckoutPhaseTwo(backRepo)

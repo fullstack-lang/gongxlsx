@@ -11,7 +11,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/fullstack-lang/gongxslx/go/models"
+	"github.com/fullstack-lang/gongxlsx/go/models"
 )
 
 // dummy variable to have the import declaration wihthout compile failure (even if no code needing this import is generated)

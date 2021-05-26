@@ -12,6 +12,8 @@ var __member __void
 // StageStruct enables storage of staged instances
 // swagger:ignore
 type StageStruct struct { // insertion point for definition of arrays registering instances
+	XLCells map[*XLCell]struct{}
+
 	XLFiles map[*XLFile]struct{}
 
 	XLRows map[*XLRow]struct{}
@@ -36,6 +38,8 @@ type BackRepoInterface interface {
 	Commit(stage *StageStruct)
 	Checkout(stage *StageStruct)
 	// insertion point for Commit and Checkout signatures
+	CommitXLCell(xlcell *XLCell)
+	CheckoutXLCell(xlcell *XLCell)
 	CommitXLFile(xlfile *XLFile)
 	CheckoutXLFile(xlfile *XLFile)
 	CommitXLRow(xlrow *XLRow)
@@ -47,6 +51,8 @@ type BackRepoInterface interface {
 
 // swagger:ignore instructs the gong compiler (gongc) to avoid this particular struct
 var Stage StageStruct = StageStruct{ // insertion point for array initiatialisation
+	XLCells: make(map[*XLCell]struct{}, 0),
+
 	XLFiles: make(map[*XLFile]struct{}, 0),
 
 	XLRows: make(map[*XLRow]struct{}, 0),
@@ -68,6 +74,105 @@ func (stage *StageStruct) Checkout() {
 }
 
 // insertion point for cumulative sub template with model space calls
+func (stage *StageStruct) getXLCellOrderedStructWithNameField() []*XLCell {
+	// have alphabetical order generation
+	xlcellOrdered := []*XLCell{}
+	for xlcell := range stage.XLCells {
+		xlcellOrdered = append(xlcellOrdered, xlcell)
+	}
+	sort.Slice(xlcellOrdered[:], func(i, j int) bool {
+		return xlcellOrdered[i].Name < xlcellOrdered[j].Name
+	})
+	return xlcellOrdered
+}
+
+// Stage puts xlcell to the model stage
+func (xlcell *XLCell) Stage() *XLCell {
+	Stage.XLCells[xlcell] = __member
+	return xlcell
+}
+
+// Unstage removes xlcell off the model stage
+func (xlcell *XLCell) Unstage() *XLCell {
+	delete(Stage.XLCells, xlcell)
+	return xlcell
+}
+
+// commit xlcell to the back repo (if it is already staged)
+func (xlcell *XLCell) Commit() *XLCell {
+	if _, ok := Stage.XLCells[xlcell]; ok {
+		if Stage.BackRepo != nil {
+			Stage.BackRepo.CommitXLCell(xlcell)
+		}
+	}
+	return xlcell
+}
+
+// Checkout xlcell to the back repo (if it is already staged)
+func (xlcell *XLCell) Checkout() *XLCell {
+	if _, ok := Stage.XLCells[xlcell]; ok {
+		if Stage.BackRepo != nil {
+			Stage.BackRepo.CheckoutXLCell(xlcell)
+		}
+	}
+	return xlcell
+}
+
+//
+// Legacy, to be deleted
+//
+
+// StageCopy appends a copy of xlcell to the model stage
+func (xlcell *XLCell) StageCopy() *XLCell {
+	_xlcell := new(XLCell)
+	*_xlcell = *xlcell
+	_xlcell.Stage()
+	return _xlcell
+}
+
+// StageAndCommit appends xlcell to the model stage and commit to the orm repo
+func (xlcell *XLCell) StageAndCommit() *XLCell {
+	xlcell.Stage()
+	if Stage.AllModelsStructCreateCallback != nil {
+		Stage.AllModelsStructCreateCallback.CreateORMXLCell(xlcell)
+	}
+	return xlcell
+}
+
+// DeleteStageAndCommit appends xlcell to the model stage and commit to the orm repo
+func (xlcell *XLCell) DeleteStageAndCommit() *XLCell {
+	xlcell.Unstage()
+	DeleteORMXLCell(xlcell)
+	return xlcell
+}
+
+// StageCopyAndCommit appends a copy of xlcell to the model stage and commit to the orm repo
+func (xlcell *XLCell) StageCopyAndCommit() *XLCell {
+	_xlcell := new(XLCell)
+	*_xlcell = *xlcell
+	_xlcell.Stage()
+	if Stage.AllModelsStructCreateCallback != nil {
+		Stage.AllModelsStructCreateCallback.CreateORMXLCell(xlcell)
+	}
+	return _xlcell
+}
+
+// CreateORMXLCell enables dynamic staging of a XLCell instance
+func CreateORMXLCell(xlcell *XLCell) {
+	xlcell.Stage()
+	if Stage.AllModelsStructCreateCallback != nil {
+		Stage.AllModelsStructCreateCallback.CreateORMXLCell(xlcell)
+	}
+}
+
+// DeleteORMXLCell enables dynamic staging of a XLCell instance
+func DeleteORMXLCell(xlcell *XLCell) {
+	xlcell.Unstage()
+	if Stage.AllModelsStructDeleteCallback != nil {
+		Stage.AllModelsStructDeleteCallback.DeleteORMXLCell(xlcell)
+	}
+}
+
 func (stage *StageStruct) getXLFileOrderedStructWithNameField() []*XLFile {
 	// have alphabetical order generation
 	xlfileOrdered := []*XLFile{}
@@ -367,24 +472,28 @@ func DeleteORMXLSheet(xlsheet *XLSheet) {
 
 // swagger:ignore
 type AllModelsStructCreateInterface interface { // insertion point for Callbacks on creation
+	CreateORMXLCell(XLCell *XLCell)
 	CreateORMXLFile(XLFile *XLFile)
 	CreateORMXLRow(XLRow *XLRow)
 	CreateORMXLSheet(XLSheet *XLSheet)
 }
 
 type AllModelsStructDeleteInterface interface { // insertion point for Callbacks on deletion
+	DeleteORMXLCell(XLCell *XLCell)
 	DeleteORMXLFile(XLFile *XLFile)
 	DeleteORMXLRow(XLRow *XLRow)
 	DeleteORMXLSheet(XLSheet *XLSheet)
 }
 
 func (stage *StageStruct) Reset() { // insertion point for array reset
+	stage.XLCells = make(map[*XLCell]struct{}, 0)
 	stage.XLFiles = make(map[*XLFile]struct{}, 0)
 	stage.XLRows = make(map[*XLRow]struct{}, 0)
 	stage.XLSheets = make(map[*XLSheet]struct{}, 0)
 }
 
 func (stage *StageStruct) Nil() { // insertion point for array nil
+	stage.XLCells = nil
 	stage.XLFiles = nil
 	stage.XLRows = nil
 	stage.XLSheets = nil

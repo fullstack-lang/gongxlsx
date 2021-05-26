@@ -59,6 +59,22 @@ func (xlfile *XLFile) Open(path string) {
 			xlsheet.Rows = append(xlsheet.Rows, xlrow)
 
 			xlsheet.NbRows = rowIndex
+
+			// get cells
+			for colIndex := 0; colIndex < xlsheet.MaxCol; colIndex = colIndex + 1 {
+				xlcell := new(XLCell).Stage()
+
+				xlcell.cell, err = sh.Cell(rowIndex, colIndex)
+				if err != nil {
+					continue
+				}
+
+				xlcell.Name = xlcell.cell.Value
+				xlcell.X = colIndex
+				xlcell.Y = rowIndex
+				xlrow.Cells = append(xlrow.Cells, xlcell)
+				xlsheet.SheetCells = append(xlsheet.SheetCells, xlcell)
+			}
 		}
 		fmt.Println("Sheet ", xlsheet.Name, "Nb Rows", xlsheet.NbRows)
 	}

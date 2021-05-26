@@ -32,6 +32,7 @@ func SetupModels(logMode bool, filepath string) *gorm.DB {
 // AutoMigrate migrates db with with orm Struct
 func AutoMigrate(db *gorm.DB) {
 	_db := db.AutoMigrate( // insertion point for reference to structs 
+	  &XLCellDB{},
 	  &XLFileDB{},
 	  &XLRowDB{},
 	  &XLSheetDB{},
@@ -39,12 +40,13 @@ func AutoMigrate(db *gorm.DB) {
 
 	if _db.Error != nil {
 		msg := _db.Error.Error()
-		panic("problem with migration " + msg + " on package github.com/fullstack-lang/gongxslx/go")
+		panic("problem with migration " + msg + " on package github.com/fullstack-lang/gongxlsx/go")
 	}
-	log.Printf("Database Migration of package github.com/fullstack-lang/gongxslx/go is OK")
+	log.Printf("Database Migration of package github.com/fullstack-lang/gongxlsx/go is OK")
 }
 
 func ResetDB(db *gorm.DB) { // insertion point for reference to structs 
+	  db.Delete(&XLCellDB{})
 	  db.Delete(&XLFileDB{})
 	  db.Delete(&XLRowDB{})
 	  db.Delete(&XLSheetDB{})

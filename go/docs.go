@@ -1,9 +1,9 @@
-// Package gongxslx gongxslx backend API
+// Package gongxlsx gongxlsx backend API
 //
-// gongxslx exposes types of a package.
+// gongxlsx exposes types of a package.
 //
 //     Schemes: http
-//     BasePath: /api/github.com/fullstack-lang/gongxslx/go/v1
+//     BasePath: /api/github.com/fullstack-lang/gongxlsx/go/v1
 //     Version: 0.1
 //     Host: localhost:8080
 //
@@ -21,4 +21,4 @@
 //      type: basic
 //
 // swagger:meta
-package gongxslx
+package gongxlsx
