@@ -9,7 +9,6 @@ import (
 	"github.com/fullstack-lang/gongxlsx/go/orm"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
 // declaration in order to justify use of the models import
@@ -47,10 +46,11 @@ type XLCellInput struct {
 //    default: genericError
 //        200: xlcellDBsResponse
 func GetXLCells(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-
-	var xlcells []orm.XLCellDB
-	query := db.Find(&xlcells)
+	db := orm.BackRepo.BackRepoXLCell.GetDB()
+	
+	// source slice
+	var xlcellDBs []orm.XLCellDB
+	query := db.Find(&xlcellDBs)
 	if query.Error != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
@@ -59,26 +59,23 @@ func GetXLCells(c *gin.Context) {
 		return
 	}
 
+	// slice that will be transmitted to the front
+	xlcellAPIs := make([]orm.XLCellAPI, 0)
+
 	// for each xlcell, update fields from the database nullable fields
-	for idx := range xlcells {
-		xlcell := &xlcells[idx]
-		_ = xlcell
+	for idx := range xlcellDBs {
+		xlcellDB := &xlcellDBs[idx]
+		_ = xlcellDB
+		var xlcellAPI orm.XLCellAPI
+
 		// insertion point for updating fields
-		if xlcell.Name_Data.Valid {
-			xlcell.Name = xlcell.Name_Data.String
-		}
-
-		if xlcell.X_Data.Valid {
-			xlcell.X = int(xlcell.X_Data.Int64)
-		}
-
-		if xlcell.Y_Data.Valid {
-			xlcell.Y = int(xlcell.Y_Data.Int64)
-		}
-
+		xlcellAPI.ID = xlcellDB.ID
+		xlcellDB.CopyBasicFieldsToXLCell(&xlcellAPI.XLCell)
+		xlcellAPI.XLCellPointersEnconding = xlcellDB.XLCellPointersEnconding
+		xlcellAPIs = append(xlcellAPIs, xlcellAPI)
 	}
 
-	c.JSON(http.StatusOK, xlcells)
+	c.JSON(http.StatusOK, xlcellAPIs)
 }
 
 // PostXLCell
@@ -95,7 +92,7 @@ func GetXLCells(c *gin.Context) {
 //     Responses:
 //       200: xlcellDBResponse
 func PostXLCell(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLCell.GetDB()
 
 	// Validate input
 	var input orm.XLCellAPI
@@ -111,16 +108,8 @@ func PostXLCell(c *gin.Context) {
 
 	// Create xlcell
 	xlcellDB := orm.XLCellDB{}
-	xlcellDB.XLCellAPI = input
-	// insertion point for nullable field set
-	xlcellDB.Name_Data.String = input.Name
-	xlcellDB.Name_Data.Valid = true
-
-	xlcellDB.X_Data.Int64 = int64(input.X)
-	xlcellDB.X_Data.Valid = true
-
-	xlcellDB.Y_Data.Int64 = int64(input.Y)
-	xlcellDB.Y_Data.Valid = true
+	xlcellDB.XLCellPointersEnconding = input.XLCellPointersEnconding
+	xlcellDB.CopyBasicFieldsFromXLCell(&input.XLCell)
 
 	query := db.Create(&xlcellDB)
 	if query.Error != nil {
@@ -148,11 +137,11 @@ func PostXLCell(c *gin.Context) {
 //    default: genericError
 //        200: xlcellDBResponse
 func GetXLCell(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLCell.GetDB()
 
-	// Get xlcell in DB
-	var xlcell orm.XLCellDB
-	if err := db.First(&xlcell, c.Param("id")).Error; err != nil {
+	// Get xlcellDB in DB
+	var xlcellDB orm.XLCellDB
+	if err := db.First(&xlcellDB, c.Param("id")).Error; err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
 		returnError.Body.Message = err.Error()
@@ -160,20 +149,12 @@ func GetXLCell(c *gin.Context) {
 		return
 	}
 
-	// insertion point for fields value set from nullable fields
-	if xlcell.Name_Data.Valid {
-		xlcell.Name = xlcell.Name_Data.String
-	}
+	var xlcellAPI orm.XLCellAPI
+	xlcellAPI.ID = xlcellDB.ID
+	xlcellAPI.XLCellPointersEnconding = xlcellDB.XLCellPointersEnconding
+	xlcellDB.CopyBasicFieldsToXLCell(&xlcellAPI.XLCell)
 
-	if xlcell.X_Data.Valid {
-		xlcell.X = int(xlcell.X_Data.Int64)
-	}
-
-	if xlcell.Y_Data.Valid {
-		xlcell.Y = int(xlcell.Y_Data.Int64)
-	}
-
-	c.JSON(http.StatusOK, xlcell)
+	c.JSON(http.StatusOK, xlcellAPI)
 }
 
 // UpdateXLCell
@@ -186,7 +167,7 @@ func GetXLCell(c *gin.Context) {
 //    default: genericError
 //        200: xlcellDBResponse
 func UpdateXLCell(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLCell.GetDB()
 
 	// Get model if exist
 	var xlcellDB orm.XLCellDB
@@ -210,17 +191,10 @@ func UpdateXLCell(c *gin.Context) {
 	}
 
 	// update
-	// insertion point for nullable field set
-	input.Name_Data.String = input.Name
-	input.Name_Data.Valid = true
+	xlcellDB.CopyBasicFieldsFromXLCell(&input.XLCell)
+	xlcellDB.XLCellPointersEnconding = input.XLCellPointersEnconding
 
-	input.X_Data.Int64 = int64(input.X)
-	input.X_Data.Valid = true
-
-	input.Y_Data.Int64 = int64(input.Y)
-	input.Y_Data.Valid = true
-
-	query = db.Model(&xlcellDB).Updates(input)
+	query = db.Model(&xlcellDB).Updates(xlcellDB)
 	if query.Error != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
@@ -246,7 +220,7 @@ func UpdateXLCell(c *gin.Context) {
 // Responses:
 //    default: genericError
 func DeleteXLCell(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLCell.GetDB()
 
 	// Get model if exist
 	var xlcellDB orm.XLCellDB

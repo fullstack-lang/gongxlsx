@@ -9,7 +9,6 @@ import (
 	"github.com/fullstack-lang/gongxlsx/go/orm"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
 // declaration in order to justify use of the models import
@@ -47,10 +46,11 @@ type XLRowInput struct {
 //    default: genericError
 //        200: xlrowDBsResponse
 func GetXLRows(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-
-	var xlrows []orm.XLRowDB
-	query := db.Find(&xlrows)
+	db := orm.BackRepo.BackRepoXLRow.GetDB()
+	
+	// source slice
+	var xlrowDBs []orm.XLRowDB
+	query := db.Find(&xlrowDBs)
 	if query.Error != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
@@ -59,26 +59,23 @@ func GetXLRows(c *gin.Context) {
 		return
 	}
 
+	// slice that will be transmitted to the front
+	xlrowAPIs := make([]orm.XLRowAPI, 0)
+
 	// for each xlrow, update fields from the database nullable fields
-	for idx := range xlrows {
-		xlrow := &xlrows[idx]
-		_ = xlrow
+	for idx := range xlrowDBs {
+		xlrowDB := &xlrowDBs[idx]
+		_ = xlrowDB
+		var xlrowAPI orm.XLRowAPI
+
 		// insertion point for updating fields
-		if xlrow.Name_Data.Valid {
-			xlrow.Name = xlrow.Name_Data.String
-		}
-
-		if xlrow.RowIndex_Data.Valid {
-			xlrow.RowIndex = int(xlrow.RowIndex_Data.Int64)
-		}
-
-		if xlrow.NbCols_Data.Valid {
-			xlrow.NbCols = int(xlrow.NbCols_Data.Int64)
-		}
-
+		xlrowAPI.ID = xlrowDB.ID
+		xlrowDB.CopyBasicFieldsToXLRow(&xlrowAPI.XLRow)
+		xlrowAPI.XLRowPointersEnconding = xlrowDB.XLRowPointersEnconding
+		xlrowAPIs = append(xlrowAPIs, xlrowAPI)
 	}
 
-	c.JSON(http.StatusOK, xlrows)
+	c.JSON(http.StatusOK, xlrowAPIs)
 }
 
 // PostXLRow
@@ -95,7 +92,7 @@ func GetXLRows(c *gin.Context) {
 //     Responses:
 //       200: xlrowDBResponse
 func PostXLRow(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLRow.GetDB()
 
 	// Validate input
 	var input orm.XLRowAPI
@@ -111,16 +108,8 @@ func PostXLRow(c *gin.Context) {
 
 	// Create xlrow
 	xlrowDB := orm.XLRowDB{}
-	xlrowDB.XLRowAPI = input
-	// insertion point for nullable field set
-	xlrowDB.Name_Data.String = input.Name
-	xlrowDB.Name_Data.Valid = true
-
-	xlrowDB.RowIndex_Data.Int64 = int64(input.RowIndex)
-	xlrowDB.RowIndex_Data.Valid = true
-
-	xlrowDB.NbCols_Data.Int64 = int64(input.NbCols)
-	xlrowDB.NbCols_Data.Valid = true
+	xlrowDB.XLRowPointersEnconding = input.XLRowPointersEnconding
+	xlrowDB.CopyBasicFieldsFromXLRow(&input.XLRow)
 
 	query := db.Create(&xlrowDB)
 	if query.Error != nil {
@@ -148,11 +137,11 @@ func PostXLRow(c *gin.Context) {
 //    default: genericError
 //        200: xlrowDBResponse
 func GetXLRow(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLRow.GetDB()
 
-	// Get xlrow in DB
-	var xlrow orm.XLRowDB
-	if err := db.First(&xlrow, c.Param("id")).Error; err != nil {
+	// Get xlrowDB in DB
+	var xlrowDB orm.XLRowDB
+	if err := db.First(&xlrowDB, c.Param("id")).Error; err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
 		returnError.Body.Message = err.Error()
@@ -160,20 +149,12 @@ func GetXLRow(c *gin.Context) {
 		return
 	}
 
-	// insertion point for fields value set from nullable fields
-	if xlrow.Name_Data.Valid {
-		xlrow.Name = xlrow.Name_Data.String
-	}
+	var xlrowAPI orm.XLRowAPI
+	xlrowAPI.ID = xlrowDB.ID
+	xlrowAPI.XLRowPointersEnconding = xlrowDB.XLRowPointersEnconding
+	xlrowDB.CopyBasicFieldsToXLRow(&xlrowAPI.XLRow)
 
-	if xlrow.RowIndex_Data.Valid {
-		xlrow.RowIndex = int(xlrow.RowIndex_Data.Int64)
-	}
-
-	if xlrow.NbCols_Data.Valid {
-		xlrow.NbCols = int(xlrow.NbCols_Data.Int64)
-	}
-
-	c.JSON(http.StatusOK, xlrow)
+	c.JSON(http.StatusOK, xlrowAPI)
 }
 
 // UpdateXLRow
@@ -186,7 +167,7 @@ func GetXLRow(c *gin.Context) {
 //    default: genericError
 //        200: xlrowDBResponse
 func UpdateXLRow(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLRow.GetDB()
 
 	// Get model if exist
 	var xlrowDB orm.XLRowDB
@@ -210,17 +191,10 @@ func UpdateXLRow(c *gin.Context) {
 	}
 
 	// update
-	// insertion point for nullable field set
-	input.Name_Data.String = input.Name
-	input.Name_Data.Valid = true
+	xlrowDB.CopyBasicFieldsFromXLRow(&input.XLRow)
+	xlrowDB.XLRowPointersEnconding = input.XLRowPointersEnconding
 
-	input.RowIndex_Data.Int64 = int64(input.RowIndex)
-	input.RowIndex_Data.Valid = true
-
-	input.NbCols_Data.Int64 = int64(input.NbCols)
-	input.NbCols_Data.Valid = true
-
-	query = db.Model(&xlrowDB).Updates(input)
+	query = db.Model(&xlrowDB).Updates(xlrowDB)
 	if query.Error != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
@@ -246,7 +220,7 @@ func UpdateXLRow(c *gin.Context) {
 // Responses:
 //    default: genericError
 func DeleteXLRow(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLRow.GetDB()
 
 	// Get model if exist
 	var xlrowDB orm.XLRowDB

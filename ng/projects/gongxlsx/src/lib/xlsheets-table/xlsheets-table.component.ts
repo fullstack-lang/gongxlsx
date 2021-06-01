@@ -104,7 +104,6 @@ export class XLSheetsTableComponent implements OnInit {
     this.frontRepoService.pull().subscribe(
       frontRepo => {
         this.frontRepo = frontRepo
-        console.log("front repo pull returned")
 
         this.xlsheets = this.frontRepo.XLSheets_array;
 
@@ -142,8 +141,6 @@ export class XLSheetsTableComponent implements OnInit {
     this.xlsheetService.deleteXLSheet(xlsheetID).subscribe(
       xlsheet => {
         this.xlsheetService.XLSheetServiceChanged.next("delete")
-
-        console.log("xlsheet deleted")
       }
     );
   }
@@ -205,7 +202,6 @@ export class XLSheetsTableComponent implements OnInit {
     // from selection, set xlsheet that belong to xlsheet through Anarrayofb
     this.selection.selected.forEach(
       xlsheet => {
-        console.log("selection ID " + xlsheet.ID)
         let ID = +this.dialogData.ID
         xlsheet[this.dialogData.ReversePointer].Int64 = ID
         xlsheet[this.dialogData.ReversePointer].Valid = true
@@ -219,7 +215,6 @@ export class XLSheetsTableComponent implements OnInit {
         this.xlsheetService.updateXLSheet(xlsheet)
           .subscribe(xlsheet => {
             this.xlsheetService.XLSheetServiceChanged.next("update")
-            console.log("xlsheet saved")
           });
       }
     )

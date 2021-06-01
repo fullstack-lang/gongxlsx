@@ -3,9 +3,13 @@ package orm
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 	"sort"
 	"time"
 
@@ -27,27 +31,38 @@ var dummy_XLFile_sort sort.Float64Slice
 //
 // swagger:model xlfileAPI
 type XLFileAPI struct {
+	gorm.Model
+
 	models.XLFile
 
-	// insertion for fields declaration
+	// encoding of pointers
+	XLFilePointersEnconding
+}
+
+// XLFilePointersEnconding encodes pointers to Struct and
+// reverse pointers of slice of poitners to Struct
+type XLFilePointersEnconding struct {
+	// insertion for pointer fields encoding declaration
+}
+
+// XLFileDB describes a xlfile in the database
+//
+// It incorporates the GORM ID, basic fields from the model (because they can be serialized),
+// the encoded version of pointers
+//
+// swagger:model xlfileDB
+type XLFileDB struct {
+	gorm.Model
+
+	// insertion for basic fields declaration
 	// Declation for basic field xlfileDB.Name {{BasicKind}} (to be completed)
 	Name_Data sql.NullString
 
 	// Declation for basic field xlfileDB.NbSheets {{BasicKind}} (to be completed)
 	NbSheets_Data sql.NullInt64
 
-	// end of insertion
-}
-
-// XLFileDB describes a xlfile in the database
-//
-// It incorporates all fields : from the model, from the generated field for the API and the GORM ID
-//
-// swagger:model xlfileDB
-type XLFileDB struct {
-	gorm.Model
-
-	XLFileAPI
+	// encoding of pointers
+	XLFilePointersEnconding
 }
 
 // XLFileDBs arrays xlfileDBs
@@ -71,6 +86,17 @@ type BackRepoXLFileStruct struct {
 	Map_XLFileDBID_XLFilePtr *map[uint]*models.XLFile
 
 	db *gorm.DB
+}
+
+func (backRepoXLFile *BackRepoXLFileStruct) GetDB() *gorm.DB {
+	return backRepoXLFile.db
+}
+
+// GetXLFileDBFromXLFilePtr is a handy function to access the back repo instance from the stage instance
+func (backRepoXLFile *BackRepoXLFileStruct) GetXLFileDBFromXLFilePtr(xlfile *models.XLFile) (xlfileDB *XLFileDB) {
+	id := (*backRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile]
+	xlfileDB = (*backRepoXLFile.Map_XLFileDBID_XLFileDB)[id]
+	return
 }
 
 // BackRepoXLFile.Init set up the BackRepo of the XLFile
@@ -154,7 +180,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseOneInstance(xlfile *model
 
 	// initiate xlfile
 	var xlfileDB XLFileDB
-	xlfileDB.XLFile = *xlfile
+	xlfileDB.CopyBasicFieldsFromXLFile(xlfile)
 
 	query := backRepoXLFile.db.Create(&xlfileDB)
 	if query.Error != nil {
@@ -187,34 +213,28 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseTwoInstance(backRepo *Bac
 	// fetch matching xlfileDB
 	if xlfileDB, ok := (*backRepoXLFile.Map_XLFileDBID_XLFileDB)[idx]; ok {
 
-		{
-			{
-				// insertion point for fields commit
-				xlfileDB.Name_Data.String = xlfile.Name
-				xlfileDB.Name_Data.Valid = true
+		xlfileDB.CopyBasicFieldsFromXLFile(xlfile)
 
-				xlfileDB.NbSheets_Data.Int64 = int64(xlfile.NbSheets)
-				xlfileDB.NbSheets_Data.Valid = true
+		// insertion point for translating pointers encodings into actual pointers
+		// This loop encodes the slice of pointers xlfile.Sheets into the back repo.
+		// Each back repo instance at the end of the association encode the ID of the association start
+		// into a dedicated field for coding the association. The back repo instance is then saved to the db
+		for idx, xlsheetAssocEnd := range xlfile.Sheets {
 
-				// commit a slice of pointer translates to update reverse pointer to XLSheet, i.e.
-				index_Sheets := 0
-				for _, xlsheet := range xlfile.Sheets {
-					if xlsheetDBID, ok := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet]; ok {
-						if xlsheetDB, ok := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDBID]; ok {
-							xlsheetDB.XLFile_SheetsDBID.Int64 = int64(xlfileDB.ID)
-							xlsheetDB.XLFile_SheetsDBID.Valid = true
-							xlsheetDB.XLFile_SheetsDBID_Index.Int64 = int64(index_Sheets)
-							index_Sheets = index_Sheets + 1
-							xlsheetDB.XLFile_SheetsDBID_Index.Valid = true
-							if q := backRepoXLFile.db.Save(&xlsheetDB); q.Error != nil {
-								return q.Error
-							}
-						}
-					}
-				}
+			// get the back repo instance at the association end
+			xlsheetAssocEnd_DB :=
+				backRepo.BackRepoXLSheet.GetXLSheetDBFromXLSheetPtr( xlsheetAssocEnd)
 
+			// encode reverse pointer in the association end back repo instance
+			xlsheetAssocEnd_DB.XLFile_SheetsDBID.Int64 = int64(xlfileDB.ID)
+			xlsheetAssocEnd_DB.XLFile_SheetsDBID.Valid = true
+			xlsheetAssocEnd_DB.XLFile_SheetsDBID_Index.Int64 = int64(idx)
+			xlsheetAssocEnd_DB.XLFile_SheetsDBID_Index.Valid = true
+			if q := backRepoXLFile.db.Save(xlsheetAssocEnd_DB); q.Error != nil {
+				return q.Error
 			}
 		}
+
 		query := backRepoXLFile.db.Save(&xlfileDB)
 		if query.Error != nil {
 			return query.Error
@@ -255,18 +275,23 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOne() (Error error) {
 // models version of the xlfileDB
 func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOneInstance(xlfileDB *XLFileDB) (Error error) {
 
-	// if absent, create entries in the backRepoXLFile maps.
-	xlfileWithNewFieldValues := xlfileDB.XLFile
-	if _, ok := (*backRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]; !ok {
+	xlfile, ok := (*backRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+	if !ok {
+		xlfile = new(models.XLFile)
 
-		(*backRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID] = &xlfileWithNewFieldValues
-		(*backRepoXLFile.Map_XLFilePtr_XLFileDBID)[&xlfileWithNewFieldValues] = xlfileDB.ID
+		(*backRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID] = xlfile
+		(*backRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile] = xlfileDB.ID
 
 		// append model store with the new element
-		xlfileWithNewFieldValues.Stage()
+		xlfile.Stage()
 	}
-	xlfileDBWithNewFieldValues := *xlfileDB
-	(*backRepoXLFile.Map_XLFileDBID_XLFileDB)[xlfileDB.ID] = &xlfileDBWithNewFieldValues
+	xlfileDB.CopyBasicFieldsToXLFile(xlfile)
+
+	// preserve pointer to xlfileDB. Otherwise, pointer will is recycled and the map of pointers
+	// Map_XLFileDBID_XLFileDB)[xlfileDB hold variable pointers
+	xlfileDB_Data := *xlfileDB
+	preservedPtrToXLFile := &xlfileDB_Data
+	(*backRepoXLFile.Map_XLFileDBID_XLFileDB)[xlfileDB.ID] = preservedPtrToXLFile
 
 	return
 }
@@ -288,37 +313,35 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseTwoInstance(backRepo *B
 
 	xlfile := (*backRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
 	_ = xlfile // sometimes, there is no code generated. This lines voids the "unused variable" compilation error
-	{
-		{
-			// insertion point for checkout, i.e. update of fields of stage instance from fields of back repo instances
-			//
-			xlfile.Name = xlfileDB.Name_Data.String
 
-			xlfile.NbSheets = int(xlfileDB.NbSheets_Data.Int64)
-
-			// parse all XLSheetDB and redeem the array of poiners to XLFile
-			// first reset the slice
-			xlfile.Sheets = xlfile.Sheets[:0]
-			for _, XLSheetDB := range *backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
-				if XLSheetDB.XLFile_SheetsDBID.Int64 == int64(xlfileDB.ID) {
-					XLSheet := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[XLSheetDB.ID]
-					xlfile.Sheets = append(xlfile.Sheets, XLSheet)
-				}
-			}
-			
-			// sort the array according to the order
-			sort.Slice(xlfile.Sheets, func(i, j int) bool {
-				xlsheetDB_i_ID := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlfile.Sheets[i]]
-				xlsheetDB_j_ID := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlfile.Sheets[j]]
-
-				xlsheetDB_i := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB_i_ID]
-				xlsheetDB_j := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB_j_ID]
-
-				return xlsheetDB_i.XLFile_SheetsDBID_Index.Int64 < xlsheetDB_j.XLFile_SheetsDBID_Index.Int64
-			})
-
+	// insertion point for checkout of pointer encoding
+	// This loop redeem xlfile.Sheets in the stage from the encode in the back repo
+	// It parses all XLSheetDB in the back repo and if the reverse pointer encoding matches the back repo ID
+	// it appends the stage instance
+	// 1. reset the slice
+	xlfile.Sheets = xlfile.Sheets[:0]
+	// 2. loop all instances in the type in the association end
+	for _, xlsheetDB_AssocEnd := range *backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
+		// 3. Does the ID encoding at the end and the ID at the start matches ?
+		if xlsheetDB_AssocEnd.XLFile_SheetsDBID.Int64 == int64(xlfileDB.ID) {
+			// 4. fetch the associated instance in the stage
+			xlsheet_AssocEnd := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB_AssocEnd.ID]
+			// 5. append it the association slice
+			xlfile.Sheets = append(xlfile.Sheets, xlsheet_AssocEnd)
 		}
 	}
+
+	// sort the array according to the order
+	sort.Slice(xlfile.Sheets, func(i, j int) bool {
+		xlsheetDB_i_ID := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlfile.Sheets[i]]
+		xlsheetDB_j_ID := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlfile.Sheets[j]]
+
+		xlsheetDB_i := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB_i_ID]
+		xlsheetDB_j := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB_j_ID]
+
+		return xlsheetDB_i.XLFile_SheetsDBID_Index.Int64 < xlsheetDB_j.XLFile_SheetsDBID_Index.Int64
+	})
+
 	return
 }
 
@@ -347,3 +370,113 @@ func (backRepo *BackRepoStruct) CheckoutXLFile(xlfile *models.XLFile) {
 		}
 	}
 }
+
+// CopyBasicFieldsToXLFileDB is used to copy basic fields between the Stage or the CRUD to the back repo
+func (xlfileDB *XLFileDB) CopyBasicFieldsFromXLFile(xlfile *models.XLFile) {
+	// insertion point for fields commit
+	xlfileDB.Name_Data.String = xlfile.Name
+	xlfileDB.Name_Data.Valid = true
+
+	xlfileDB.NbSheets_Data.Int64 = int64(xlfile.NbSheets)
+	xlfileDB.NbSheets_Data.Valid = true
+
+}
+
+// CopyBasicFieldsToXLFileDB is used to copy basic fields between the Stage or the CRUD to the back repo
+func (xlfileDB *XLFileDB) CopyBasicFieldsToXLFile(xlfile *models.XLFile) {
+
+	// insertion point for checkout of basic fields (back repo to stage)
+	xlfile.Name = xlfileDB.Name_Data.String
+	xlfile.NbSheets = int(xlfileDB.NbSheets_Data.Int64)
+}
+
+// Backup generates a json file from a slice of all XLFileDB instances in the backrepo
+func (backRepoXLFile *BackRepoXLFileStruct) Backup(dirPath string) {
+
+	filename := filepath.Join(dirPath, "XLFileDB.json")
+
+	// organize the map into an array with increasing IDs, in order to have repoductible
+	// backup file
+	forBackup := make([]*XLFileDB, 0)
+	for _, xlfileDB := range *backRepoXLFile.Map_XLFileDBID_XLFileDB {
+		forBackup = append(forBackup, xlfileDB)
+	}
+
+	sort.Slice(forBackup[:], func(i, j int) bool {
+		return forBackup[i].ID < forBackup[j].ID
+	})
+
+	file, err := json.MarshalIndent(forBackup, "", " ")
+
+	if err != nil {
+		log.Panic("Cannot json XLFile ", filename, " ", err.Error())
+	}
+
+	err = ioutil.WriteFile(filename, file, 0644)
+	if err != nil {
+		log.Panic("Cannot write the json XLFile file", err.Error())
+	}
+}
+
+// RestorePhaseOne read the file "XLFileDB.json" in dirPath that stores an array
+// of XLFileDB and stores it in the database
+// the map BackRepoXLFileid_atBckpTime_newID is updated accordingly
+func (backRepoXLFile *BackRepoXLFileStruct) RestorePhaseOne(dirPath string) {
+
+	// resets the map
+	BackRepoXLFileid_atBckpTime_newID = make(map[uint]uint)
+
+	filename := filepath.Join(dirPath, "XLFileDB.json")
+	jsonFile, err := os.Open(filename)
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		log.Panic("Cannot restore/open the json XLFile file", filename, " ", err.Error())
+	}
+
+	// read our opened jsonFile as a byte array.
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	var forRestore []*XLFileDB
+
+	err = json.Unmarshal(byteValue, &forRestore)
+
+	// fill up Map_XLFileDBID_XLFileDB
+	for _, xlfileDB := range forRestore {
+
+		xlfileDB_ID_atBackupTime := xlfileDB.ID
+		xlfileDB.ID = 0
+		query := backRepoXLFile.db.Create(xlfileDB)
+		if query.Error != nil {
+			log.Panic(query.Error)
+		}
+		(*backRepoXLFile.Map_XLFileDBID_XLFileDB)[xlfileDB.ID] = xlfileDB
+		BackRepoXLFileid_atBckpTime_newID[xlfileDB_ID_atBackupTime] = xlfileDB.ID
+	}
+
+	if err != nil {
+		log.Panic("Cannot restore/unmarshall json XLFile file", err.Error())
+	}
+}
+
+// RestorePhaseTwo uses all map BackRepo<XLFile>id_atBckpTime_newID
+// to compute new index
+func (backRepoXLFile *BackRepoXLFileStruct) RestorePhaseTwo() {
+
+	for _, xlfileDB := range (*backRepoXLFile.Map_XLFileDBID_XLFileDB) {
+
+		// next line of code is to avert unused variable compilation error
+		_ = xlfileDB
+
+		// insertion point for reindexing pointers encoding
+		// update databse with new index encoding
+		query := backRepoXLFile.db.Model(xlfileDB).Updates(*xlfileDB)
+		if query.Error != nil {
+			log.Panic(query.Error)
+		}
+	}
+
+}
+
+// this field is used during the restauration process.
+// it stores the ID at the backup time and is used for renumbering
+var BackRepoXLFileid_atBckpTime_newID map[uint]uint

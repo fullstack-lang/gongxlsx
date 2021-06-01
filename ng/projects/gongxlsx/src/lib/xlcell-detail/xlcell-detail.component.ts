@@ -63,8 +63,6 @@ export class XLCellDetailComponent implements OnInit {
 		this.frontRepoService.pull().subscribe(
 			frontRepo => {
 				this.frontRepo = frontRepo
-				console.log("front repo XLCellPull returned")
-
 				if (id != 0 && association == undefined) {
 					this.xlcell = frontRepo.XLCells.get(id)
 				} else {
@@ -94,6 +92,7 @@ export class XLCellDetailComponent implements OnInit {
 				this.xlcell.XLRow_CellsDBID = new NullInt64
 				this.xlcell.XLRow_CellsDBID.Int64 = this.xlcell.XLRow_Cells_reverse.ID
 				this.xlcell.XLRow_CellsDBID.Valid = true
+				this.xlcell.XLRow_CellsDBID_Index = new NullInt64
 				this.xlcell.XLRow_CellsDBID_Index.Valid = true
 				this.xlcell.XLRow_Cells_reverse = undefined // very important, otherwise, circular JSON
 			}
@@ -101,6 +100,7 @@ export class XLCellDetailComponent implements OnInit {
 				this.xlcell.XLSheet_SheetCellsDBID = new NullInt64
 				this.xlcell.XLSheet_SheetCellsDBID.Int64 = this.xlcell.XLSheet_SheetCells_reverse.ID
 				this.xlcell.XLSheet_SheetCellsDBID.Valid = true
+				this.xlcell.XLSheet_SheetCellsDBID_Index = new NullInt64
 				this.xlcell.XLSheet_SheetCellsDBID_Index.Valid = true
 				this.xlcell.XLSheet_SheetCells_reverse = undefined // very important, otherwise, circular JSON
 			}
@@ -111,8 +111,6 @@ export class XLCellDetailComponent implements OnInit {
 			this.xlcellService.updateXLCell(this.xlcell)
 				.subscribe(xlcell => {
 					this.xlcellService.XLCellServiceChanged.next("update")
-
-					console.log("xlcell saved")
 				});
 		} else {
 			switch (association) {
@@ -121,12 +119,14 @@ export class XLCellDetailComponent implements OnInit {
 					this.xlcell.XLRow_CellsDBID = new NullInt64
 					this.xlcell.XLRow_CellsDBID.Int64 = id
 					this.xlcell.XLRow_CellsDBID.Valid = true
+					this.xlcell.XLRow_CellsDBID_Index = new NullInt64
 					this.xlcell.XLRow_CellsDBID_Index.Valid = true
 					break
 				case "XLSheet_SheetCells":
 					this.xlcell.XLSheet_SheetCellsDBID = new NullInt64
 					this.xlcell.XLSheet_SheetCellsDBID.Int64 = id
 					this.xlcell.XLSheet_SheetCellsDBID.Valid = true
+					this.xlcell.XLSheet_SheetCellsDBID_Index = new NullInt64
 					this.xlcell.XLSheet_SheetCellsDBID_Index.Valid = true
 					break
 			}
@@ -135,7 +135,6 @@ export class XLCellDetailComponent implements OnInit {
 				this.xlcellService.XLCellServiceChanged.next("post")
 
 				this.xlcell = {} // reset fields
-				console.log("xlcell added")
 			});
 		}
 	}
@@ -164,7 +163,6 @@ export class XLCellDetailComponent implements OnInit {
 		);
 
 		dialogRef.afterClosed().subscribe(result => {
-			console.log('The dialog was closed');
 		});
 	}
 
@@ -187,7 +185,12 @@ export class XLCellDetailComponent implements OnInit {
 		);
 
 		dialogRef.afterClosed().subscribe(result => {
-			console.log('The dialog was closed');
 		});
+	}
+
+	fillUpNameIfEmpty(event) {
+		if (this.xlcell.Name == undefined) {
+			this.xlcell.Name = event.value.Name		
+		}
 	}
 }

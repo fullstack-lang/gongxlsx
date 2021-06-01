@@ -104,7 +104,6 @@ export class XLCellsTableComponent implements OnInit {
     this.frontRepoService.pull().subscribe(
       frontRepo => {
         this.frontRepo = frontRepo
-        console.log("front repo pull returned")
 
         this.xlcells = this.frontRepo.XLCells_array;
 
@@ -142,8 +141,6 @@ export class XLCellsTableComponent implements OnInit {
     this.xlcellService.deleteXLCell(xlcellID).subscribe(
       xlcell => {
         this.xlcellService.XLCellServiceChanged.next("delete")
-
-        console.log("xlcell deleted")
       }
     );
   }
@@ -205,7 +202,6 @@ export class XLCellsTableComponent implements OnInit {
     // from selection, set xlcell that belong to xlcell through Anarrayofb
     this.selection.selected.forEach(
       xlcell => {
-        console.log("selection ID " + xlcell.ID)
         let ID = +this.dialogData.ID
         xlcell[this.dialogData.ReversePointer].Int64 = ID
         xlcell[this.dialogData.ReversePointer].Valid = true
@@ -219,7 +215,6 @@ export class XLCellsTableComponent implements OnInit {
         this.xlcellService.updateXLCell(xlcell)
           .subscribe(xlcell => {
             this.xlcellService.XLCellServiceChanged.next("update")
-            console.log("xlcell saved")
           });
       }
     )

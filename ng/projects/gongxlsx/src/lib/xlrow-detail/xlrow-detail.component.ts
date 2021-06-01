@@ -63,8 +63,6 @@ export class XLRowDetailComponent implements OnInit {
 		this.frontRepoService.pull().subscribe(
 			frontRepo => {
 				this.frontRepo = frontRepo
-				console.log("front repo XLRowPull returned")
-
 				if (id != 0 && association == undefined) {
 					this.xlrow = frontRepo.XLRows.get(id)
 				} else {
@@ -94,6 +92,7 @@ export class XLRowDetailComponent implements OnInit {
 				this.xlrow.XLSheet_RowsDBID = new NullInt64
 				this.xlrow.XLSheet_RowsDBID.Int64 = this.xlrow.XLSheet_Rows_reverse.ID
 				this.xlrow.XLSheet_RowsDBID.Valid = true
+				this.xlrow.XLSheet_RowsDBID_Index = new NullInt64
 				this.xlrow.XLSheet_RowsDBID_Index.Valid = true
 				this.xlrow.XLSheet_Rows_reverse = undefined // very important, otherwise, circular JSON
 			}
@@ -104,8 +103,6 @@ export class XLRowDetailComponent implements OnInit {
 			this.xlrowService.updateXLRow(this.xlrow)
 				.subscribe(xlrow => {
 					this.xlrowService.XLRowServiceChanged.next("update")
-
-					console.log("xlrow saved")
 				});
 		} else {
 			switch (association) {
@@ -114,6 +111,7 @@ export class XLRowDetailComponent implements OnInit {
 					this.xlrow.XLSheet_RowsDBID = new NullInt64
 					this.xlrow.XLSheet_RowsDBID.Int64 = id
 					this.xlrow.XLSheet_RowsDBID.Valid = true
+					this.xlrow.XLSheet_RowsDBID_Index = new NullInt64
 					this.xlrow.XLSheet_RowsDBID_Index.Valid = true
 					break
 			}
@@ -122,7 +120,6 @@ export class XLRowDetailComponent implements OnInit {
 				this.xlrowService.XLRowServiceChanged.next("post")
 
 				this.xlrow = {} // reset fields
-				console.log("xlrow added")
 			});
 		}
 	}
@@ -151,7 +148,6 @@ export class XLRowDetailComponent implements OnInit {
 		);
 
 		dialogRef.afterClosed().subscribe(result => {
-			console.log('The dialog was closed');
 		});
 	}
 
@@ -174,7 +170,12 @@ export class XLRowDetailComponent implements OnInit {
 		);
 
 		dialogRef.afterClosed().subscribe(result => {
-			console.log('The dialog was closed');
 		});
+	}
+
+	fillUpNameIfEmpty(event) {
+		if (this.xlrow.Name == undefined) {
+			this.xlrow.Name = event.value.Name		
+		}
 	}
 }

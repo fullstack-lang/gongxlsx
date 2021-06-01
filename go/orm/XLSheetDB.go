@@ -3,9 +3,13 @@ package orm
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 	"sort"
 	"time"
 
@@ -27,9 +31,35 @@ var dummy_XLSheet_sort sort.Float64Slice
 //
 // swagger:model xlsheetAPI
 type XLSheetAPI struct {
+	gorm.Model
+
 	models.XLSheet
 
-	// insertion for fields declaration
+	// encoding of pointers
+	XLSheetPointersEnconding
+}
+
+// XLSheetPointersEnconding encodes pointers to Struct and
+// reverse pointers of slice of poitners to Struct
+type XLSheetPointersEnconding struct {
+	// insertion for pointer fields encoding declaration
+	// Implementation of a reverse ID for field XLFile{}.Sheets []*XLSheet
+	XLFile_SheetsDBID sql.NullInt64
+
+	// implementation of the index of the withing the slice
+	XLFile_SheetsDBID_Index sql.NullInt64
+}
+
+// XLSheetDB describes a xlsheet in the database
+//
+// It incorporates the GORM ID, basic fields from the model (because they can be serialized),
+// the encoded version of pointers
+//
+// swagger:model xlsheetDB
+type XLSheetDB struct {
+	gorm.Model
+
+	// insertion for basic fields declaration
 	// Declation for basic field xlsheetDB.Name {{BasicKind}} (to be completed)
 	Name_Data sql.NullString
 
@@ -42,22 +72,8 @@ type XLSheetAPI struct {
 	// Declation for basic field xlsheetDB.NbRows {{BasicKind}} (to be completed)
 	NbRows_Data sql.NullInt64
 
-	// Implementation of a reverse ID for field XLFile{}.Sheets []*XLSheet
-	XLFile_SheetsDBID sql.NullInt64
-	XLFile_SheetsDBID_Index sql.NullInt64
-
-	// end of insertion
-}
-
-// XLSheetDB describes a xlsheet in the database
-//
-// It incorporates all fields : from the model, from the generated field for the API and the GORM ID
-//
-// swagger:model xlsheetDB
-type XLSheetDB struct {
-	gorm.Model
-
-	XLSheetAPI
+	// encoding of pointers
+	XLSheetPointersEnconding
 }
 
 // XLSheetDBs arrays xlsheetDBs
@@ -81,6 +97,17 @@ type BackRepoXLSheetStruct struct {
 	Map_XLSheetDBID_XLSheetPtr *map[uint]*models.XLSheet
 
 	db *gorm.DB
+}
+
+func (backRepoXLSheet *BackRepoXLSheetStruct) GetDB() *gorm.DB {
+	return backRepoXLSheet.db
+}
+
+// GetXLSheetDBFromXLSheetPtr is a handy function to access the back repo instance from the stage instance
+func (backRepoXLSheet *BackRepoXLSheetStruct) GetXLSheetDBFromXLSheetPtr(xlsheet *models.XLSheet) (xlsheetDB *XLSheetDB) {
+	id := (*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet]
+	xlsheetDB = (*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[id]
+	return
 }
 
 // BackRepoXLSheet.Init set up the BackRepo of the XLSheet
@@ -164,7 +191,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseOneInstance(xlsheet *mo
 
 	// initiate xlsheet
 	var xlsheetDB XLSheetDB
-	xlsheetDB.XLSheet = *xlsheet
+	xlsheetDB.CopyBasicFieldsFromXLSheet(xlsheet)
 
 	query := backRepoXLSheet.db.Create(&xlsheetDB)
 	if query.Error != nil {
@@ -197,57 +224,47 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 	// fetch matching xlsheetDB
 	if xlsheetDB, ok := (*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[idx]; ok {
 
-		{
-			{
-				// insertion point for fields commit
-				xlsheetDB.Name_Data.String = xlsheet.Name
-				xlsheetDB.Name_Data.Valid = true
+		xlsheetDB.CopyBasicFieldsFromXLSheet(xlsheet)
 
-				xlsheetDB.MaxRow_Data.Int64 = int64(xlsheet.MaxRow)
-				xlsheetDB.MaxRow_Data.Valid = true
+		// insertion point for translating pointers encodings into actual pointers
+		// This loop encodes the slice of pointers xlsheet.Rows into the back repo.
+		// Each back repo instance at the end of the association encode the ID of the association start
+		// into a dedicated field for coding the association. The back repo instance is then saved to the db
+		for idx, xlrowAssocEnd := range xlsheet.Rows {
 
-				xlsheetDB.MaxCol_Data.Int64 = int64(xlsheet.MaxCol)
-				xlsheetDB.MaxCol_Data.Valid = true
+			// get the back repo instance at the association end
+			xlrowAssocEnd_DB :=
+				backRepo.BackRepoXLRow.GetXLRowDBFromXLRowPtr( xlrowAssocEnd)
 
-				xlsheetDB.NbRows_Data.Int64 = int64(xlsheet.NbRows)
-				xlsheetDB.NbRows_Data.Valid = true
-
-				// commit a slice of pointer translates to update reverse pointer to XLRow, i.e.
-				index_Rows := 0
-				for _, xlrow := range xlsheet.Rows {
-					if xlrowDBID, ok := (*backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlrow]; ok {
-						if xlrowDB, ok := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB)[xlrowDBID]; ok {
-							xlrowDB.XLSheet_RowsDBID.Int64 = int64(xlsheetDB.ID)
-							xlrowDB.XLSheet_RowsDBID.Valid = true
-							xlrowDB.XLSheet_RowsDBID_Index.Int64 = int64(index_Rows)
-							index_Rows = index_Rows + 1
-							xlrowDB.XLSheet_RowsDBID_Index.Valid = true
-							if q := backRepoXLSheet.db.Save(&xlrowDB); q.Error != nil {
-								return q.Error
-							}
-						}
-					}
-				}
-
-				// commit a slice of pointer translates to update reverse pointer to XLCell, i.e.
-				index_SheetCells := 0
-				for _, xlcell := range xlsheet.SheetCells {
-					if xlcellDBID, ok := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlcell]; ok {
-						if xlcellDB, ok := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDBID]; ok {
-							xlcellDB.XLSheet_SheetCellsDBID.Int64 = int64(xlsheetDB.ID)
-							xlcellDB.XLSheet_SheetCellsDBID.Valid = true
-							xlcellDB.XLSheet_SheetCellsDBID_Index.Int64 = int64(index_SheetCells)
-							index_SheetCells = index_SheetCells + 1
-							xlcellDB.XLSheet_SheetCellsDBID_Index.Valid = true
-							if q := backRepoXLSheet.db.Save(&xlcellDB); q.Error != nil {
-								return q.Error
-							}
-						}
-					}
-				}
-
+			// encode reverse pointer in the association end back repo instance
+			xlrowAssocEnd_DB.XLSheet_RowsDBID.Int64 = int64(xlsheetDB.ID)
+			xlrowAssocEnd_DB.XLSheet_RowsDBID.Valid = true
+			xlrowAssocEnd_DB.XLSheet_RowsDBID_Index.Int64 = int64(idx)
+			xlrowAssocEnd_DB.XLSheet_RowsDBID_Index.Valid = true
+			if q := backRepoXLSheet.db.Save(xlrowAssocEnd_DB); q.Error != nil {
+				return q.Error
 			}
 		}
+
+		// This loop encodes the slice of pointers xlsheet.SheetCells into the back repo.
+		// Each back repo instance at the end of the association encode the ID of the association start
+		// into a dedicated field for coding the association. The back repo instance is then saved to the db
+		for idx, xlcellAssocEnd := range xlsheet.SheetCells {
+
+			// get the back repo instance at the association end
+			xlcellAssocEnd_DB :=
+				backRepo.BackRepoXLCell.GetXLCellDBFromXLCellPtr( xlcellAssocEnd)
+
+			// encode reverse pointer in the association end back repo instance
+			xlcellAssocEnd_DB.XLSheet_SheetCellsDBID.Int64 = int64(xlsheetDB.ID)
+			xlcellAssocEnd_DB.XLSheet_SheetCellsDBID.Valid = true
+			xlcellAssocEnd_DB.XLSheet_SheetCellsDBID_Index.Int64 = int64(idx)
+			xlcellAssocEnd_DB.XLSheet_SheetCellsDBID_Index.Valid = true
+			if q := backRepoXLSheet.db.Save(xlcellAssocEnd_DB); q.Error != nil {
+				return q.Error
+			}
+		}
+
 		query := backRepoXLSheet.db.Save(&xlsheetDB)
 		if query.Error != nil {
 			return query.Error
@@ -288,18 +305,23 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOne() (Error error) {
 // models version of the xlsheetDB
 func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOneInstance(xlsheetDB *XLSheetDB) (Error error) {
 
-	// if absent, create entries in the backRepoXLSheet maps.
-	xlsheetWithNewFieldValues := xlsheetDB.XLSheet
-	if _, ok := (*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]; !ok {
+	xlsheet, ok := (*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+	if !ok {
+		xlsheet = new(models.XLSheet)
 
-		(*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID] = &xlsheetWithNewFieldValues
-		(*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[&xlsheetWithNewFieldValues] = xlsheetDB.ID
+		(*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID] = xlsheet
+		(*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet] = xlsheetDB.ID
 
 		// append model store with the new element
-		xlsheetWithNewFieldValues.Stage()
+		xlsheet.Stage()
 	}
-	xlsheetDBWithNewFieldValues := *xlsheetDB
-	(*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB.ID] = &xlsheetDBWithNewFieldValues
+	xlsheetDB.CopyBasicFieldsToXLSheet(xlsheet)
+
+	// preserve pointer to xlsheetDB. Otherwise, pointer will is recycled and the map of pointers
+	// Map_XLSheetDBID_XLSheetDB)[xlsheetDB hold variable pointers
+	xlsheetDB_Data := *xlsheetDB
+	preservedPtrToXLSheet := &xlsheetDB_Data
+	(*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB.ID] = preservedPtrToXLSheet
 
 	return
 }
@@ -321,62 +343,62 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseTwoInstance(backRepo 
 
 	xlsheet := (*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
 	_ = xlsheet // sometimes, there is no code generated. This lines voids the "unused variable" compilation error
-	{
-		{
-			// insertion point for checkout, i.e. update of fields of stage instance from fields of back repo instances
-			//
-			xlsheet.Name = xlsheetDB.Name_Data.String
 
-			xlsheet.MaxRow = int(xlsheetDB.MaxRow_Data.Int64)
-
-			xlsheet.MaxCol = int(xlsheetDB.MaxCol_Data.Int64)
-
-			xlsheet.NbRows = int(xlsheetDB.NbRows_Data.Int64)
-
-			// parse all XLRowDB and redeem the array of poiners to XLSheet
-			// first reset the slice
-			xlsheet.Rows = xlsheet.Rows[:0]
-			for _, XLRowDB := range *backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB {
-				if XLRowDB.XLSheet_RowsDBID.Int64 == int64(xlsheetDB.ID) {
-					XLRow := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[XLRowDB.ID]
-					xlsheet.Rows = append(xlsheet.Rows, XLRow)
-				}
-			}
-			
-			// sort the array according to the order
-			sort.Slice(xlsheet.Rows, func(i, j int) bool {
-				xlrowDB_i_ID := (*backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlsheet.Rows[i]]
-				xlrowDB_j_ID := (*backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlsheet.Rows[j]]
-
-				xlrowDB_i := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB)[xlrowDB_i_ID]
-				xlrowDB_j := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB)[xlrowDB_j_ID]
-
-				return xlrowDB_i.XLSheet_RowsDBID_Index.Int64 < xlrowDB_j.XLSheet_RowsDBID_Index.Int64
-			})
-
-			// parse all XLCellDB and redeem the array of poiners to XLSheet
-			// first reset the slice
-			xlsheet.SheetCells = xlsheet.SheetCells[:0]
-			for _, XLCellDB := range *backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB {
-				if XLCellDB.XLSheet_SheetCellsDBID.Int64 == int64(xlsheetDB.ID) {
-					XLCell := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[XLCellDB.ID]
-					xlsheet.SheetCells = append(xlsheet.SheetCells, XLCell)
-				}
-			}
-			
-			// sort the array according to the order
-			sort.Slice(xlsheet.SheetCells, func(i, j int) bool {
-				xlcellDB_i_ID := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlsheet.SheetCells[i]]
-				xlcellDB_j_ID := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlsheet.SheetCells[j]]
-
-				xlcellDB_i := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB_i_ID]
-				xlcellDB_j := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB_j_ID]
-
-				return xlcellDB_i.XLSheet_SheetCellsDBID_Index.Int64 < xlcellDB_j.XLSheet_SheetCellsDBID_Index.Int64
-			})
-
+	// insertion point for checkout of pointer encoding
+	// This loop redeem xlsheet.Rows in the stage from the encode in the back repo
+	// It parses all XLRowDB in the back repo and if the reverse pointer encoding matches the back repo ID
+	// it appends the stage instance
+	// 1. reset the slice
+	xlsheet.Rows = xlsheet.Rows[:0]
+	// 2. loop all instances in the type in the association end
+	for _, xlrowDB_AssocEnd := range *backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB {
+		// 3. Does the ID encoding at the end and the ID at the start matches ?
+		if xlrowDB_AssocEnd.XLSheet_RowsDBID.Int64 == int64(xlsheetDB.ID) {
+			// 4. fetch the associated instance in the stage
+			xlrow_AssocEnd := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB_AssocEnd.ID]
+			// 5. append it the association slice
+			xlsheet.Rows = append(xlsheet.Rows, xlrow_AssocEnd)
 		}
 	}
+
+	// sort the array according to the order
+	sort.Slice(xlsheet.Rows, func(i, j int) bool {
+		xlrowDB_i_ID := (*backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlsheet.Rows[i]]
+		xlrowDB_j_ID := (*backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlsheet.Rows[j]]
+
+		xlrowDB_i := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB)[xlrowDB_i_ID]
+		xlrowDB_j := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB)[xlrowDB_j_ID]
+
+		return xlrowDB_i.XLSheet_RowsDBID_Index.Int64 < xlrowDB_j.XLSheet_RowsDBID_Index.Int64
+	})
+
+	// This loop redeem xlsheet.SheetCells in the stage from the encode in the back repo
+	// It parses all XLCellDB in the back repo and if the reverse pointer encoding matches the back repo ID
+	// it appends the stage instance
+	// 1. reset the slice
+	xlsheet.SheetCells = xlsheet.SheetCells[:0]
+	// 2. loop all instances in the type in the association end
+	for _, xlcellDB_AssocEnd := range *backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB {
+		// 3. Does the ID encoding at the end and the ID at the start matches ?
+		if xlcellDB_AssocEnd.XLSheet_SheetCellsDBID.Int64 == int64(xlsheetDB.ID) {
+			// 4. fetch the associated instance in the stage
+			xlcell_AssocEnd := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB_AssocEnd.ID]
+			// 5. append it the association slice
+			xlsheet.SheetCells = append(xlsheet.SheetCells, xlcell_AssocEnd)
+		}
+	}
+
+	// sort the array according to the order
+	sort.Slice(xlsheet.SheetCells, func(i, j int) bool {
+		xlcellDB_i_ID := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlsheet.SheetCells[i]]
+		xlcellDB_j_ID := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlsheet.SheetCells[j]]
+
+		xlcellDB_i := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB_i_ID]
+		xlcellDB_j := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB_j_ID]
+
+		return xlcellDB_i.XLSheet_SheetCellsDBID_Index.Int64 < xlcellDB_j.XLSheet_SheetCellsDBID_Index.Int64
+	})
+
 	return
 }
 
@@ -405,3 +427,127 @@ func (backRepo *BackRepoStruct) CheckoutXLSheet(xlsheet *models.XLSheet) {
 		}
 	}
 }
+
+// CopyBasicFieldsToXLSheetDB is used to copy basic fields between the Stage or the CRUD to the back repo
+func (xlsheetDB *XLSheetDB) CopyBasicFieldsFromXLSheet(xlsheet *models.XLSheet) {
+	// insertion point for fields commit
+	xlsheetDB.Name_Data.String = xlsheet.Name
+	xlsheetDB.Name_Data.Valid = true
+
+	xlsheetDB.MaxRow_Data.Int64 = int64(xlsheet.MaxRow)
+	xlsheetDB.MaxRow_Data.Valid = true
+
+	xlsheetDB.MaxCol_Data.Int64 = int64(xlsheet.MaxCol)
+	xlsheetDB.MaxCol_Data.Valid = true
+
+	xlsheetDB.NbRows_Data.Int64 = int64(xlsheet.NbRows)
+	xlsheetDB.NbRows_Data.Valid = true
+
+}
+
+// CopyBasicFieldsToXLSheetDB is used to copy basic fields between the Stage or the CRUD to the back repo
+func (xlsheetDB *XLSheetDB) CopyBasicFieldsToXLSheet(xlsheet *models.XLSheet) {
+
+	// insertion point for checkout of basic fields (back repo to stage)
+	xlsheet.Name = xlsheetDB.Name_Data.String
+	xlsheet.MaxRow = int(xlsheetDB.MaxRow_Data.Int64)
+	xlsheet.MaxCol = int(xlsheetDB.MaxCol_Data.Int64)
+	xlsheet.NbRows = int(xlsheetDB.NbRows_Data.Int64)
+}
+
+// Backup generates a json file from a slice of all XLSheetDB instances in the backrepo
+func (backRepoXLSheet *BackRepoXLSheetStruct) Backup(dirPath string) {
+
+	filename := filepath.Join(dirPath, "XLSheetDB.json")
+
+	// organize the map into an array with increasing IDs, in order to have repoductible
+	// backup file
+	forBackup := make([]*XLSheetDB, 0)
+	for _, xlsheetDB := range *backRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
+		forBackup = append(forBackup, xlsheetDB)
+	}
+
+	sort.Slice(forBackup[:], func(i, j int) bool {
+		return forBackup[i].ID < forBackup[j].ID
+	})
+
+	file, err := json.MarshalIndent(forBackup, "", " ")
+
+	if err != nil {
+		log.Panic("Cannot json XLSheet ", filename, " ", err.Error())
+	}
+
+	err = ioutil.WriteFile(filename, file, 0644)
+	if err != nil {
+		log.Panic("Cannot write the json XLSheet file", err.Error())
+	}
+}
+
+// RestorePhaseOne read the file "XLSheetDB.json" in dirPath that stores an array
+// of XLSheetDB and stores it in the database
+// the map BackRepoXLSheetid_atBckpTime_newID is updated accordingly
+func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseOne(dirPath string) {
+
+	// resets the map
+	BackRepoXLSheetid_atBckpTime_newID = make(map[uint]uint)
+
+	filename := filepath.Join(dirPath, "XLSheetDB.json")
+	jsonFile, err := os.Open(filename)
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		log.Panic("Cannot restore/open the json XLSheet file", filename, " ", err.Error())
+	}
+
+	// read our opened jsonFile as a byte array.
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	var forRestore []*XLSheetDB
+
+	err = json.Unmarshal(byteValue, &forRestore)
+
+	// fill up Map_XLSheetDBID_XLSheetDB
+	for _, xlsheetDB := range forRestore {
+
+		xlsheetDB_ID_atBackupTime := xlsheetDB.ID
+		xlsheetDB.ID = 0
+		query := backRepoXLSheet.db.Create(xlsheetDB)
+		if query.Error != nil {
+			log.Panic(query.Error)
+		}
+		(*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB.ID] = xlsheetDB
+		BackRepoXLSheetid_atBckpTime_newID[xlsheetDB_ID_atBackupTime] = xlsheetDB.ID
+	}
+
+	if err != nil {
+		log.Panic("Cannot restore/unmarshall json XLSheet file", err.Error())
+	}
+}
+
+// RestorePhaseTwo uses all map BackRepo<XLSheet>id_atBckpTime_newID
+// to compute new index
+func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseTwo() {
+
+	for _, xlsheetDB := range (*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB) {
+
+		// next line of code is to avert unused variable compilation error
+		_ = xlsheetDB
+
+		// insertion point for reindexing pointers encoding
+		// This reindex xlsheet.Sheets
+		if xlsheetDB.XLFile_SheetsDBID.Int64 != 0 {
+			xlsheetDB.XLFile_SheetsDBID.Int64 = 
+				int64(BackRepoXLFileid_atBckpTime_newID[uint(xlsheetDB.XLFile_SheetsDBID.Int64)])
+		}
+
+		// update databse with new index encoding
+		query := backRepoXLSheet.db.Model(xlsheetDB).Updates(*xlsheetDB)
+		if query.Error != nil {
+			log.Panic(query.Error)
+		}
+	}
+
+}
+
+// this field is used during the restauration process.
+// it stores the ID at the backup time and is used for renumbering
+var BackRepoXLSheetid_atBckpTime_newID map[uint]uint

@@ -63,8 +63,6 @@ export class XLFileDetailComponent implements OnInit {
 		this.frontRepoService.pull().subscribe(
 			frontRepo => {
 				this.frontRepo = frontRepo
-				console.log("front repo XLFilePull returned")
-
 				if (id != 0 && association == undefined) {
 					this.xlfile = frontRepo.XLFiles.get(id)
 				} else {
@@ -97,8 +95,6 @@ export class XLFileDetailComponent implements OnInit {
 			this.xlfileService.updateXLFile(this.xlfile)
 				.subscribe(xlfile => {
 					this.xlfileService.XLFileServiceChanged.next("update")
-
-					console.log("xlfile saved")
 				});
 		} else {
 			switch (association) {
@@ -109,7 +105,6 @@ export class XLFileDetailComponent implements OnInit {
 				this.xlfileService.XLFileServiceChanged.next("post")
 
 				this.xlfile = {} // reset fields
-				console.log("xlfile added")
 			});
 		}
 	}
@@ -138,7 +133,6 @@ export class XLFileDetailComponent implements OnInit {
 		);
 
 		dialogRef.afterClosed().subscribe(result => {
-			console.log('The dialog was closed');
 		});
 	}
 
@@ -161,7 +155,12 @@ export class XLFileDetailComponent implements OnInit {
 		);
 
 		dialogRef.afterClosed().subscribe(result => {
-			console.log('The dialog was closed');
 		});
+	}
+
+	fillUpNameIfEmpty(event) {
+		if (this.xlfile.Name == undefined) {
+			this.xlfile.Name = event.value.Name		
+		}
 	}
 }

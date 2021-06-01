@@ -102,7 +102,6 @@ export class XLRowsTableComponent implements OnInit {
     this.frontRepoService.pull().subscribe(
       frontRepo => {
         this.frontRepo = frontRepo
-        console.log("front repo pull returned")
 
         this.xlrows = this.frontRepo.XLRows_array;
 
@@ -140,8 +139,6 @@ export class XLRowsTableComponent implements OnInit {
     this.xlrowService.deleteXLRow(xlrowID).subscribe(
       xlrow => {
         this.xlrowService.XLRowServiceChanged.next("delete")
-
-        console.log("xlrow deleted")
       }
     );
   }
@@ -203,7 +200,6 @@ export class XLRowsTableComponent implements OnInit {
     // from selection, set xlrow that belong to xlrow through Anarrayofb
     this.selection.selected.forEach(
       xlrow => {
-        console.log("selection ID " + xlrow.ID)
         let ID = +this.dialogData.ID
         xlrow[this.dialogData.ReversePointer].Int64 = ID
         xlrow[this.dialogData.ReversePointer].Valid = true
@@ -217,7 +213,6 @@ export class XLRowsTableComponent implements OnInit {
         this.xlrowService.updateXLRow(xlrow)
           .subscribe(xlrow => {
             this.xlrowService.XLRowServiceChanged.next("update")
-            console.log("xlrow saved")
           });
       }
     )

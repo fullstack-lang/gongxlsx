@@ -98,7 +98,6 @@ export class XLFilesTableComponent implements OnInit {
     this.frontRepoService.pull().subscribe(
       frontRepo => {
         this.frontRepo = frontRepo
-        console.log("front repo pull returned")
 
         this.xlfiles = this.frontRepo.XLFiles_array;
 
@@ -136,8 +135,6 @@ export class XLFilesTableComponent implements OnInit {
     this.xlfileService.deleteXLFile(xlfileID).subscribe(
       xlfile => {
         this.xlfileService.XLFileServiceChanged.next("delete")
-
-        console.log("xlfile deleted")
       }
     );
   }
@@ -199,7 +196,6 @@ export class XLFilesTableComponent implements OnInit {
     // from selection, set xlfile that belong to xlfile through Anarrayofb
     this.selection.selected.forEach(
       xlfile => {
-        console.log("selection ID " + xlfile.ID)
         let ID = +this.dialogData.ID
         xlfile[this.dialogData.ReversePointer].Int64 = ID
         xlfile[this.dialogData.ReversePointer].Valid = true
@@ -213,7 +209,6 @@ export class XLFilesTableComponent implements OnInit {
         this.xlfileService.updateXLFile(xlfile)
           .subscribe(xlfile => {
             this.xlfileService.XLFileServiceChanged.next("update")
-            console.log("xlfile saved")
           });
       }
     )

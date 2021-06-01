@@ -9,7 +9,6 @@ import (
 	"github.com/fullstack-lang/gongxlsx/go/orm"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
 // declaration in order to justify use of the models import
@@ -47,10 +46,11 @@ type XLSheetInput struct {
 //    default: genericError
 //        200: xlsheetDBsResponse
 func GetXLSheets(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-
-	var xlsheets []orm.XLSheetDB
-	query := db.Find(&xlsheets)
+	db := orm.BackRepo.BackRepoXLSheet.GetDB()
+	
+	// source slice
+	var xlsheetDBs []orm.XLSheetDB
+	query := db.Find(&xlsheetDBs)
 	if query.Error != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
@@ -59,30 +59,23 @@ func GetXLSheets(c *gin.Context) {
 		return
 	}
 
+	// slice that will be transmitted to the front
+	xlsheetAPIs := make([]orm.XLSheetAPI, 0)
+
 	// for each xlsheet, update fields from the database nullable fields
-	for idx := range xlsheets {
-		xlsheet := &xlsheets[idx]
-		_ = xlsheet
+	for idx := range xlsheetDBs {
+		xlsheetDB := &xlsheetDBs[idx]
+		_ = xlsheetDB
+		var xlsheetAPI orm.XLSheetAPI
+
 		// insertion point for updating fields
-		if xlsheet.Name_Data.Valid {
-			xlsheet.Name = xlsheet.Name_Data.String
-		}
-
-		if xlsheet.MaxRow_Data.Valid {
-			xlsheet.MaxRow = int(xlsheet.MaxRow_Data.Int64)
-		}
-
-		if xlsheet.MaxCol_Data.Valid {
-			xlsheet.MaxCol = int(xlsheet.MaxCol_Data.Int64)
-		}
-
-		if xlsheet.NbRows_Data.Valid {
-			xlsheet.NbRows = int(xlsheet.NbRows_Data.Int64)
-		}
-
+		xlsheetAPI.ID = xlsheetDB.ID
+		xlsheetDB.CopyBasicFieldsToXLSheet(&xlsheetAPI.XLSheet)
+		xlsheetAPI.XLSheetPointersEnconding = xlsheetDB.XLSheetPointersEnconding
+		xlsheetAPIs = append(xlsheetAPIs, xlsheetAPI)
 	}
 
-	c.JSON(http.StatusOK, xlsheets)
+	c.JSON(http.StatusOK, xlsheetAPIs)
 }
 
 // PostXLSheet
@@ -99,7 +92,7 @@ func GetXLSheets(c *gin.Context) {
 //     Responses:
 //       200: xlsheetDBResponse
 func PostXLSheet(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 
 	// Validate input
 	var input orm.XLSheetAPI
@@ -115,19 +108,8 @@ func PostXLSheet(c *gin.Context) {
 
 	// Create xlsheet
 	xlsheetDB := orm.XLSheetDB{}
-	xlsheetDB.XLSheetAPI = input
-	// insertion point for nullable field set
-	xlsheetDB.Name_Data.String = input.Name
-	xlsheetDB.Name_Data.Valid = true
-
-	xlsheetDB.MaxRow_Data.Int64 = int64(input.MaxRow)
-	xlsheetDB.MaxRow_Data.Valid = true
-
-	xlsheetDB.MaxCol_Data.Int64 = int64(input.MaxCol)
-	xlsheetDB.MaxCol_Data.Valid = true
-
-	xlsheetDB.NbRows_Data.Int64 = int64(input.NbRows)
-	xlsheetDB.NbRows_Data.Valid = true
+	xlsheetDB.XLSheetPointersEnconding = input.XLSheetPointersEnconding
+	xlsheetDB.CopyBasicFieldsFromXLSheet(&input.XLSheet)
 
 	query := db.Create(&xlsheetDB)
 	if query.Error != nil {
@@ -155,11 +137,11 @@ func PostXLSheet(c *gin.Context) {
 //    default: genericError
 //        200: xlsheetDBResponse
 func GetXLSheet(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 
-	// Get xlsheet in DB
-	var xlsheet orm.XLSheetDB
-	if err := db.First(&xlsheet, c.Param("id")).Error; err != nil {
+	// Get xlsheetDB in DB
+	var xlsheetDB orm.XLSheetDB
+	if err := db.First(&xlsheetDB, c.Param("id")).Error; err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
 		returnError.Body.Message = err.Error()
@@ -167,24 +149,12 @@ func GetXLSheet(c *gin.Context) {
 		return
 	}
 
-	// insertion point for fields value set from nullable fields
-	if xlsheet.Name_Data.Valid {
-		xlsheet.Name = xlsheet.Name_Data.String
-	}
+	var xlsheetAPI orm.XLSheetAPI
+	xlsheetAPI.ID = xlsheetDB.ID
+	xlsheetAPI.XLSheetPointersEnconding = xlsheetDB.XLSheetPointersEnconding
+	xlsheetDB.CopyBasicFieldsToXLSheet(&xlsheetAPI.XLSheet)
 
-	if xlsheet.MaxRow_Data.Valid {
-		xlsheet.MaxRow = int(xlsheet.MaxRow_Data.Int64)
-	}
-
-	if xlsheet.MaxCol_Data.Valid {
-		xlsheet.MaxCol = int(xlsheet.MaxCol_Data.Int64)
-	}
-
-	if xlsheet.NbRows_Data.Valid {
-		xlsheet.NbRows = int(xlsheet.NbRows_Data.Int64)
-	}
-
-	c.JSON(http.StatusOK, xlsheet)
+	c.JSON(http.StatusOK, xlsheetAPI)
 }
 
 // UpdateXLSheet
@@ -197,7 +167,7 @@ func GetXLSheet(c *gin.Context) {
 //    default: genericError
 //        200: xlsheetDBResponse
 func UpdateXLSheet(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 
 	// Get model if exist
 	var xlsheetDB orm.XLSheetDB
@@ -221,20 +191,10 @@ func UpdateXLSheet(c *gin.Context) {
 	}
 
 	// update
-	// insertion point for nullable field set
-	input.Name_Data.String = input.Name
-	input.Name_Data.Valid = true
+	xlsheetDB.CopyBasicFieldsFromXLSheet(&input.XLSheet)
+	xlsheetDB.XLSheetPointersEnconding = input.XLSheetPointersEnconding
 
-	input.MaxRow_Data.Int64 = int64(input.MaxRow)
-	input.MaxRow_Data.Valid = true
-
-	input.MaxCol_Data.Int64 = int64(input.MaxCol)
-	input.MaxCol_Data.Valid = true
-
-	input.NbRows_Data.Int64 = int64(input.NbRows)
-	input.NbRows_Data.Valid = true
-
-	query = db.Model(&xlsheetDB).Updates(input)
+	query = db.Model(&xlsheetDB).Updates(xlsheetDB)
 	if query.Error != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
@@ -260,7 +220,7 @@ func UpdateXLSheet(c *gin.Context) {
 // Responses:
 //    default: genericError
 func DeleteXLSheet(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 
 	// Get model if exist
 	var xlsheetDB orm.XLSheetDB

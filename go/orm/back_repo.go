@@ -2,7 +2,10 @@
 package orm
 
 import (
+	"os"
+
 	"github.com/jinzhu/gorm"
+
 	"github.com/fullstack-lang/gongxlsx/go/models"
 )
 
@@ -80,3 +83,44 @@ var BackRepo BackRepoStruct
 func GetLastCommitNb() uint {
 	return BackRepo.GetLastCommitNb()
 }
+
+// Backup the BackRepoStruct
+func (backRepo *BackRepoStruct) Backup(stage *models.StageStruct, dirPath string) {
+	os.Mkdir(dirPath, os.ModePerm)
+
+	// insertion point for per struct backup
+	backRepo.BackRepoXLCell.Backup(dirPath)
+	backRepo.BackRepoXLFile.Backup(dirPath)
+	backRepo.BackRepoXLRow.Backup(dirPath)
+	backRepo.BackRepoXLSheet.Backup(dirPath)
+}
+
+// Restore the database into the back repo
+func (backRepo *BackRepoStruct) Restore(stage *models.StageStruct, dirPath string) {
+	models.Stage.Commit()
+	models.Stage.Reset()
+	models.Stage.Checkout()
+
+	//
+	// restauration first phase (create DB instance with new IDs)
+	//
+
+	// insertion point for per struct backup
+	backRepo.BackRepoXLCell.RestorePhaseOne(dirPath)
+	backRepo.BackRepoXLFile.RestorePhaseOne(dirPath)
+	backRepo.BackRepoXLRow.RestorePhaseOne(dirPath)
+	backRepo.BackRepoXLSheet.RestorePhaseOne(dirPath)
+
+	//
+	// restauration second phase (reindex pointers with the new ID)
+	//
+	
+	// insertion point for per struct backup
+	backRepo.BackRepoXLCell.RestorePhaseTwo()
+	backRepo.BackRepoXLFile.RestorePhaseTwo()
+	backRepo.BackRepoXLRow.RestorePhaseTwo()
+	backRepo.BackRepoXLSheet.RestorePhaseTwo()
+
+	models.Stage.Checkout()
+}
+

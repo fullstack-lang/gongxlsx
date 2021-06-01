@@ -63,8 +63,6 @@ export class XLSheetDetailComponent implements OnInit {
 		this.frontRepoService.pull().subscribe(
 			frontRepo => {
 				this.frontRepo = frontRepo
-				console.log("front repo XLSheetPull returned")
-
 				if (id != 0 && association == undefined) {
 					this.xlsheet = frontRepo.XLSheets.get(id)
 				} else {
@@ -94,6 +92,7 @@ export class XLSheetDetailComponent implements OnInit {
 				this.xlsheet.XLFile_SheetsDBID = new NullInt64
 				this.xlsheet.XLFile_SheetsDBID.Int64 = this.xlsheet.XLFile_Sheets_reverse.ID
 				this.xlsheet.XLFile_SheetsDBID.Valid = true
+				this.xlsheet.XLFile_SheetsDBID_Index = new NullInt64
 				this.xlsheet.XLFile_SheetsDBID_Index.Valid = true
 				this.xlsheet.XLFile_Sheets_reverse = undefined // very important, otherwise, circular JSON
 			}
@@ -104,8 +103,6 @@ export class XLSheetDetailComponent implements OnInit {
 			this.xlsheetService.updateXLSheet(this.xlsheet)
 				.subscribe(xlsheet => {
 					this.xlsheetService.XLSheetServiceChanged.next("update")
-
-					console.log("xlsheet saved")
 				});
 		} else {
 			switch (association) {
@@ -114,6 +111,7 @@ export class XLSheetDetailComponent implements OnInit {
 					this.xlsheet.XLFile_SheetsDBID = new NullInt64
 					this.xlsheet.XLFile_SheetsDBID.Int64 = id
 					this.xlsheet.XLFile_SheetsDBID.Valid = true
+					this.xlsheet.XLFile_SheetsDBID_Index = new NullInt64
 					this.xlsheet.XLFile_SheetsDBID_Index.Valid = true
 					break
 			}
@@ -122,7 +120,6 @@ export class XLSheetDetailComponent implements OnInit {
 				this.xlsheetService.XLSheetServiceChanged.next("post")
 
 				this.xlsheet = {} // reset fields
-				console.log("xlsheet added")
 			});
 		}
 	}
@@ -151,7 +148,6 @@ export class XLSheetDetailComponent implements OnInit {
 		);
 
 		dialogRef.afterClosed().subscribe(result => {
-			console.log('The dialog was closed');
 		});
 	}
 
@@ -174,7 +170,12 @@ export class XLSheetDetailComponent implements OnInit {
 		);
 
 		dialogRef.afterClosed().subscribe(result => {
-			console.log('The dialog was closed');
 		});
+	}
+
+	fillUpNameIfEmpty(event) {
+		if (this.xlsheet.Name == undefined) {
+			this.xlsheet.Name = event.value.Name		
+		}
 	}
 }

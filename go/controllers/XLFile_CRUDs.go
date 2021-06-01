@@ -9,7 +9,6 @@ import (
 	"github.com/fullstack-lang/gongxlsx/go/orm"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
 // declaration in order to justify use of the models import
@@ -47,10 +46,11 @@ type XLFileInput struct {
 //    default: genericError
 //        200: xlfileDBsResponse
 func GetXLFiles(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-
-	var xlfiles []orm.XLFileDB
-	query := db.Find(&xlfiles)
+	db := orm.BackRepo.BackRepoXLFile.GetDB()
+	
+	// source slice
+	var xlfileDBs []orm.XLFileDB
+	query := db.Find(&xlfileDBs)
 	if query.Error != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
@@ -59,22 +59,23 @@ func GetXLFiles(c *gin.Context) {
 		return
 	}
 
+	// slice that will be transmitted to the front
+	xlfileAPIs := make([]orm.XLFileAPI, 0)
+
 	// for each xlfile, update fields from the database nullable fields
-	for idx := range xlfiles {
-		xlfile := &xlfiles[idx]
-		_ = xlfile
+	for idx := range xlfileDBs {
+		xlfileDB := &xlfileDBs[idx]
+		_ = xlfileDB
+		var xlfileAPI orm.XLFileAPI
+
 		// insertion point for updating fields
-		if xlfile.Name_Data.Valid {
-			xlfile.Name = xlfile.Name_Data.String
-		}
-
-		if xlfile.NbSheets_Data.Valid {
-			xlfile.NbSheets = int(xlfile.NbSheets_Data.Int64)
-		}
-
+		xlfileAPI.ID = xlfileDB.ID
+		xlfileDB.CopyBasicFieldsToXLFile(&xlfileAPI.XLFile)
+		xlfileAPI.XLFilePointersEnconding = xlfileDB.XLFilePointersEnconding
+		xlfileAPIs = append(xlfileAPIs, xlfileAPI)
 	}
 
-	c.JSON(http.StatusOK, xlfiles)
+	c.JSON(http.StatusOK, xlfileAPIs)
 }
 
 // PostXLFile
@@ -91,7 +92,7 @@ func GetXLFiles(c *gin.Context) {
 //     Responses:
 //       200: xlfileDBResponse
 func PostXLFile(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLFile.GetDB()
 
 	// Validate input
 	var input orm.XLFileAPI
@@ -107,13 +108,8 @@ func PostXLFile(c *gin.Context) {
 
 	// Create xlfile
 	xlfileDB := orm.XLFileDB{}
-	xlfileDB.XLFileAPI = input
-	// insertion point for nullable field set
-	xlfileDB.Name_Data.String = input.Name
-	xlfileDB.Name_Data.Valid = true
-
-	xlfileDB.NbSheets_Data.Int64 = int64(input.NbSheets)
-	xlfileDB.NbSheets_Data.Valid = true
+	xlfileDB.XLFilePointersEnconding = input.XLFilePointersEnconding
+	xlfileDB.CopyBasicFieldsFromXLFile(&input.XLFile)
 
 	query := db.Create(&xlfileDB)
 	if query.Error != nil {
@@ -141,11 +137,11 @@ func PostXLFile(c *gin.Context) {
 //    default: genericError
 //        200: xlfileDBResponse
 func GetXLFile(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLFile.GetDB()
 
-	// Get xlfile in DB
-	var xlfile orm.XLFileDB
-	if err := db.First(&xlfile, c.Param("id")).Error; err != nil {
+	// Get xlfileDB in DB
+	var xlfileDB orm.XLFileDB
+	if err := db.First(&xlfileDB, c.Param("id")).Error; err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
 		returnError.Body.Message = err.Error()
@@ -153,16 +149,12 @@ func GetXLFile(c *gin.Context) {
 		return
 	}
 
-	// insertion point for fields value set from nullable fields
-	if xlfile.Name_Data.Valid {
-		xlfile.Name = xlfile.Name_Data.String
-	}
+	var xlfileAPI orm.XLFileAPI
+	xlfileAPI.ID = xlfileDB.ID
+	xlfileAPI.XLFilePointersEnconding = xlfileDB.XLFilePointersEnconding
+	xlfileDB.CopyBasicFieldsToXLFile(&xlfileAPI.XLFile)
 
-	if xlfile.NbSheets_Data.Valid {
-		xlfile.NbSheets = int(xlfile.NbSheets_Data.Int64)
-	}
-
-	c.JSON(http.StatusOK, xlfile)
+	c.JSON(http.StatusOK, xlfileAPI)
 }
 
 // UpdateXLFile
@@ -175,7 +167,7 @@ func GetXLFile(c *gin.Context) {
 //    default: genericError
 //        200: xlfileDBResponse
 func UpdateXLFile(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLFile.GetDB()
 
 	// Get model if exist
 	var xlfileDB orm.XLFileDB
@@ -199,14 +191,10 @@ func UpdateXLFile(c *gin.Context) {
 	}
 
 	// update
-	// insertion point for nullable field set
-	input.Name_Data.String = input.Name
-	input.Name_Data.Valid = true
+	xlfileDB.CopyBasicFieldsFromXLFile(&input.XLFile)
+	xlfileDB.XLFilePointersEnconding = input.XLFilePointersEnconding
 
-	input.NbSheets_Data.Int64 = int64(input.NbSheets)
-	input.NbSheets_Data.Valid = true
-
-	query = db.Model(&xlfileDB).Updates(input)
+	query = db.Model(&xlfileDB).Updates(xlfileDB)
 	if query.Error != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
@@ -232,7 +220,7 @@ func UpdateXLFile(c *gin.Context) {
 // Responses:
 //    default: genericError
 func DeleteXLFile(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+	db := orm.BackRepo.BackRepoXLFile.GetDB()
 
 	// Get model if exist
 	var xlfileDB orm.XLFileDB

@@ -76,8 +76,6 @@ export class XLFileSortingComponent implements OnInit {
           }
           return 0;
         });
-
-        console.log("front repo pull returned")
       }
     )
   }
@@ -93,7 +91,6 @@ export class XLFileSortingComponent implements OnInit {
       revPointerID_Index.Valid = true
       revPointerID_Index.Int64 = index++
     }
-    console.log("after drop")
   }
 
   save() {
@@ -103,7 +100,6 @@ export class XLFileSortingComponent implements OnInit {
         this.xlfileService.updateXLFile(xlfile)
           .subscribe(xlfile => {
             this.xlfileService.XLFileServiceChanged.next("update")
-            console.log("xlfile saved")
           });
       }
     )

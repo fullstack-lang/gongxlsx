@@ -3,9 +3,13 @@ package orm
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 	"sort"
 	"time"
 
@@ -27,9 +31,40 @@ var dummy_XLCell_sort sort.Float64Slice
 //
 // swagger:model xlcellAPI
 type XLCellAPI struct {
+	gorm.Model
+
 	models.XLCell
 
-	// insertion for fields declaration
+	// encoding of pointers
+	XLCellPointersEnconding
+}
+
+// XLCellPointersEnconding encodes pointers to Struct and
+// reverse pointers of slice of poitners to Struct
+type XLCellPointersEnconding struct {
+	// insertion for pointer fields encoding declaration
+	// Implementation of a reverse ID for field XLRow{}.Cells []*XLCell
+	XLRow_CellsDBID sql.NullInt64
+
+	// implementation of the index of the withing the slice
+	XLRow_CellsDBID_Index sql.NullInt64
+	// Implementation of a reverse ID for field XLSheet{}.SheetCells []*XLCell
+	XLSheet_SheetCellsDBID sql.NullInt64
+
+	// implementation of the index of the withing the slice
+	XLSheet_SheetCellsDBID_Index sql.NullInt64
+}
+
+// XLCellDB describes a xlcell in the database
+//
+// It incorporates the GORM ID, basic fields from the model (because they can be serialized),
+// the encoded version of pointers
+//
+// swagger:model xlcellDB
+type XLCellDB struct {
+	gorm.Model
+
+	// insertion for basic fields declaration
 	// Declation for basic field xlcellDB.Name {{BasicKind}} (to be completed)
 	Name_Data sql.NullString
 
@@ -39,26 +74,8 @@ type XLCellAPI struct {
 	// Declation for basic field xlcellDB.Y {{BasicKind}} (to be completed)
 	Y_Data sql.NullInt64
 
-	// Implementation of a reverse ID for field XLRow{}.Cells []*XLCell
-	XLRow_CellsDBID sql.NullInt64
-	XLRow_CellsDBID_Index sql.NullInt64
-
-	// Implementation of a reverse ID for field XLSheet{}.SheetCells []*XLCell
-	XLSheet_SheetCellsDBID sql.NullInt64
-	XLSheet_SheetCellsDBID_Index sql.NullInt64
-
-	// end of insertion
-}
-
-// XLCellDB describes a xlcell in the database
-//
-// It incorporates all fields : from the model, from the generated field for the API and the GORM ID
-//
-// swagger:model xlcellDB
-type XLCellDB struct {
-	gorm.Model
-
-	XLCellAPI
+	// encoding of pointers
+	XLCellPointersEnconding
 }
 
 // XLCellDBs arrays xlcellDBs
@@ -82,6 +99,17 @@ type BackRepoXLCellStruct struct {
 	Map_XLCellDBID_XLCellPtr *map[uint]*models.XLCell
 
 	db *gorm.DB
+}
+
+func (backRepoXLCell *BackRepoXLCellStruct) GetDB() *gorm.DB {
+	return backRepoXLCell.db
+}
+
+// GetXLCellDBFromXLCellPtr is a handy function to access the back repo instance from the stage instance
+func (backRepoXLCell *BackRepoXLCellStruct) GetXLCellDBFromXLCellPtr(xlcell *models.XLCell) (xlcellDB *XLCellDB) {
+	id := (*backRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlcell]
+	xlcellDB = (*backRepoXLCell.Map_XLCellDBID_XLCellDB)[id]
+	return
 }
 
 // BackRepoXLCell.Init set up the BackRepo of the XLCell
@@ -165,7 +193,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) CommitPhaseOneInstance(xlcell *model
 
 	// initiate xlcell
 	var xlcellDB XLCellDB
-	xlcellDB.XLCell = *xlcell
+	xlcellDB.CopyBasicFieldsFromXLCell(xlcell)
 
 	query := backRepoXLCell.db.Create(&xlcellDB)
 	if query.Error != nil {
@@ -198,20 +226,9 @@ func (backRepoXLCell *BackRepoXLCellStruct) CommitPhaseTwoInstance(backRepo *Bac
 	// fetch matching xlcellDB
 	if xlcellDB, ok := (*backRepoXLCell.Map_XLCellDBID_XLCellDB)[idx]; ok {
 
-		{
-			{
-				// insertion point for fields commit
-				xlcellDB.Name_Data.String = xlcell.Name
-				xlcellDB.Name_Data.Valid = true
+		xlcellDB.CopyBasicFieldsFromXLCell(xlcell)
 
-				xlcellDB.X_Data.Int64 = int64(xlcell.X)
-				xlcellDB.X_Data.Valid = true
-
-				xlcellDB.Y_Data.Int64 = int64(xlcell.Y)
-				xlcellDB.Y_Data.Valid = true
-
-			}
-		}
+		// insertion point for translating pointers encodings into actual pointers
 		query := backRepoXLCell.db.Save(&xlcellDB)
 		if query.Error != nil {
 			return query.Error
@@ -252,18 +269,23 @@ func (backRepoXLCell *BackRepoXLCellStruct) CheckoutPhaseOne() (Error error) {
 // models version of the xlcellDB
 func (backRepoXLCell *BackRepoXLCellStruct) CheckoutPhaseOneInstance(xlcellDB *XLCellDB) (Error error) {
 
-	// if absent, create entries in the backRepoXLCell maps.
-	xlcellWithNewFieldValues := xlcellDB.XLCell
-	if _, ok := (*backRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]; !ok {
+	xlcell, ok := (*backRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
+	if !ok {
+		xlcell = new(models.XLCell)
 
-		(*backRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID] = &xlcellWithNewFieldValues
-		(*backRepoXLCell.Map_XLCellPtr_XLCellDBID)[&xlcellWithNewFieldValues] = xlcellDB.ID
+		(*backRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID] = xlcell
+		(*backRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlcell] = xlcellDB.ID
 
 		// append model store with the new element
-		xlcellWithNewFieldValues.Stage()
+		xlcell.Stage()
 	}
-	xlcellDBWithNewFieldValues := *xlcellDB
-	(*backRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB.ID] = &xlcellDBWithNewFieldValues
+	xlcellDB.CopyBasicFieldsToXLCell(xlcell)
+
+	// preserve pointer to xlcellDB. Otherwise, pointer will is recycled and the map of pointers
+	// Map_XLCellDBID_XLCellDB)[xlcellDB hold variable pointers
+	xlcellDB_Data := *xlcellDB
+	preservedPtrToXLCell := &xlcellDB_Data
+	(*backRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB.ID] = preservedPtrToXLCell
 
 	return
 }
@@ -285,18 +307,8 @@ func (backRepoXLCell *BackRepoXLCellStruct) CheckoutPhaseTwoInstance(backRepo *B
 
 	xlcell := (*backRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
 	_ = xlcell // sometimes, there is no code generated. This lines voids the "unused variable" compilation error
-	{
-		{
-			// insertion point for checkout, i.e. update of fields of stage instance from fields of back repo instances
-			//
-			xlcell.Name = xlcellDB.Name_Data.String
 
-			xlcell.X = int(xlcellDB.X_Data.Int64)
-
-			xlcell.Y = int(xlcellDB.Y_Data.Int64)
-
-		}
-	}
+	// insertion point for checkout of pointer encoding
 	return
 }
 
@@ -325,3 +337,129 @@ func (backRepo *BackRepoStruct) CheckoutXLCell(xlcell *models.XLCell) {
 		}
 	}
 }
+
+// CopyBasicFieldsToXLCellDB is used to copy basic fields between the Stage or the CRUD to the back repo
+func (xlcellDB *XLCellDB) CopyBasicFieldsFromXLCell(xlcell *models.XLCell) {
+	// insertion point for fields commit
+	xlcellDB.Name_Data.String = xlcell.Name
+	xlcellDB.Name_Data.Valid = true
+
+	xlcellDB.X_Data.Int64 = int64(xlcell.X)
+	xlcellDB.X_Data.Valid = true
+
+	xlcellDB.Y_Data.Int64 = int64(xlcell.Y)
+	xlcellDB.Y_Data.Valid = true
+
+}
+
+// CopyBasicFieldsToXLCellDB is used to copy basic fields between the Stage or the CRUD to the back repo
+func (xlcellDB *XLCellDB) CopyBasicFieldsToXLCell(xlcell *models.XLCell) {
+
+	// insertion point for checkout of basic fields (back repo to stage)
+	xlcell.Name = xlcellDB.Name_Data.String
+	xlcell.X = int(xlcellDB.X_Data.Int64)
+	xlcell.Y = int(xlcellDB.Y_Data.Int64)
+}
+
+// Backup generates a json file from a slice of all XLCellDB instances in the backrepo
+func (backRepoXLCell *BackRepoXLCellStruct) Backup(dirPath string) {
+
+	filename := filepath.Join(dirPath, "XLCellDB.json")
+
+	// organize the map into an array with increasing IDs, in order to have repoductible
+	// backup file
+	forBackup := make([]*XLCellDB, 0)
+	for _, xlcellDB := range *backRepoXLCell.Map_XLCellDBID_XLCellDB {
+		forBackup = append(forBackup, xlcellDB)
+	}
+
+	sort.Slice(forBackup[:], func(i, j int) bool {
+		return forBackup[i].ID < forBackup[j].ID
+	})
+
+	file, err := json.MarshalIndent(forBackup, "", " ")
+
+	if err != nil {
+		log.Panic("Cannot json XLCell ", filename, " ", err.Error())
+	}
+
+	err = ioutil.WriteFile(filename, file, 0644)
+	if err != nil {
+		log.Panic("Cannot write the json XLCell file", err.Error())
+	}
+}
+
+// RestorePhaseOne read the file "XLCellDB.json" in dirPath that stores an array
+// of XLCellDB and stores it in the database
+// the map BackRepoXLCellid_atBckpTime_newID is updated accordingly
+func (backRepoXLCell *BackRepoXLCellStruct) RestorePhaseOne(dirPath string) {
+
+	// resets the map
+	BackRepoXLCellid_atBckpTime_newID = make(map[uint]uint)
+
+	filename := filepath.Join(dirPath, "XLCellDB.json")
+	jsonFile, err := os.Open(filename)
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		log.Panic("Cannot restore/open the json XLCell file", filename, " ", err.Error())
+	}
+
+	// read our opened jsonFile as a byte array.
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	var forRestore []*XLCellDB
+
+	err = json.Unmarshal(byteValue, &forRestore)
+
+	// fill up Map_XLCellDBID_XLCellDB
+	for _, xlcellDB := range forRestore {
+
+		xlcellDB_ID_atBackupTime := xlcellDB.ID
+		xlcellDB.ID = 0
+		query := backRepoXLCell.db.Create(xlcellDB)
+		if query.Error != nil {
+			log.Panic(query.Error)
+		}
+		(*backRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB.ID] = xlcellDB
+		BackRepoXLCellid_atBckpTime_newID[xlcellDB_ID_atBackupTime] = xlcellDB.ID
+	}
+
+	if err != nil {
+		log.Panic("Cannot restore/unmarshall json XLCell file", err.Error())
+	}
+}
+
+// RestorePhaseTwo uses all map BackRepo<XLCell>id_atBckpTime_newID
+// to compute new index
+func (backRepoXLCell *BackRepoXLCellStruct) RestorePhaseTwo() {
+
+	for _, xlcellDB := range (*backRepoXLCell.Map_XLCellDBID_XLCellDB) {
+
+		// next line of code is to avert unused variable compilation error
+		_ = xlcellDB
+
+		// insertion point for reindexing pointers encoding
+		// This reindex xlcell.Cells
+		if xlcellDB.XLRow_CellsDBID.Int64 != 0 {
+			xlcellDB.XLRow_CellsDBID.Int64 = 
+				int64(BackRepoXLRowid_atBckpTime_newID[uint(xlcellDB.XLRow_CellsDBID.Int64)])
+		}
+
+		// This reindex xlcell.SheetCells
+		if xlcellDB.XLSheet_SheetCellsDBID.Int64 != 0 {
+			xlcellDB.XLSheet_SheetCellsDBID.Int64 = 
+				int64(BackRepoXLSheetid_atBckpTime_newID[uint(xlcellDB.XLSheet_SheetCellsDBID.Int64)])
+		}
+
+		// update databse with new index encoding
+		query := backRepoXLCell.db.Model(xlcellDB).Updates(*xlcellDB)
+		if query.Error != nil {
+			log.Panic(query.Error)
+		}
+	}
+
+}
+
+// this field is used during the restauration process.
+// it stores the ID at the backup time and is used for renumbering
+var BackRepoXLCellid_atBckpTime_newID map[uint]uint
