@@ -13,7 +13,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
+
+	"github.com/tealeg/xlsx/v3"
 
 	"github.com/fullstack-lang/gongxlsx/go/models"
 )
@@ -81,6 +83,29 @@ type XLRowDBs []XLRowDB
 // swagger:response xlrowDBResponse
 type XLRowDBResponse struct {
 	XLRowDB
+}
+
+// XLRowWOP is a XLRow without pointers (WOP is an acronym for "Without Pointers")
+// it holds the same basic fields but pointers are encoded into uint
+type XLRowWOP struct {
+	ID int
+
+	// insertion for WOP basic fields
+
+	Name string
+
+	RowIndex int
+
+	NbCols int
+	// insertion for WOP pointer fields
+}
+
+var XLRow_Fields = []string{
+	// insertion for WOP basic fields
+	"ID",
+	"Name",
+	"RowIndex",
+	"NbCols",
 }
 
 type BackRepoXLRowStruct struct {
@@ -231,7 +256,7 @@ func (backRepoXLRow *BackRepoXLRowStruct) CommitPhaseTwoInstance(backRepo *BackR
 
 			// get the back repo instance at the association end
 			xlcellAssocEnd_DB :=
-				backRepo.BackRepoXLCell.GetXLCellDBFromXLCellPtr( xlcellAssocEnd)
+				backRepo.BackRepoXLCell.GetXLCellDBFromXLCellPtr(xlcellAssocEnd)
 
 			// encode reverse pointer in the association end back repo instance
 			xlcellAssocEnd_DB.XLRow_CellsDBID.Int64 = int64(xlrowDB.ID)
@@ -259,9 +284,8 @@ func (backRepoXLRow *BackRepoXLRowStruct) CommitPhaseTwoInstance(backRepo *BackR
 
 // BackRepoXLRow.CheckoutPhaseOne Checkouts all BackRepo instances to the Stage
 //
-// Phase One is the creation of instance in the stage
-//
-// NOTE: the is supposed to have been reset before
+// Phase One will result in having instances on the stage aligned with the back repo
+// pointers are not initialized yet (this is for pahse two)
 //
 func (backRepoXLRow *BackRepoXLRowStruct) CheckoutPhaseOne() (Error error) {
 
@@ -271,9 +295,34 @@ func (backRepoXLRow *BackRepoXLRowStruct) CheckoutPhaseOne() (Error error) {
 		return query.Error
 	}
 
+	// list of instances to be removed
+	// start from the initial map on the stage and remove instances that have been checked out
+	xlrowInstancesToBeRemovedFromTheStage := make(map[*models.XLRow]struct{})
+	for key, value := range models.Stage.XLRows {
+		xlrowInstancesToBeRemovedFromTheStage[key] = value
+	}
+
 	// copy orm objects to the the map
 	for _, xlrowDB := range xlrowDBArray {
 		backRepoXLRow.CheckoutPhaseOneInstance(&xlrowDB)
+
+		// do not remove this instance from the stage, therefore
+		// remove instance from the list of instances to be be removed from the stage
+		xlrow, ok := (*backRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB.ID]
+		if ok {
+			delete(xlrowInstancesToBeRemovedFromTheStage, xlrow)
+		}
+	}
+
+	// remove from stage and back repo's 3 maps all xlrows that are not in the checkout
+	for xlrow := range xlrowInstancesToBeRemovedFromTheStage {
+		xlrow.Unstage()
+
+		// remove instance from the back repo 3 maps
+		xlrowID := (*backRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlrow]
+		delete((*backRepoXLRow.Map_XLRowPtr_XLRowDBID), xlrow)
+		delete((*backRepoXLRow.Map_XLRowDBID_XLRowDB), xlrowID)
+		delete((*backRepoXLRow.Map_XLRowDBID_XLRowPtr), xlrowID)
 	}
 
 	return
@@ -291,6 +340,7 @@ func (backRepoXLRow *BackRepoXLRowStruct) CheckoutPhaseOneInstance(xlrowDB *XLRo
 		(*backRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlrow] = xlrowDB.ID
 
 		// append model store with the new element
+		xlrow.Name = xlrowDB.Name_Data.String
 		xlrow.Stage()
 	}
 	xlrowDB.CopyBasicFieldsToXLRow(xlrow)
@@ -379,7 +429,7 @@ func (backRepo *BackRepoStruct) CheckoutXLRow(xlrow *models.XLRow) {
 	}
 }
 
-// CopyBasicFieldsToXLRowDB is used to copy basic fields between the Stage or the CRUD to the back repo
+// CopyBasicFieldsFromXLRow
 func (xlrowDB *XLRowDB) CopyBasicFieldsFromXLRow(xlrow *models.XLRow) {
 	// insertion point for fields commit
 	xlrowDB.Name_Data.String = xlrow.Name
@@ -393,9 +443,31 @@ func (xlrowDB *XLRowDB) CopyBasicFieldsFromXLRow(xlrow *models.XLRow) {
 
 }
 
-// CopyBasicFieldsToXLRowDB is used to copy basic fields between the Stage or the CRUD to the back repo
-func (xlrowDB *XLRowDB) CopyBasicFieldsToXLRow(xlrow *models.XLRow) {
+// CopyBasicFieldsFromXLRowWOP
+func (xlrowDB *XLRowDB) CopyBasicFieldsFromXLRowWOP(xlrow *XLRowWOP) {
+	// insertion point for fields commit
+	xlrowDB.Name_Data.String = xlrow.Name
+	xlrowDB.Name_Data.Valid = true
 
+	xlrowDB.RowIndex_Data.Int64 = int64(xlrow.RowIndex)
+	xlrowDB.RowIndex_Data.Valid = true
+
+	xlrowDB.NbCols_Data.Int64 = int64(xlrow.NbCols)
+	xlrowDB.NbCols_Data.Valid = true
+
+}
+
+// CopyBasicFieldsToXLRow
+func (xlrowDB *XLRowDB) CopyBasicFieldsToXLRow(xlrow *models.XLRow) {
+	// insertion point for checkout of basic fields (back repo to stage)
+	xlrow.Name = xlrowDB.Name_Data.String
+	xlrow.RowIndex = int(xlrowDB.RowIndex_Data.Int64)
+	xlrow.NbCols = int(xlrowDB.NbCols_Data.Int64)
+}
+
+// CopyBasicFieldsToXLRowWOP
+func (xlrowDB *XLRowDB) CopyBasicFieldsToXLRowWOP(xlrow *XLRowWOP) {
+	xlrow.ID = int(xlrowDB.ID)
 	// insertion point for checkout of basic fields (back repo to stage)
 	xlrow.Name = xlrowDB.Name_Data.String
 	xlrow.RowIndex = int(xlrowDB.RowIndex_Data.Int64)
@@ -427,6 +499,38 @@ func (backRepoXLRow *BackRepoXLRowStruct) Backup(dirPath string) {
 	err = ioutil.WriteFile(filename, file, 0644)
 	if err != nil {
 		log.Panic("Cannot write the json XLRow file", err.Error())
+	}
+}
+
+// Backup generates a json file from a slice of all XLRowDB instances in the backrepo
+func (backRepoXLRow *BackRepoXLRowStruct) BackupXL(file *xlsx.File) {
+
+	// organize the map into an array with increasing IDs, in order to have repoductible
+	// backup file
+	forBackup := make([]*XLRowDB, 0)
+	for _, xlrowDB := range *backRepoXLRow.Map_XLRowDBID_XLRowDB {
+		forBackup = append(forBackup, xlrowDB)
+	}
+
+	sort.Slice(forBackup[:], func(i, j int) bool {
+		return forBackup[i].ID < forBackup[j].ID
+	})
+
+	sh, err := file.AddSheet("XLRow")
+	if err != nil {
+		log.Panic("Cannot add XL file", err.Error())
+	}
+	_ = sh
+
+	row := sh.AddRow()
+	row.WriteSlice(&XLRow_Fields, -1)
+	for _, xlrowDB := range forBackup {
+
+		var xlrowWOP XLRowWOP
+		xlrowDB.CopyBasicFieldsToXLRowWOP(&xlrowWOP)
+
+		row := sh.AddRow()
+		row.WriteStruct(&xlrowWOP, -1)
 	}
 }
 
@@ -474,7 +578,7 @@ func (backRepoXLRow *BackRepoXLRowStruct) RestorePhaseOne(dirPath string) {
 // to compute new index
 func (backRepoXLRow *BackRepoXLRowStruct) RestorePhaseTwo() {
 
-	for _, xlrowDB := range (*backRepoXLRow.Map_XLRowDBID_XLRowDB) {
+	for _, xlrowDB := range *backRepoXLRow.Map_XLRowDBID_XLRowDB {
 
 		// next line of code is to avert unused variable compilation error
 		_ = xlrowDB
@@ -482,7 +586,7 @@ func (backRepoXLRow *BackRepoXLRowStruct) RestorePhaseTwo() {
 		// insertion point for reindexing pointers encoding
 		// This reindex xlrow.Rows
 		if xlrowDB.XLSheet_RowsDBID.Int64 != 0 {
-			xlrowDB.XLSheet_RowsDBID.Int64 = 
+			xlrowDB.XLSheet_RowsDBID.Int64 =
 				int64(BackRepoXLSheetid_atBckpTime_newID[uint(xlrowDB.XLSheet_RowsDBID.Int64)])
 		}
 

@@ -20,7 +20,7 @@ import { FrontRepoService, FrontRepo } from '../front-repo.service'
 
 // generated table component
 @Component({
-  selector: 'app-xlcells-table',
+  selector: 'app-xlcellstable',
   templateUrl: './xlcells-table.component.html',
   styleUrls: ['./xlcells-table.component.css'],
 })
@@ -47,6 +47,55 @@ export class XLCellsTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   ngAfterViewInit() {
+
+	// enable sorting on all fields (including pointers and reverse pointer)
+	this.matTableDataSource.sortingDataAccessor = (xlcellDB: XLCellDB, property: string) => {
+		switch (property) {
+				// insertion point for specific sorting accessor
+			case 'Name':
+				return xlcellDB.Name;
+
+			case 'X':
+				return xlcellDB.X;
+
+			case 'Y':
+				return xlcellDB.Y;
+
+				case 'Cells':
+					return this.frontRepo.XLRows.get(xlcellDB.XLRow_CellsDBID.Int64)?.Name;
+
+				case 'SheetCells':
+					return this.frontRepo.XLSheets.get(xlcellDB.XLSheet_SheetCellsDBID.Int64)?.Name;
+
+				default:
+					return XLCellDB[property];
+		}
+	}; 
+
+	// enable filtering on all fields (including pointers and reverse pointer, which is not done by default)
+	this.matTableDataSource.filterPredicate = (xlcellDB: XLCellDB, filter: string) => {
+
+		// filtering is based on finding a lower case filter into a concatenated string
+		// the xlcellDB properties
+		let mergedContent = ""
+
+		// insertion point for merging of fields
+		mergedContent += xlcellDB.Name.toLowerCase()
+		mergedContent += xlcellDB.X.toString()
+		mergedContent += xlcellDB.Y.toString()
+		if (xlcellDB.XLRow_CellsDBID.Int64 != 0) {
+        	mergedContent += this.frontRepo.XLRows.get(xlcellDB.XLRow_CellsDBID.Int64)?.Name.toLowerCase()
+    	}
+
+		if (xlcellDB.XLSheet_SheetCellsDBID.Int64 != 0) {
+        	mergedContent += this.frontRepo.XLSheets.get(xlcellDB.XLSheet_SheetCellsDBID.Int64)?.Name.toLowerCase()
+    	}
+
+
+		let isSelected = mergedContent.includes(filter.toLowerCase())
+		return isSelected
+	};
+
     this.matTableDataSource.sort = this.sort;
     this.matTableDataSource.paginator = this.paginator;
   }
@@ -151,14 +200,14 @@ export class XLCellsTableComponent implements OnInit {
 
   // display xlcell in router
   displayXLCellInRouter(xlcellID: number) {
-    this.router.navigate(["xlcell-display", xlcellID])
+    this.router.navigate(["github_com_fullstack_lang_gongxlsx_go-" + "xlcell-display", xlcellID])
   }
 
   // set editor outlet
   setEditorRouterOutlet(xlcellID: number) {
     this.router.navigate([{
       outlets: {
-        editor: ["xlcell-detail", xlcellID]
+        github_com_fullstack_lang_gongxlsx_go_editor: ["github_com_fullstack_lang_gongxlsx_go-" + "xlcell-detail", xlcellID]
       }
     }]);
   }
@@ -167,7 +216,7 @@ export class XLCellsTableComponent implements OnInit {
   setPresentationRouterOutlet(xlcellID: number) {
     this.router.navigate([{
       outlets: {
-        presentation: ["xlcell-presentation", xlcellID]
+        github_com_fullstack_lang_gongxlsx_go_presentation: ["github_com_fullstack_lang_gongxlsx_go-" + "xlcell-presentation", xlcellID]
       }
     }]);
   }

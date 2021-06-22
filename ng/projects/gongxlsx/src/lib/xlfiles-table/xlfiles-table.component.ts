@@ -20,7 +20,7 @@ import { FrontRepoService, FrontRepo } from '../front-repo.service'
 
 // generated table component
 @Component({
-  selector: 'app-xlfiles-table',
+  selector: 'app-xlfilestable',
   templateUrl: './xlfiles-table.component.html',
   styleUrls: ['./xlfiles-table.component.css'],
 })
@@ -47,6 +47,37 @@ export class XLFilesTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   ngAfterViewInit() {
+
+	// enable sorting on all fields (including pointers and reverse pointer)
+	this.matTableDataSource.sortingDataAccessor = (xlfileDB: XLFileDB, property: string) => {
+		switch (property) {
+				// insertion point for specific sorting accessor
+			case 'Name':
+				return xlfileDB.Name;
+
+			case 'NbSheets':
+				return xlfileDB.NbSheets;
+
+				default:
+					return XLFileDB[property];
+		}
+	}; 
+
+	// enable filtering on all fields (including pointers and reverse pointer, which is not done by default)
+	this.matTableDataSource.filterPredicate = (xlfileDB: XLFileDB, filter: string) => {
+
+		// filtering is based on finding a lower case filter into a concatenated string
+		// the xlfileDB properties
+		let mergedContent = ""
+
+		// insertion point for merging of fields
+		mergedContent += xlfileDB.Name.toLowerCase()
+		mergedContent += xlfileDB.NbSheets.toString()
+
+		let isSelected = mergedContent.includes(filter.toLowerCase())
+		return isSelected
+	};
+
     this.matTableDataSource.sort = this.sort;
     this.matTableDataSource.paginator = this.paginator;
   }
@@ -145,14 +176,14 @@ export class XLFilesTableComponent implements OnInit {
 
   // display xlfile in router
   displayXLFileInRouter(xlfileID: number) {
-    this.router.navigate(["xlfile-display", xlfileID])
+    this.router.navigate(["github_com_fullstack_lang_gongxlsx_go-" + "xlfile-display", xlfileID])
   }
 
   // set editor outlet
   setEditorRouterOutlet(xlfileID: number) {
     this.router.navigate([{
       outlets: {
-        editor: ["xlfile-detail", xlfileID]
+        github_com_fullstack_lang_gongxlsx_go_editor: ["github_com_fullstack_lang_gongxlsx_go-" + "xlfile-detail", xlfileID]
       }
     }]);
   }
@@ -161,7 +192,7 @@ export class XLFilesTableComponent implements OnInit {
   setPresentationRouterOutlet(xlfileID: number) {
     this.router.navigate([{
       outlets: {
-        presentation: ["xlfile-presentation", xlfileID]
+        github_com_fullstack_lang_gongxlsx_go_presentation: ["github_com_fullstack_lang_gongxlsx_go-" + "xlfile-presentation", xlfileID]
       }
     }]);
   }

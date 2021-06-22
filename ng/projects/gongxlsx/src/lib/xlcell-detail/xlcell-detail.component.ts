@@ -89,18 +89,26 @@ export class XLCellDetailComponent implements OnInit {
 		if (association == undefined) {
 			// insertion point for translation/nullation of each pointers
 			if (this.xlcell.XLRow_Cells_reverse != undefined) {
-				this.xlcell.XLRow_CellsDBID = new NullInt64
+				if (this.xlcell.XLRow_CellsDBID == undefined) {
+					this.xlcell.XLRow_CellsDBID = new NullInt64
+				}
 				this.xlcell.XLRow_CellsDBID.Int64 = this.xlcell.XLRow_Cells_reverse.ID
 				this.xlcell.XLRow_CellsDBID.Valid = true
-				this.xlcell.XLRow_CellsDBID_Index = new NullInt64
+				if (this.xlcell.XLRow_CellsDBID_Index == undefined) {
+					this.xlcell.XLRow_CellsDBID_Index = new NullInt64
+				}
 				this.xlcell.XLRow_CellsDBID_Index.Valid = true
 				this.xlcell.XLRow_Cells_reverse = undefined // very important, otherwise, circular JSON
 			}
 			if (this.xlcell.XLSheet_SheetCells_reverse != undefined) {
-				this.xlcell.XLSheet_SheetCellsDBID = new NullInt64
+				if (this.xlcell.XLSheet_SheetCellsDBID == undefined) {
+					this.xlcell.XLSheet_SheetCellsDBID = new NullInt64
+				}
 				this.xlcell.XLSheet_SheetCellsDBID.Int64 = this.xlcell.XLSheet_SheetCells_reverse.ID
 				this.xlcell.XLSheet_SheetCellsDBID.Valid = true
-				this.xlcell.XLSheet_SheetCellsDBID_Index = new NullInt64
+				if (this.xlcell.XLSheet_SheetCellsDBID_Index == undefined) {
+					this.xlcell.XLSheet_SheetCellsDBID_Index = new NullInt64
+				}
 				this.xlcell.XLSheet_SheetCellsDBID_Index.Valid = true
 				this.xlcell.XLSheet_SheetCells_reverse = undefined // very important, otherwise, circular JSON
 			}

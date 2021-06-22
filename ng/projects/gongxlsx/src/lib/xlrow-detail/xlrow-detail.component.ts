@@ -89,10 +89,14 @@ export class XLRowDetailComponent implements OnInit {
 		if (association == undefined) {
 			// insertion point for translation/nullation of each pointers
 			if (this.xlrow.XLSheet_Rows_reverse != undefined) {
-				this.xlrow.XLSheet_RowsDBID = new NullInt64
+				if (this.xlrow.XLSheet_RowsDBID == undefined) {
+					this.xlrow.XLSheet_RowsDBID = new NullInt64
+				}
 				this.xlrow.XLSheet_RowsDBID.Int64 = this.xlrow.XLSheet_Rows_reverse.ID
 				this.xlrow.XLSheet_RowsDBID.Valid = true
-				this.xlrow.XLSheet_RowsDBID_Index = new NullInt64
+				if (this.xlrow.XLSheet_RowsDBID_Index == undefined) {
+					this.xlrow.XLSheet_RowsDBID_Index = new NullInt64
+				}
 				this.xlrow.XLSheet_RowsDBID_Index.Valid = true
 				this.xlrow.XLSheet_Rows_reverse = undefined // very important, otherwise, circular JSON
 			}

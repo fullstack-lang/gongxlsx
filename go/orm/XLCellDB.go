@@ -13,7 +13,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
+
+	"github.com/tealeg/xlsx/v3"
 
 	"github.com/fullstack-lang/gongxlsx/go/models"
 )
@@ -86,6 +88,29 @@ type XLCellDBs []XLCellDB
 // swagger:response xlcellDBResponse
 type XLCellDBResponse struct {
 	XLCellDB
+}
+
+// XLCellWOP is a XLCell without pointers (WOP is an acronym for "Without Pointers")
+// it holds the same basic fields but pointers are encoded into uint
+type XLCellWOP struct {
+	ID int
+
+	// insertion for WOP basic fields
+
+	Name string
+
+	X int
+
+	Y int
+	// insertion for WOP pointer fields
+}
+
+var XLCell_Fields = []string{
+	// insertion for WOP basic fields
+	"ID",
+	"Name",
+	"X",
+	"Y",
 }
 
 type BackRepoXLCellStruct struct {
@@ -245,9 +270,8 @@ func (backRepoXLCell *BackRepoXLCellStruct) CommitPhaseTwoInstance(backRepo *Bac
 
 // BackRepoXLCell.CheckoutPhaseOne Checkouts all BackRepo instances to the Stage
 //
-// Phase One is the creation of instance in the stage
-//
-// NOTE: the is supposed to have been reset before
+// Phase One will result in having instances on the stage aligned with the back repo
+// pointers are not initialized yet (this is for pahse two)
 //
 func (backRepoXLCell *BackRepoXLCellStruct) CheckoutPhaseOne() (Error error) {
 
@@ -257,9 +281,34 @@ func (backRepoXLCell *BackRepoXLCellStruct) CheckoutPhaseOne() (Error error) {
 		return query.Error
 	}
 
+	// list of instances to be removed
+	// start from the initial map on the stage and remove instances that have been checked out
+	xlcellInstancesToBeRemovedFromTheStage := make(map[*models.XLCell]struct{})
+	for key, value := range models.Stage.XLCells {
+		xlcellInstancesToBeRemovedFromTheStage[key] = value
+	}
+
 	// copy orm objects to the the map
 	for _, xlcellDB := range xlcellDBArray {
 		backRepoXLCell.CheckoutPhaseOneInstance(&xlcellDB)
+
+		// do not remove this instance from the stage, therefore
+		// remove instance from the list of instances to be be removed from the stage
+		xlcell, ok := (*backRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
+		if ok {
+			delete(xlcellInstancesToBeRemovedFromTheStage, xlcell)
+		}
+	}
+
+	// remove from stage and back repo's 3 maps all xlcells that are not in the checkout
+	for xlcell := range xlcellInstancesToBeRemovedFromTheStage {
+		xlcell.Unstage()
+
+		// remove instance from the back repo 3 maps
+		xlcellID := (*backRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlcell]
+		delete((*backRepoXLCell.Map_XLCellPtr_XLCellDBID), xlcell)
+		delete((*backRepoXLCell.Map_XLCellDBID_XLCellDB), xlcellID)
+		delete((*backRepoXLCell.Map_XLCellDBID_XLCellPtr), xlcellID)
 	}
 
 	return
@@ -277,6 +326,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) CheckoutPhaseOneInstance(xlcellDB *X
 		(*backRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlcell] = xlcellDB.ID
 
 		// append model store with the new element
+		xlcell.Name = xlcellDB.Name_Data.String
 		xlcell.Stage()
 	}
 	xlcellDB.CopyBasicFieldsToXLCell(xlcell)
@@ -338,7 +388,7 @@ func (backRepo *BackRepoStruct) CheckoutXLCell(xlcell *models.XLCell) {
 	}
 }
 
-// CopyBasicFieldsToXLCellDB is used to copy basic fields between the Stage or the CRUD to the back repo
+// CopyBasicFieldsFromXLCell
 func (xlcellDB *XLCellDB) CopyBasicFieldsFromXLCell(xlcell *models.XLCell) {
 	// insertion point for fields commit
 	xlcellDB.Name_Data.String = xlcell.Name
@@ -352,9 +402,31 @@ func (xlcellDB *XLCellDB) CopyBasicFieldsFromXLCell(xlcell *models.XLCell) {
 
 }
 
-// CopyBasicFieldsToXLCellDB is used to copy basic fields between the Stage or the CRUD to the back repo
-func (xlcellDB *XLCellDB) CopyBasicFieldsToXLCell(xlcell *models.XLCell) {
+// CopyBasicFieldsFromXLCellWOP
+func (xlcellDB *XLCellDB) CopyBasicFieldsFromXLCellWOP(xlcell *XLCellWOP) {
+	// insertion point for fields commit
+	xlcellDB.Name_Data.String = xlcell.Name
+	xlcellDB.Name_Data.Valid = true
 
+	xlcellDB.X_Data.Int64 = int64(xlcell.X)
+	xlcellDB.X_Data.Valid = true
+
+	xlcellDB.Y_Data.Int64 = int64(xlcell.Y)
+	xlcellDB.Y_Data.Valid = true
+
+}
+
+// CopyBasicFieldsToXLCell
+func (xlcellDB *XLCellDB) CopyBasicFieldsToXLCell(xlcell *models.XLCell) {
+	// insertion point for checkout of basic fields (back repo to stage)
+	xlcell.Name = xlcellDB.Name_Data.String
+	xlcell.X = int(xlcellDB.X_Data.Int64)
+	xlcell.Y = int(xlcellDB.Y_Data.Int64)
+}
+
+// CopyBasicFieldsToXLCellWOP
+func (xlcellDB *XLCellDB) CopyBasicFieldsToXLCellWOP(xlcell *XLCellWOP) {
+	xlcell.ID = int(xlcellDB.ID)
 	// insertion point for checkout of basic fields (back repo to stage)
 	xlcell.Name = xlcellDB.Name_Data.String
 	xlcell.X = int(xlcellDB.X_Data.Int64)
@@ -386,6 +458,38 @@ func (backRepoXLCell *BackRepoXLCellStruct) Backup(dirPath string) {
 	err = ioutil.WriteFile(filename, file, 0644)
 	if err != nil {
 		log.Panic("Cannot write the json XLCell file", err.Error())
+	}
+}
+
+// Backup generates a json file from a slice of all XLCellDB instances in the backrepo
+func (backRepoXLCell *BackRepoXLCellStruct) BackupXL(file *xlsx.File) {
+
+	// organize the map into an array with increasing IDs, in order to have repoductible
+	// backup file
+	forBackup := make([]*XLCellDB, 0)
+	for _, xlcellDB := range *backRepoXLCell.Map_XLCellDBID_XLCellDB {
+		forBackup = append(forBackup, xlcellDB)
+	}
+
+	sort.Slice(forBackup[:], func(i, j int) bool {
+		return forBackup[i].ID < forBackup[j].ID
+	})
+
+	sh, err := file.AddSheet("XLCell")
+	if err != nil {
+		log.Panic("Cannot add XL file", err.Error())
+	}
+	_ = sh
+
+	row := sh.AddRow()
+	row.WriteSlice(&XLCell_Fields, -1)
+	for _, xlcellDB := range forBackup {
+
+		var xlcellWOP XLCellWOP
+		xlcellDB.CopyBasicFieldsToXLCellWOP(&xlcellWOP)
+
+		row := sh.AddRow()
+		row.WriteStruct(&xlcellWOP, -1)
 	}
 }
 
@@ -433,7 +537,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) RestorePhaseOne(dirPath string) {
 // to compute new index
 func (backRepoXLCell *BackRepoXLCellStruct) RestorePhaseTwo() {
 
-	for _, xlcellDB := range (*backRepoXLCell.Map_XLCellDBID_XLCellDB) {
+	for _, xlcellDB := range *backRepoXLCell.Map_XLCellDBID_XLCellDB {
 
 		// next line of code is to avert unused variable compilation error
 		_ = xlcellDB
@@ -441,13 +545,13 @@ func (backRepoXLCell *BackRepoXLCellStruct) RestorePhaseTwo() {
 		// insertion point for reindexing pointers encoding
 		// This reindex xlcell.Cells
 		if xlcellDB.XLRow_CellsDBID.Int64 != 0 {
-			xlcellDB.XLRow_CellsDBID.Int64 = 
+			xlcellDB.XLRow_CellsDBID.Int64 =
 				int64(BackRepoXLRowid_atBckpTime_newID[uint(xlcellDB.XLRow_CellsDBID.Int64)])
 		}
 
 		// This reindex xlcell.SheetCells
 		if xlcellDB.XLSheet_SheetCellsDBID.Int64 != 0 {
-			xlcellDB.XLSheet_SheetCellsDBID.Int64 = 
+			xlcellDB.XLSheet_SheetCellsDBID.Int64 =
 				int64(BackRepoXLSheetid_atBckpTime_newID[uint(xlcellDB.XLSheet_SheetCellsDBID.Int64)])
 		}
 

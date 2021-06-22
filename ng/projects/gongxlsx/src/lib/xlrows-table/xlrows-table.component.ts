@@ -20,7 +20,7 @@ import { FrontRepoService, FrontRepo } from '../front-repo.service'
 
 // generated table component
 @Component({
-  selector: 'app-xlrows-table',
+  selector: 'app-xlrowstable',
   templateUrl: './xlrows-table.component.html',
   styleUrls: ['./xlrows-table.component.css'],
 })
@@ -47,6 +47,48 @@ export class XLRowsTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   ngAfterViewInit() {
+
+	// enable sorting on all fields (including pointers and reverse pointer)
+	this.matTableDataSource.sortingDataAccessor = (xlrowDB: XLRowDB, property: string) => {
+		switch (property) {
+				// insertion point for specific sorting accessor
+			case 'Name':
+				return xlrowDB.Name;
+
+			case 'RowIndex':
+				return xlrowDB.RowIndex;
+
+			case 'NbCols':
+				return xlrowDB.NbCols;
+
+				case 'Rows':
+					return this.frontRepo.XLSheets.get(xlrowDB.XLSheet_RowsDBID.Int64)?.Name;
+
+				default:
+					return XLRowDB[property];
+		}
+	}; 
+
+	// enable filtering on all fields (including pointers and reverse pointer, which is not done by default)
+	this.matTableDataSource.filterPredicate = (xlrowDB: XLRowDB, filter: string) => {
+
+		// filtering is based on finding a lower case filter into a concatenated string
+		// the xlrowDB properties
+		let mergedContent = ""
+
+		// insertion point for merging of fields
+		mergedContent += xlrowDB.Name.toLowerCase()
+		mergedContent += xlrowDB.RowIndex.toString()
+		mergedContent += xlrowDB.NbCols.toString()
+		if (xlrowDB.XLSheet_RowsDBID.Int64 != 0) {
+        	mergedContent += this.frontRepo.XLSheets.get(xlrowDB.XLSheet_RowsDBID.Int64)?.Name.toLowerCase()
+    	}
+
+
+		let isSelected = mergedContent.includes(filter.toLowerCase())
+		return isSelected
+	};
+
     this.matTableDataSource.sort = this.sort;
     this.matTableDataSource.paginator = this.paginator;
   }
@@ -149,14 +191,14 @@ export class XLRowsTableComponent implements OnInit {
 
   // display xlrow in router
   displayXLRowInRouter(xlrowID: number) {
-    this.router.navigate(["xlrow-display", xlrowID])
+    this.router.navigate(["github_com_fullstack_lang_gongxlsx_go-" + "xlrow-display", xlrowID])
   }
 
   // set editor outlet
   setEditorRouterOutlet(xlrowID: number) {
     this.router.navigate([{
       outlets: {
-        editor: ["xlrow-detail", xlrowID]
+        github_com_fullstack_lang_gongxlsx_go_editor: ["github_com_fullstack_lang_gongxlsx_go-" + "xlrow-detail", xlrowID]
       }
     }]);
   }
@@ -165,7 +207,7 @@ export class XLRowsTableComponent implements OnInit {
   setPresentationRouterOutlet(xlrowID: number) {
     this.router.navigate([{
       outlets: {
-        presentation: ["xlrow-presentation", xlrowID]
+        github_com_fullstack_lang_gongxlsx_go_presentation: ["github_com_fullstack_lang_gongxlsx_go-" + "xlrow-presentation", xlrowID]
       }
     }]);
   }

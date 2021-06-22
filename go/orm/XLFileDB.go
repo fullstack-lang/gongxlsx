@@ -13,7 +13,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
+
+	"github.com/tealeg/xlsx/v3"
 
 	"github.com/fullstack-lang/gongxlsx/go/models"
 )
@@ -73,6 +75,26 @@ type XLFileDBs []XLFileDB
 // swagger:response xlfileDBResponse
 type XLFileDBResponse struct {
 	XLFileDB
+}
+
+// XLFileWOP is a XLFile without pointers (WOP is an acronym for "Without Pointers")
+// it holds the same basic fields but pointers are encoded into uint
+type XLFileWOP struct {
+	ID int
+
+	// insertion for WOP basic fields
+
+	Name string
+
+	NbSheets int
+	// insertion for WOP pointer fields
+}
+
+var XLFile_Fields = []string{
+	// insertion for WOP basic fields
+	"ID",
+	"Name",
+	"NbSheets",
 }
 
 type BackRepoXLFileStruct struct {
@@ -223,7 +245,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseTwoInstance(backRepo *Bac
 
 			// get the back repo instance at the association end
 			xlsheetAssocEnd_DB :=
-				backRepo.BackRepoXLSheet.GetXLSheetDBFromXLSheetPtr( xlsheetAssocEnd)
+				backRepo.BackRepoXLSheet.GetXLSheetDBFromXLSheetPtr(xlsheetAssocEnd)
 
 			// encode reverse pointer in the association end back repo instance
 			xlsheetAssocEnd_DB.XLFile_SheetsDBID.Int64 = int64(xlfileDB.ID)
@@ -251,9 +273,8 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseTwoInstance(backRepo *Bac
 
 // BackRepoXLFile.CheckoutPhaseOne Checkouts all BackRepo instances to the Stage
 //
-// Phase One is the creation of instance in the stage
-//
-// NOTE: the is supposed to have been reset before
+// Phase One will result in having instances on the stage aligned with the back repo
+// pointers are not initialized yet (this is for pahse two)
 //
 func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOne() (Error error) {
 
@@ -263,9 +284,34 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOne() (Error error) {
 		return query.Error
 	}
 
+	// list of instances to be removed
+	// start from the initial map on the stage and remove instances that have been checked out
+	xlfileInstancesToBeRemovedFromTheStage := make(map[*models.XLFile]struct{})
+	for key, value := range models.Stage.XLFiles {
+		xlfileInstancesToBeRemovedFromTheStage[key] = value
+	}
+
 	// copy orm objects to the the map
 	for _, xlfileDB := range xlfileDBArray {
 		backRepoXLFile.CheckoutPhaseOneInstance(&xlfileDB)
+
+		// do not remove this instance from the stage, therefore
+		// remove instance from the list of instances to be be removed from the stage
+		xlfile, ok := (*backRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+		if ok {
+			delete(xlfileInstancesToBeRemovedFromTheStage, xlfile)
+		}
+	}
+
+	// remove from stage and back repo's 3 maps all xlfiles that are not in the checkout
+	for xlfile := range xlfileInstancesToBeRemovedFromTheStage {
+		xlfile.Unstage()
+
+		// remove instance from the back repo 3 maps
+		xlfileID := (*backRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile]
+		delete((*backRepoXLFile.Map_XLFilePtr_XLFileDBID), xlfile)
+		delete((*backRepoXLFile.Map_XLFileDBID_XLFileDB), xlfileID)
+		delete((*backRepoXLFile.Map_XLFileDBID_XLFilePtr), xlfileID)
 	}
 
 	return
@@ -283,6 +329,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOneInstance(xlfileDB *X
 		(*backRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile] = xlfileDB.ID
 
 		// append model store with the new element
+		xlfile.Name = xlfileDB.Name_Data.String
 		xlfile.Stage()
 	}
 	xlfileDB.CopyBasicFieldsToXLFile(xlfile)
@@ -371,7 +418,7 @@ func (backRepo *BackRepoStruct) CheckoutXLFile(xlfile *models.XLFile) {
 	}
 }
 
-// CopyBasicFieldsToXLFileDB is used to copy basic fields between the Stage or the CRUD to the back repo
+// CopyBasicFieldsFromXLFile
 func (xlfileDB *XLFileDB) CopyBasicFieldsFromXLFile(xlfile *models.XLFile) {
 	// insertion point for fields commit
 	xlfileDB.Name_Data.String = xlfile.Name
@@ -382,9 +429,27 @@ func (xlfileDB *XLFileDB) CopyBasicFieldsFromXLFile(xlfile *models.XLFile) {
 
 }
 
-// CopyBasicFieldsToXLFileDB is used to copy basic fields between the Stage or the CRUD to the back repo
-func (xlfileDB *XLFileDB) CopyBasicFieldsToXLFile(xlfile *models.XLFile) {
+// CopyBasicFieldsFromXLFileWOP
+func (xlfileDB *XLFileDB) CopyBasicFieldsFromXLFileWOP(xlfile *XLFileWOP) {
+	// insertion point for fields commit
+	xlfileDB.Name_Data.String = xlfile.Name
+	xlfileDB.Name_Data.Valid = true
 
+	xlfileDB.NbSheets_Data.Int64 = int64(xlfile.NbSheets)
+	xlfileDB.NbSheets_Data.Valid = true
+
+}
+
+// CopyBasicFieldsToXLFile
+func (xlfileDB *XLFileDB) CopyBasicFieldsToXLFile(xlfile *models.XLFile) {
+	// insertion point for checkout of basic fields (back repo to stage)
+	xlfile.Name = xlfileDB.Name_Data.String
+	xlfile.NbSheets = int(xlfileDB.NbSheets_Data.Int64)
+}
+
+// CopyBasicFieldsToXLFileWOP
+func (xlfileDB *XLFileDB) CopyBasicFieldsToXLFileWOP(xlfile *XLFileWOP) {
+	xlfile.ID = int(xlfileDB.ID)
 	// insertion point for checkout of basic fields (back repo to stage)
 	xlfile.Name = xlfileDB.Name_Data.String
 	xlfile.NbSheets = int(xlfileDB.NbSheets_Data.Int64)
@@ -415,6 +480,38 @@ func (backRepoXLFile *BackRepoXLFileStruct) Backup(dirPath string) {
 	err = ioutil.WriteFile(filename, file, 0644)
 	if err != nil {
 		log.Panic("Cannot write the json XLFile file", err.Error())
+	}
+}
+
+// Backup generates a json file from a slice of all XLFileDB instances in the backrepo
+func (backRepoXLFile *BackRepoXLFileStruct) BackupXL(file *xlsx.File) {
+
+	// organize the map into an array with increasing IDs, in order to have repoductible
+	// backup file
+	forBackup := make([]*XLFileDB, 0)
+	for _, xlfileDB := range *backRepoXLFile.Map_XLFileDBID_XLFileDB {
+		forBackup = append(forBackup, xlfileDB)
+	}
+
+	sort.Slice(forBackup[:], func(i, j int) bool {
+		return forBackup[i].ID < forBackup[j].ID
+	})
+
+	sh, err := file.AddSheet("XLFile")
+	if err != nil {
+		log.Panic("Cannot add XL file", err.Error())
+	}
+	_ = sh
+
+	row := sh.AddRow()
+	row.WriteSlice(&XLFile_Fields, -1)
+	for _, xlfileDB := range forBackup {
+
+		var xlfileWOP XLFileWOP
+		xlfileDB.CopyBasicFieldsToXLFileWOP(&xlfileWOP)
+
+		row := sh.AddRow()
+		row.WriteStruct(&xlfileWOP, -1)
 	}
 }
 
@@ -462,7 +559,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) RestorePhaseOne(dirPath string) {
 // to compute new index
 func (backRepoXLFile *BackRepoXLFileStruct) RestorePhaseTwo() {
 
-	for _, xlfileDB := range (*backRepoXLFile.Map_XLFileDBID_XLFileDB) {
+	for _, xlfileDB := range *backRepoXLFile.Map_XLFileDBID_XLFileDB {
 
 		// next line of code is to avert unused variable compilation error
 		_ = xlfileDB

@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup} from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 
 import { XLRowDB } from '../xlrow-db'
 import { XLRowService } from '../xlrow.service'
+
+import { FrontRepoService, FrontRepo } from '../front-repo.service'
 
 import { Router, RouterState, ActivatedRoute } from '@angular/router';
 
@@ -25,9 +27,13 @@ export class XLRowPresentationComponent implements OnInit {
 	dataSource = ELEMENT_DATA;
 
 	xlrow: XLRowDB;
+
+	// front repo
+	frontRepo: FrontRepo
  
 	constructor(
 		private xlrowService: XLRowService,
+		private frontRepoService: FrontRepoService,
 		private route: ActivatedRoute,
 		private router: Router,
 	) {
@@ -51,22 +57,22 @@ export class XLRowPresentationComponent implements OnInit {
 
 	getXLRow(): void {
 		const id = +this.route.snapshot.paramMap.get('id');
-		this.xlrowService.getXLRow(id)
-			.subscribe(
-				xlrow => {
-					this.xlrow = xlrow
+		this.frontRepoService.pull().subscribe(
+			frontRepo => {
+				this.frontRepo = frontRepo
 
-					// insertion point for recovery of durations
+				this.xlrow = this.frontRepo.XLRows.get(id)
 
-				}
-			);
+				// insertion point for recovery of durations
+			}
+		);
 	}
 
 	// set presentation outlet
 	setPresentationRouterOutlet(structName: string, ID: number) {
 		this.router.navigate([{
 			outlets: {
-				presentation: [structName + "-presentation", ID]
+				github_com_fullstack_lang_gongxlsx_go_presentation: ["github_com_fullstack_lang_gongxlsx_go-" + structName + "-presentation", ID]
 			}
 		}]);
 	}
@@ -75,7 +81,7 @@ export class XLRowPresentationComponent implements OnInit {
 	setEditorRouterOutlet(ID: number) {
 		this.router.navigate([{
 			outlets: {
-				editor: ["xlrow-detail", ID]
+				github_com_fullstack_lang_gongxlsx_go_editor: ["github_com_fullstack_lang_gongxlsx_go-" + "xlrow-detail", ID]
 			}
 		}]);
 	}

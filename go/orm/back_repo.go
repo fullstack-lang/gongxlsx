@@ -2,11 +2,18 @@
 package orm
 
 import (
+	"bufio"
+	"bytes"
+	"io/ioutil"
+	"log"
 	"os"
+	"path/filepath"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
 	"github.com/fullstack-lang/gongxlsx/go/models"
+
+	"github.com/tealeg/xlsx/v3"
 )
 
 // BackRepoStruct supports callback functions
@@ -21,10 +28,16 @@ type BackRepoStruct struct {
 	BackRepoXLSheet BackRepoXLSheetStruct
 
 	CommitNb uint // this ng is updated at the BackRepo level but also at the BackRepo<GongStruct> level
+
+	PushFromFrontNb uint // records increments from push from front
 }
 
 func (backRepo *BackRepoStruct) GetLastCommitNb() uint {
 	return backRepo.CommitNb
+}
+
+func (backRepo *BackRepoStruct) GetLastPushFromFrontNb() uint {
+	return backRepo.PushFromFrontNb
 }
 
 func (backRepo *BackRepoStruct) IncrementCommitNb() uint {
@@ -32,6 +45,11 @@ func (backRepo *BackRepoStruct) IncrementCommitNb() uint {
 		models.Stage.OnInitCommitCallback.BeforeCommit(&models.Stage)
 	}
 	backRepo.CommitNb = backRepo.CommitNb + 1
+	return backRepo.CommitNb
+}
+
+func (backRepo *BackRepoStruct) IncrementPushFromFrontNb() uint {
+	backRepo.PushFromFrontNb = backRepo.PushFromFrontNb + 1
 	return backRepo.CommitNb
 }
 
@@ -84,6 +102,10 @@ func GetLastCommitNb() uint {
 	return BackRepo.GetLastCommitNb()
 }
 
+func GetLastPushFromFrontNb() uint {
+	return BackRepo.GetLastPushFromFrontNb()
+}
+
 // Backup the BackRepoStruct
 func (backRepo *BackRepoStruct) Backup(stage *models.StageStruct, dirPath string) {
 	os.Mkdir(dirPath, os.ModePerm)
@@ -93,6 +115,31 @@ func (backRepo *BackRepoStruct) Backup(stage *models.StageStruct, dirPath string
 	backRepo.BackRepoXLFile.Backup(dirPath)
 	backRepo.BackRepoXLRow.Backup(dirPath)
 	backRepo.BackRepoXLSheet.Backup(dirPath)
+}
+
+// Backup in XL the BackRepoStruct
+func (backRepo *BackRepoStruct) BackupXL(stage *models.StageStruct, dirPath string) {
+	os.Mkdir(dirPath, os.ModePerm)
+
+	// open an existing file
+	file := xlsx.NewFile()
+
+	// insertion point for per struct backup
+	backRepo.BackRepoXLCell.BackupXL(file)
+	backRepo.BackRepoXLFile.BackupXL(file)
+	backRepo.BackRepoXLRow.BackupXL(file)
+	backRepo.BackRepoXLSheet.BackupXL(file)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+	file.Write(writer)
+	theBytes := b.Bytes()
+
+	filename := filepath.Join(dirPath, "bckp.xlsx")
+	err := ioutil.WriteFile(filename, theBytes, 0644)
+	if err != nil {
+		log.Panic("Cannot write the XL file", err.Error())
+	}
 }
 
 // Restore the database into the back repo
@@ -114,7 +161,7 @@ func (backRepo *BackRepoStruct) Restore(stage *models.StageStruct, dirPath strin
 	//
 	// restauration second phase (reindex pointers with the new ID)
 	//
-	
+
 	// insertion point for per struct backup
 	backRepo.BackRepoXLCell.RestorePhaseTwo()
 	backRepo.BackRepoXLFile.RestorePhaseTwo()
@@ -124,3 +171,6 @@ func (backRepo *BackRepoStruct) Restore(stage *models.StageStruct, dirPath strin
 	models.Stage.Checkout()
 }
 
+// Restore the database into the back repo
+func (backRepo *BackRepoStruct) RestoreXL(stage *models.StageStruct, dirPath string) {
+}

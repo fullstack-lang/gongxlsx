@@ -12,13 +12,17 @@ var __member __void
 // StageStruct enables storage of staged instances
 // swagger:ignore
 type StageStruct struct { // insertion point for definition of arrays registering instances
-	XLCells map[*XLCell]struct{}
+	XLCells           map[*XLCell]struct{}
+	XLCells_mapString map[string]*XLCell
 
-	XLFiles map[*XLFile]struct{}
+	XLFiles           map[*XLFile]struct{}
+	XLFiles_mapString map[string]*XLFile
 
-	XLRows map[*XLRow]struct{}
+	XLRows           map[*XLRow]struct{}
+	XLRows_mapString map[string]*XLRow
 
-	XLSheets map[*XLSheet]struct{}
+	XLSheets           map[*XLSheet]struct{}
+	XLSheets_mapString map[string]*XLSheet
 
 	AllModelsStructCreateCallback AllModelsStructCreateInterface
 
@@ -39,6 +43,8 @@ type BackRepoInterface interface {
 	Checkout(stage *StageStruct)
 	Backup(stage *StageStruct, dirPath string)
 	Restore(stage *StageStruct, dirPath string)
+	BackupXL(stage *StageStruct, dirPath string)
+	RestoreXL(stage *StageStruct, dirPath string)
 	// insertion point for Commit and Checkout signatures
 	CommitXLCell(xlcell *XLCell)
 	CheckoutXLCell(xlcell *XLCell)
@@ -49,18 +55,24 @@ type BackRepoInterface interface {
 	CommitXLSheet(xlsheet *XLSheet)
 	CheckoutXLSheet(xlsheet *XLSheet)
 	GetLastCommitNb() uint
+	GetLastPushFromFrontNb() uint
 }
 
 // swagger:ignore instructs the gong compiler (gongc) to avoid this particular struct
 var Stage StageStruct = StageStruct{ // insertion point for array initiatialisation
-	XLCells: make(map[*XLCell]struct{}, 0),
+	XLCells:           make(map[*XLCell]struct{}, 0),
+	XLCells_mapString: make(map[string]*XLCell, 0),
 
-	XLFiles: make(map[*XLFile]struct{}, 0),
+	XLFiles:           make(map[*XLFile]struct{}, 0),
+	XLFiles_mapString: make(map[string]*XLFile, 0),
 
-	XLRows: make(map[*XLRow]struct{}, 0),
+	XLRows:           make(map[*XLRow]struct{}, 0),
+	XLRows_mapString: make(map[string]*XLRow, 0),
 
-	XLSheets: make(map[*XLSheet]struct{}, 0),
+	XLSheets:           make(map[*XLSheet]struct{}, 0),
+	XLSheets_mapString: make(map[string]*XLSheet, 0),
 
+	// end of insertion point
 }
 
 func (stage *StageStruct) Commit() {
@@ -83,10 +95,23 @@ func (stage *StageStruct) Backup(dirPath string) {
 }
 
 // Restore resets Stage & BackRepo and restores their content from the restore files in dirPath
-// Restore shall be performed only on a new database with rowids at 0 (otherwise, it will panic)
 func (stage *StageStruct) Restore(dirPath string) {
 	if stage.BackRepo != nil {
 		stage.BackRepo.Restore(stage, dirPath)
+	}
+}
+
+// backup generates backup files in the dirPath
+func (stage *StageStruct) BackupXL(dirPath string) {
+	if stage.BackRepo != nil {
+		stage.BackRepo.BackupXL(stage, dirPath)
+	}
+}
+
+// Restore resets Stage & BackRepo and restores their content from the restore files in dirPath
+func (stage *StageStruct) RestoreXL(dirPath string) {
+	if stage.BackRepo != nil {
+		stage.BackRepo.RestoreXL(stage, dirPath)
 	}
 }
 
@@ -106,12 +131,15 @@ func (stage *StageStruct) getXLCellOrderedStructWithNameField() []*XLCell {
 // Stage puts xlcell to the model stage
 func (xlcell *XLCell) Stage() *XLCell {
 	Stage.XLCells[xlcell] = __member
+	Stage.XLCells_mapString[xlcell.Name] = xlcell
+
 	return xlcell
 }
 
 // Unstage removes xlcell off the model stage
 func (xlcell *XLCell) Unstage() *XLCell {
 	delete(Stage.XLCells, xlcell)
+	delete(Stage.XLCells_mapString, xlcell.Name)
 	return xlcell
 }
 
@@ -205,12 +233,15 @@ func (stage *StageStruct) getXLFileOrderedStructWithNameField() []*XLFile {
 // Stage puts xlfile to the model stage
 func (xlfile *XLFile) Stage() *XLFile {
 	Stage.XLFiles[xlfile] = __member
+	Stage.XLFiles_mapString[xlfile.Name] = xlfile
+
 	return xlfile
 }
 
 // Unstage removes xlfile off the model stage
 func (xlfile *XLFile) Unstage() *XLFile {
 	delete(Stage.XLFiles, xlfile)
+	delete(Stage.XLFiles_mapString, xlfile.Name)
 	return xlfile
 }
 
@@ -304,12 +335,15 @@ func (stage *StageStruct) getXLRowOrderedStructWithNameField() []*XLRow {
 // Stage puts xlrow to the model stage
 func (xlrow *XLRow) Stage() *XLRow {
 	Stage.XLRows[xlrow] = __member
+	Stage.XLRows_mapString[xlrow.Name] = xlrow
+
 	return xlrow
 }
 
 // Unstage removes xlrow off the model stage
 func (xlrow *XLRow) Unstage() *XLRow {
 	delete(Stage.XLRows, xlrow)
+	delete(Stage.XLRows_mapString, xlrow.Name)
 	return xlrow
 }
 
@@ -403,12 +437,15 @@ func (stage *StageStruct) getXLSheetOrderedStructWithNameField() []*XLSheet {
 // Stage puts xlsheet to the model stage
 func (xlsheet *XLSheet) Stage() *XLSheet {
 	Stage.XLSheets[xlsheet] = __member
+	Stage.XLSheets_mapString[xlsheet.Name] = xlsheet
+
 	return xlsheet
 }
 
 // Unstage removes xlsheet off the model stage
 func (xlsheet *XLSheet) Unstage() *XLSheet {
 	delete(Stage.XLSheets, xlsheet)
+	delete(Stage.XLSheets_mapString, xlsheet.Name)
 	return xlsheet
 }
 
@@ -504,18 +541,30 @@ type AllModelsStructDeleteInterface interface { // insertion point for Callbacks
 
 func (stage *StageStruct) Reset() { // insertion point for array reset
 	stage.XLCells = make(map[*XLCell]struct{}, 0)
+	stage.XLCells_mapString = make(map[string]*XLCell, 0)
 
 	stage.XLFiles = make(map[*XLFile]struct{}, 0)
+	stage.XLFiles_mapString = make(map[string]*XLFile, 0)
 
 	stage.XLRows = make(map[*XLRow]struct{}, 0)
+	stage.XLRows_mapString = make(map[string]*XLRow, 0)
 
 	stage.XLSheets = make(map[*XLSheet]struct{}, 0)
+	stage.XLSheets_mapString = make(map[string]*XLSheet, 0)
 
 }
 
 func (stage *StageStruct) Nil() { // insertion point for array nil
 	stage.XLCells = nil
+	stage.XLCells_mapString = nil
+
 	stage.XLFiles = nil
+	stage.XLFiles_mapString = nil
+
 	stage.XLRows = nil
+	stage.XLRows_mapString = nil
+
 	stage.XLSheets = nil
+	stage.XLSheets_mapString = nil
+
 }

@@ -13,7 +13,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
+
+	"github.com/tealeg/xlsx/v3"
 
 	"github.com/fullstack-lang/gongxlsx/go/models"
 )
@@ -84,6 +86,32 @@ type XLSheetDBs []XLSheetDB
 // swagger:response xlsheetDBResponse
 type XLSheetDBResponse struct {
 	XLSheetDB
+}
+
+// XLSheetWOP is a XLSheet without pointers (WOP is an acronym for "Without Pointers")
+// it holds the same basic fields but pointers are encoded into uint
+type XLSheetWOP struct {
+	ID int
+
+	// insertion for WOP basic fields
+
+	Name string
+
+	MaxRow int
+
+	MaxCol int
+
+	NbRows int
+	// insertion for WOP pointer fields
+}
+
+var XLSheet_Fields = []string{
+	// insertion for WOP basic fields
+	"ID",
+	"Name",
+	"MaxRow",
+	"MaxCol",
+	"NbRows",
 }
 
 type BackRepoXLSheetStruct struct {
@@ -234,7 +262,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 
 			// get the back repo instance at the association end
 			xlrowAssocEnd_DB :=
-				backRepo.BackRepoXLRow.GetXLRowDBFromXLRowPtr( xlrowAssocEnd)
+				backRepo.BackRepoXLRow.GetXLRowDBFromXLRowPtr(xlrowAssocEnd)
 
 			// encode reverse pointer in the association end back repo instance
 			xlrowAssocEnd_DB.XLSheet_RowsDBID.Int64 = int64(xlsheetDB.ID)
@@ -253,7 +281,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 
 			// get the back repo instance at the association end
 			xlcellAssocEnd_DB :=
-				backRepo.BackRepoXLCell.GetXLCellDBFromXLCellPtr( xlcellAssocEnd)
+				backRepo.BackRepoXLCell.GetXLCellDBFromXLCellPtr(xlcellAssocEnd)
 
 			// encode reverse pointer in the association end back repo instance
 			xlcellAssocEnd_DB.XLSheet_SheetCellsDBID.Int64 = int64(xlsheetDB.ID)
@@ -281,9 +309,8 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 
 // BackRepoXLSheet.CheckoutPhaseOne Checkouts all BackRepo instances to the Stage
 //
-// Phase One is the creation of instance in the stage
-//
-// NOTE: the is supposed to have been reset before
+// Phase One will result in having instances on the stage aligned with the back repo
+// pointers are not initialized yet (this is for pahse two)
 //
 func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOne() (Error error) {
 
@@ -293,9 +320,34 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOne() (Error error) {
 		return query.Error
 	}
 
+	// list of instances to be removed
+	// start from the initial map on the stage and remove instances that have been checked out
+	xlsheetInstancesToBeRemovedFromTheStage := make(map[*models.XLSheet]struct{})
+	for key, value := range models.Stage.XLSheets {
+		xlsheetInstancesToBeRemovedFromTheStage[key] = value
+	}
+
 	// copy orm objects to the the map
 	for _, xlsheetDB := range xlsheetDBArray {
 		backRepoXLSheet.CheckoutPhaseOneInstance(&xlsheetDB)
+
+		// do not remove this instance from the stage, therefore
+		// remove instance from the list of instances to be be removed from the stage
+		xlsheet, ok := (*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+		if ok {
+			delete(xlsheetInstancesToBeRemovedFromTheStage, xlsheet)
+		}
+	}
+
+	// remove from stage and back repo's 3 maps all xlsheets that are not in the checkout
+	for xlsheet := range xlsheetInstancesToBeRemovedFromTheStage {
+		xlsheet.Unstage()
+
+		// remove instance from the back repo 3 maps
+		xlsheetID := (*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet]
+		delete((*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID), xlsheet)
+		delete((*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB), xlsheetID)
+		delete((*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr), xlsheetID)
 	}
 
 	return
@@ -313,6 +365,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOneInstance(xlsheetDB
 		(*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet] = xlsheetDB.ID
 
 		// append model store with the new element
+		xlsheet.Name = xlsheetDB.Name_Data.String
 		xlsheet.Stage()
 	}
 	xlsheetDB.CopyBasicFieldsToXLSheet(xlsheet)
@@ -428,7 +481,7 @@ func (backRepo *BackRepoStruct) CheckoutXLSheet(xlsheet *models.XLSheet) {
 	}
 }
 
-// CopyBasicFieldsToXLSheetDB is used to copy basic fields between the Stage or the CRUD to the back repo
+// CopyBasicFieldsFromXLSheet
 func (xlsheetDB *XLSheetDB) CopyBasicFieldsFromXLSheet(xlsheet *models.XLSheet) {
 	// insertion point for fields commit
 	xlsheetDB.Name_Data.String = xlsheet.Name
@@ -445,9 +498,35 @@ func (xlsheetDB *XLSheetDB) CopyBasicFieldsFromXLSheet(xlsheet *models.XLSheet) 
 
 }
 
-// CopyBasicFieldsToXLSheetDB is used to copy basic fields between the Stage or the CRUD to the back repo
-func (xlsheetDB *XLSheetDB) CopyBasicFieldsToXLSheet(xlsheet *models.XLSheet) {
+// CopyBasicFieldsFromXLSheetWOP
+func (xlsheetDB *XLSheetDB) CopyBasicFieldsFromXLSheetWOP(xlsheet *XLSheetWOP) {
+	// insertion point for fields commit
+	xlsheetDB.Name_Data.String = xlsheet.Name
+	xlsheetDB.Name_Data.Valid = true
 
+	xlsheetDB.MaxRow_Data.Int64 = int64(xlsheet.MaxRow)
+	xlsheetDB.MaxRow_Data.Valid = true
+
+	xlsheetDB.MaxCol_Data.Int64 = int64(xlsheet.MaxCol)
+	xlsheetDB.MaxCol_Data.Valid = true
+
+	xlsheetDB.NbRows_Data.Int64 = int64(xlsheet.NbRows)
+	xlsheetDB.NbRows_Data.Valid = true
+
+}
+
+// CopyBasicFieldsToXLSheet
+func (xlsheetDB *XLSheetDB) CopyBasicFieldsToXLSheet(xlsheet *models.XLSheet) {
+	// insertion point for checkout of basic fields (back repo to stage)
+	xlsheet.Name = xlsheetDB.Name_Data.String
+	xlsheet.MaxRow = int(xlsheetDB.MaxRow_Data.Int64)
+	xlsheet.MaxCol = int(xlsheetDB.MaxCol_Data.Int64)
+	xlsheet.NbRows = int(xlsheetDB.NbRows_Data.Int64)
+}
+
+// CopyBasicFieldsToXLSheetWOP
+func (xlsheetDB *XLSheetDB) CopyBasicFieldsToXLSheetWOP(xlsheet *XLSheetWOP) {
+	xlsheet.ID = int(xlsheetDB.ID)
 	// insertion point for checkout of basic fields (back repo to stage)
 	xlsheet.Name = xlsheetDB.Name_Data.String
 	xlsheet.MaxRow = int(xlsheetDB.MaxRow_Data.Int64)
@@ -480,6 +559,38 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) Backup(dirPath string) {
 	err = ioutil.WriteFile(filename, file, 0644)
 	if err != nil {
 		log.Panic("Cannot write the json XLSheet file", err.Error())
+	}
+}
+
+// Backup generates a json file from a slice of all XLSheetDB instances in the backrepo
+func (backRepoXLSheet *BackRepoXLSheetStruct) BackupXL(file *xlsx.File) {
+
+	// organize the map into an array with increasing IDs, in order to have repoductible
+	// backup file
+	forBackup := make([]*XLSheetDB, 0)
+	for _, xlsheetDB := range *backRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
+		forBackup = append(forBackup, xlsheetDB)
+	}
+
+	sort.Slice(forBackup[:], func(i, j int) bool {
+		return forBackup[i].ID < forBackup[j].ID
+	})
+
+	sh, err := file.AddSheet("XLSheet")
+	if err != nil {
+		log.Panic("Cannot add XL file", err.Error())
+	}
+	_ = sh
+
+	row := sh.AddRow()
+	row.WriteSlice(&XLSheet_Fields, -1)
+	for _, xlsheetDB := range forBackup {
+
+		var xlsheetWOP XLSheetWOP
+		xlsheetDB.CopyBasicFieldsToXLSheetWOP(&xlsheetWOP)
+
+		row := sh.AddRow()
+		row.WriteStruct(&xlsheetWOP, -1)
 	}
 }
 
@@ -527,7 +638,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseOne(dirPath string) {
 // to compute new index
 func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseTwo() {
 
-	for _, xlsheetDB := range (*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB) {
+	for _, xlsheetDB := range *backRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
 
 		// next line of code is to avert unused variable compilation error
 		_ = xlsheetDB
@@ -535,7 +646,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseTwo() {
 		// insertion point for reindexing pointers encoding
 		// This reindex xlsheet.Sheets
 		if xlsheetDB.XLFile_SheetsDBID.Int64 != 0 {
-			xlsheetDB.XLFile_SheetsDBID.Int64 = 
+			xlsheetDB.XLFile_SheetsDBID.Int64 =
 				int64(BackRepoXLFileid_atBckpTime_newID[uint(xlsheetDB.XLFile_SheetsDBID.Int64)])
 		}
 

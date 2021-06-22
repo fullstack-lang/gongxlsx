@@ -20,7 +20,7 @@ import { FrontRepoService, FrontRepo } from '../front-repo.service'
 
 // generated table component
 @Component({
-  selector: 'app-xlsheets-table',
+  selector: 'app-xlsheetstable',
   templateUrl: './xlsheets-table.component.html',
   styleUrls: ['./xlsheets-table.component.css'],
 })
@@ -47,6 +47,52 @@ export class XLSheetsTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   ngAfterViewInit() {
+
+	// enable sorting on all fields (including pointers and reverse pointer)
+	this.matTableDataSource.sortingDataAccessor = (xlsheetDB: XLSheetDB, property: string) => {
+		switch (property) {
+				// insertion point for specific sorting accessor
+			case 'Name':
+				return xlsheetDB.Name;
+
+			case 'MaxRow':
+				return xlsheetDB.MaxRow;
+
+			case 'MaxCol':
+				return xlsheetDB.MaxCol;
+
+			case 'NbRows':
+				return xlsheetDB.NbRows;
+
+				case 'Sheets':
+					return this.frontRepo.XLFiles.get(xlsheetDB.XLFile_SheetsDBID.Int64)?.Name;
+
+				default:
+					return XLSheetDB[property];
+		}
+	}; 
+
+	// enable filtering on all fields (including pointers and reverse pointer, which is not done by default)
+	this.matTableDataSource.filterPredicate = (xlsheetDB: XLSheetDB, filter: string) => {
+
+		// filtering is based on finding a lower case filter into a concatenated string
+		// the xlsheetDB properties
+		let mergedContent = ""
+
+		// insertion point for merging of fields
+		mergedContent += xlsheetDB.Name.toLowerCase()
+		mergedContent += xlsheetDB.MaxRow.toString()
+		mergedContent += xlsheetDB.MaxCol.toString()
+		mergedContent += xlsheetDB.NbRows.toString()
+		if (xlsheetDB.XLFile_SheetsDBID.Int64 != 0) {
+        	mergedContent += this.frontRepo.XLFiles.get(xlsheetDB.XLFile_SheetsDBID.Int64)?.Name.toLowerCase()
+    	}
+
+
+		let isSelected = mergedContent.includes(filter.toLowerCase())
+		return isSelected
+	};
+
     this.matTableDataSource.sort = this.sort;
     this.matTableDataSource.paginator = this.paginator;
   }
@@ -151,14 +197,14 @@ export class XLSheetsTableComponent implements OnInit {
 
   // display xlsheet in router
   displayXLSheetInRouter(xlsheetID: number) {
-    this.router.navigate(["xlsheet-display", xlsheetID])
+    this.router.navigate(["github_com_fullstack_lang_gongxlsx_go-" + "xlsheet-display", xlsheetID])
   }
 
   // set editor outlet
   setEditorRouterOutlet(xlsheetID: number) {
     this.router.navigate([{
       outlets: {
-        editor: ["xlsheet-detail", xlsheetID]
+        github_com_fullstack_lang_gongxlsx_go_editor: ["github_com_fullstack_lang_gongxlsx_go-" + "xlsheet-detail", xlsheetID]
       }
     }]);
   }
@@ -167,7 +213,7 @@ export class XLSheetsTableComponent implements OnInit {
   setPresentationRouterOutlet(xlsheetID: number) {
     this.router.navigate([{
       outlets: {
-        presentation: ["xlsheet-presentation", xlsheetID]
+        github_com_fullstack_lang_gongxlsx_go_presentation: ["github_com_fullstack_lang_gongxlsx_go-" + "xlsheet-presentation", xlsheetID]
       }
     }]);
   }
