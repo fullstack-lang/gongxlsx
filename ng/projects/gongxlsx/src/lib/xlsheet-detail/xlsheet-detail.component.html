@@ -1,42 +1,44 @@
-<div *ngIf="xlsheet" class="details">
+<form *ngIf="xlsheet" class="details">
     <h1 class="details__title">xlsheet</h1>
     <!-- insertion point for fields specific code -->
-    <!-- -->
-    <div class="details__item">
-        <form>
-            <mat-form-field>
+    <mat-grid-list *ngIf='!isATextArea("Name")' cols="4" rowHeight="6:1">
+        <mat-grid-tile [colspan]="3">
+            <mat-form-field mat-form-field class="detail-full-width">
                 <mat-label>Name</mat-label>
                 <input name="" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlsheet.Name">
             </mat-form-field>
-        </form>
-    </div>
+        </mat-grid-tile>
+        <mat-grid-tile>
+            <button mat-raised-button (click)="toggleTextArea('Name')">
+                <mat-icon>
+                    expand_more
+                </mat-icon>
+            </button>
+        </mat-grid-tile>
+    </mat-grid-list>
+    <mat-form-field *ngIf='isATextArea("Name")' mat-form-field class="detail-full-width">
+        <mat-label>Name</mat-label>
+        <textarea name="" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlsheet.Name"></textarea>
+    </mat-form-field>
+
     <!-- -->
-    <div class="details__item">
-        <form>
-            <mat-form-field>
-                <mat-label>MaxRow</mat-label>
-                <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlsheet.MaxRow">
-            </mat-form-field>
-        </form>
-    </div>
+    <mat-form-field class="detail-full-width">
+        <mat-label>MaxRow</mat-label>
+        <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlsheet.MaxRow" [ngModelOptions]="{standalone: true}">
+    </mat-form-field>
+
     <!-- -->
-    <div class="details__item">
-        <form>
-            <mat-form-field>
-                <mat-label>MaxCol</mat-label>
-                <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlsheet.MaxCol">
-            </mat-form-field>
-        </form>
-    </div>
+    <mat-form-field class="detail-full-width">
+        <mat-label>MaxCol</mat-label>
+        <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlsheet.MaxCol" [ngModelOptions]="{standalone: true}">
+    </mat-form-field>
+
     <!-- -->
-    <div class="details__item">
-        <form>
-            <mat-form-field>
-                <mat-label>NbRows</mat-label>
-                <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlsheet.NbRows">
-            </mat-form-field>
-        </form>
-    </div>
+    <mat-form-field class="detail-full-width">
+        <mat-label>NbRows</mat-label>
+        <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlsheet.NbRows" [ngModelOptions]="{standalone: true}">
+    </mat-form-field>
+
     <mat-grid-list cols="2" rowHeight="6:1">
         <mat-grid-tile>
             <div style="width: 100vw; text-align: right;">
@@ -71,20 +73,18 @@
             </div>
         </mat-grid-tile>
     </mat-grid-list>
-    <div class="details__item">
-    <mat-form-field>
+    <mat-form-field class="detail-full-width">
         <mat-label><- Sheets</mat-label>
-        <mat-select [(ngModel)]="xlsheet.XLFile_Sheets_reverse">
+        <mat-select [compareWith]="compareObjects" [(ngModel)]="xlsheet.XLFile_Sheets_reverse" [ngModelOptions]="{standalone: true}">
             <mat-option>None</mat-option>
             <mat-option *ngFor="let xlfile of frontRepo.XLFiles_array" [value]="xlfile">
                 {{xlfile.Name}}
             </mat-option>
         </mat-select>
     </mat-form-field>
-</div>
     <div class="details__save">
         <button mat-raised-button color="primary" (click)="save()">
 			Save xlsheet
 		</button>
     </div>
-</div>
+</form>
