@@ -17,6 +17,15 @@ import { MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatDialogConfig } from '@angu
 
 import { NullInt64 } from '../front-repo.service'
 
+// XLSheetDetailComponent is initilizaed from different routes
+// XLSheetDetailComponentState detail different cases 
+enum XLSheetDetailComponentState {
+	CREATE_INSTANCE,
+	UPDATE_INSTANCE,
+	// insertion point for declarations of enum values of state
+	CREATE_INSTANCE_WITH_ASSOCIATION_XLFile_Sheets_SET,
+}
+
 @Component({
 	selector: 'app-xlsheet-detail',
 	templateUrl: './xlsheet-detail.component.html',
@@ -37,6 +46,17 @@ export class XLSheetDetailComponent implements OnInit {
 	// if true, it is inputed with a <textarea ...> </textarea>
 	mapFields_displayAsTextArea = new Map<string, boolean>()
 
+	// the state at initialization (CREATION, UPDATE or CREATE with one association set)
+	state: XLSheetDetailComponentState
+
+	// in UDPATE state, if is the id of the instance to update
+	// in CREATE state with one association set, this is the id of the associated instance
+	id: number
+
+	// in CREATE state with one association set, this is the id of the associated instance
+	originStruct: string
+	originStructFieldName: string
+
 	constructor(
 		private xlsheetService: XLSheetService,
 		private frontRepoService: FrontRepoService,
@@ -47,6 +67,31 @@ export class XLSheetDetailComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
+
+		// compute state
+		this.id = +this.route.snapshot.paramMap.get('id');
+		this.originStruct = this.route.snapshot.paramMap.get('originStruct');
+		this.originStructFieldName = this.route.snapshot.paramMap.get('originStructFieldName');
+
+		const association = this.route.snapshot.paramMap.get('association');
+		if (this.id == 0) {
+			this.state = XLSheetDetailComponentState.CREATE_INSTANCE
+		} else {
+			if (this.originStruct == undefined) {
+				this.state = XLSheetDetailComponentState.UPDATE_INSTANCE
+			} else {
+				switch (this.originStructFieldName) {
+					// insertion point for state computation
+					case "Sheets":
+						console.log("XLSheet" + " is instanciated with back pointer to instance " + this.id + " XLFile association Sheets")
+						this.state = XLSheetDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLFile_Sheets_SET
+						break;
+					default:
+						console.log(this.originStructFieldName + " is unkown association")
+				}
+			}
+		}
+
 		this.getXLSheet()
 
 		// observable for changes in structs
@@ -62,16 +107,25 @@ export class XLSheetDetailComponent implements OnInit {
 	}
 
 	getXLSheet(): void {
-		const id = +this.route.snapshot.paramMap.get('id');
-		const association = this.route.snapshot.paramMap.get('association');
 
 		this.frontRepoService.pull().subscribe(
 			frontRepo => {
 				this.frontRepo = frontRepo
-				if (id != 0 && association == undefined) {
-					this.xlsheet = frontRepo.XLSheets.get(id)
-				} else {
-					this.xlsheet = new (XLSheetDB)
+
+				switch (this.state) {
+					case XLSheetDetailComponentState.CREATE_INSTANCE:
+						this.xlsheet = new (XLSheetDB)
+						break;
+					case XLSheetDetailComponentState.UPDATE_INSTANCE:
+						this.xlsheet = frontRepo.XLSheets.get(this.id)
+						break;
+					// insertion point for init of association field
+					case XLSheetDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLFile_Sheets_SET:
+						this.xlsheet = new (XLSheetDB)
+						this.xlsheet.XLFile_Sheets_reverse = frontRepo.XLFiles.get(this.id)
+						break;
+					default:
+						console.log(this.state + " is unkown state")
 				}
 
 				// insertion point for recovery of form controls value for bool fields
@@ -82,8 +136,6 @@ export class XLSheetDetailComponent implements OnInit {
 	}
 
 	save(): void {
-		const id = +this.route.snapshot.paramMap.get('id');
-		const association = this.route.snapshot.paramMap.get('association');
 
 		// some fields needs to be translated into serializable forms
 		// pointers fields, after the translation, are nulled in order to perform serialization
@@ -91,45 +143,33 @@ export class XLSheetDetailComponent implements OnInit {
 		// insertion point for translation/nullation of each field
 
 		// save from the front pointer space to the non pointer space for serialization
-		if (association == undefined) {
-			// insertion point for translation/nullation of each pointers
-			if (this.xlsheet.XLFile_Sheets_reverse != undefined) {
-				if (this.xlsheet.XLFile_SheetsDBID == undefined) {
-					this.xlsheet.XLFile_SheetsDBID = new NullInt64
-				}
-				this.xlsheet.XLFile_SheetsDBID.Int64 = this.xlsheet.XLFile_Sheets_reverse.ID
-				this.xlsheet.XLFile_SheetsDBID.Valid = true
-				if (this.xlsheet.XLFile_SheetsDBID_Index == undefined) {
-					this.xlsheet.XLFile_SheetsDBID_Index = new NullInt64
-				}
-				this.xlsheet.XLFile_SheetsDBID_Index.Valid = true
-				this.xlsheet.XLFile_Sheets_reverse = undefined // very important, otherwise, circular JSON
+
+		// insertion point for translation/nullation of each pointers
+		if (this.xlsheet.XLFile_Sheets_reverse != undefined) {
+			if (this.xlsheet.XLFile_SheetsDBID == undefined) {
+				this.xlsheet.XLFile_SheetsDBID = new NullInt64
 			}
+			this.xlsheet.XLFile_SheetsDBID.Int64 = this.xlsheet.XLFile_Sheets_reverse.ID
+			this.xlsheet.XLFile_SheetsDBID.Valid = true
+			if (this.xlsheet.XLFile_SheetsDBID_Index == undefined) {
+				this.xlsheet.XLFile_SheetsDBID_Index = new NullInt64
+			}
+			this.xlsheet.XLFile_SheetsDBID_Index.Valid = true
+			this.xlsheet.XLFile_Sheets_reverse = undefined // very important, otherwise, circular JSON
 		}
 
-		if (id != 0 && association == undefined) {
-
-			this.xlsheetService.updateXLSheet(this.xlsheet)
-				.subscribe(xlsheet => {
-					this.xlsheetService.XLSheetServiceChanged.next("update")
+		switch (this.state) {
+			case XLSheetDetailComponentState.UPDATE_INSTANCE:
+				this.xlsheetService.updateXLSheet(this.xlsheet)
+					.subscribe(xlsheet => {
+						this.xlsheetService.XLSheetServiceChanged.next("update")
+					});
+				break;
+			default:
+				this.xlsheetService.postXLSheet(this.xlsheet).subscribe(xlsheet => {
+					this.xlsheetService.XLSheetServiceChanged.next("post")
+					this.xlsheet = {} // reset fields
 				});
-		} else {
-			switch (association) {
-				// insertion point for saving value of ONE_MANY association reverse pointer
-				case "XLFile_Sheets":
-					this.xlsheet.XLFile_SheetsDBID = new NullInt64
-					this.xlsheet.XLFile_SheetsDBID.Int64 = id
-					this.xlsheet.XLFile_SheetsDBID.Valid = true
-					this.xlsheet.XLFile_SheetsDBID_Index = new NullInt64
-					this.xlsheet.XLFile_SheetsDBID_Index.Valid = true
-					break
-			}
-			this.xlsheetService.postXLSheet(this.xlsheet).subscribe(xlsheet => {
-
-				this.xlsheetService.XLSheetServiceChanged.next("post")
-
-				this.xlsheet = {} // reset fields
-			});
 		}
 	}
 

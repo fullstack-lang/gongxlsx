@@ -1,8 +1,8 @@
 <form *ngIf="xlcell" class="details">
-    <h1 class="details__title">xlcell</h1>
+    <h2 class="details__title">xlcell</h2>
     <!-- insertion point for fields specific code -->
-    <mat-grid-list *ngIf='!isATextArea("Name")' cols="4" rowHeight="6:1">
-        <mat-grid-tile [colspan]="3">
+    <mat-grid-list *ngIf='!isATextArea("Name")' cols="5" rowHeight="2:1">
+        <mat-grid-tile [colspan]="4">
             <mat-form-field mat-form-field class="detail-full-width">
                 <mat-label>Name</mat-label>
                 <input name="" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlcell.Name">
@@ -34,7 +34,7 @@
     </mat-form-field>
 
     <mat-form-field class="detail-full-width">
-        <mat-label><- Cells</mat-label>
+        <mat-label>(XLRow) Cells</mat-label>
         <mat-select [compareWith]="compareObjects" [(ngModel)]="xlcell.XLRow_Cells_reverse" [ngModelOptions]="{standalone: true}">
             <mat-option>None</mat-option>
             <mat-option *ngFor="let xlrow of frontRepo.XLRows_array" [value]="xlrow">
@@ -43,7 +43,7 @@
         </mat-select>
     </mat-form-field>
     <mat-form-field class="detail-full-width">
-        <mat-label><- SheetCells</mat-label>
+        <mat-label>(XLSheet) SheetCells</mat-label>
         <mat-select [compareWith]="compareObjects" [(ngModel)]="xlcell.XLSheet_SheetCells_reverse" [ngModelOptions]="{standalone: true}">
             <mat-option>None</mat-option>
             <mat-option *ngFor="let xlsheet of frontRepo.XLSheets_array" [value]="xlsheet">

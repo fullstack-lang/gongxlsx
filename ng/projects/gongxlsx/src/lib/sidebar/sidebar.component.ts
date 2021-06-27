@@ -35,6 +35,7 @@ interface GongNode {
   children?: GongNode[];
   type: GongNodeType;
   structName: string;
+  associationField: string;
   associatedStructName: string;
   id: number;
   uniqueIdPerStack: number;
@@ -50,6 +51,7 @@ interface GongFlatNode {
   level: number;
   type: GongNodeType;
   structName: string;
+  associationField: string;
   associatedStructName: string;
   id: number;
   uniqueIdPerStack: number;
@@ -84,6 +86,7 @@ export class SidebarComponent implements OnInit {
       level: level,
       type: node.type,
       structName: node.structName,
+      associationField: node.associationField,
       associatedStructName: node.associatedStructName,
       id: node.id,
       uniqueIdPerStack: node.uniqueIdPerStack,
@@ -224,6 +227,7 @@ export class SidebarComponent implements OnInit {
         id: 0,
         uniqueIdPerStack: 13 * nonInstanceNodeId,
         structName: "XLCell",
+        associationField: "",
         associatedStructName: "",
         children: new Array<GongNode>()
       }
@@ -248,6 +252,7 @@ export class SidebarComponent implements OnInit {
             id: xlcellDB.ID,
             uniqueIdPerStack: getXLCellUniqueID(xlcellDB.ID),
             structName: "XLCell",
+            associationField: "",
             associatedStructName: "",
             children: new Array<GongNode>()
           }
@@ -266,6 +271,7 @@ export class SidebarComponent implements OnInit {
         id: 0,
         uniqueIdPerStack: 13 * nonInstanceNodeId,
         structName: "XLFile",
+        associationField: "",
         associatedStructName: "",
         children: new Array<GongNode>()
       }
@@ -290,6 +296,7 @@ export class SidebarComponent implements OnInit {
             id: xlfileDB.ID,
             uniqueIdPerStack: getXLFileUniqueID(xlfileDB.ID),
             structName: "XLFile",
+            associationField: "",
             associatedStructName: "",
             children: new Array<GongNode>()
           }
@@ -305,6 +312,7 @@ export class SidebarComponent implements OnInit {
             id: xlfileDB.ID,
             uniqueIdPerStack: 19 * nonInstanceNodeId,
             structName: "XLFile",
+            associationField: "Sheets",
             associatedStructName: "XLSheet",
             children: new Array<GongNode>()
           }
@@ -320,6 +328,7 @@ export class SidebarComponent implements OnInit {
                 7 * getXLFileUniqueID(xlfileDB.ID)
                 + 11 * getXLSheetUniqueID(xlsheetDB.ID),
               structName: "XLSheet",
+              associationField: "",
               associatedStructName: "",
               children: new Array<GongNode>()
             }
@@ -338,6 +347,7 @@ export class SidebarComponent implements OnInit {
         id: 0,
         uniqueIdPerStack: 13 * nonInstanceNodeId,
         structName: "XLRow",
+        associationField: "",
         associatedStructName: "",
         children: new Array<GongNode>()
       }
@@ -362,6 +372,7 @@ export class SidebarComponent implements OnInit {
             id: xlrowDB.ID,
             uniqueIdPerStack: getXLRowUniqueID(xlrowDB.ID),
             structName: "XLRow",
+            associationField: "",
             associatedStructName: "",
             children: new Array<GongNode>()
           }
@@ -377,6 +388,7 @@ export class SidebarComponent implements OnInit {
             id: xlrowDB.ID,
             uniqueIdPerStack: 19 * nonInstanceNodeId,
             structName: "XLRow",
+            associationField: "Cells",
             associatedStructName: "XLCell",
             children: new Array<GongNode>()
           }
@@ -392,6 +404,7 @@ export class SidebarComponent implements OnInit {
                 7 * getXLRowUniqueID(xlrowDB.ID)
                 + 11 * getXLCellUniqueID(xlcellDB.ID),
               structName: "XLCell",
+              associationField: "",
               associatedStructName: "",
               children: new Array<GongNode>()
             }
@@ -410,6 +423,7 @@ export class SidebarComponent implements OnInit {
         id: 0,
         uniqueIdPerStack: 13 * nonInstanceNodeId,
         structName: "XLSheet",
+        associationField: "",
         associatedStructName: "",
         children: new Array<GongNode>()
       }
@@ -434,6 +448,7 @@ export class SidebarComponent implements OnInit {
             id: xlsheetDB.ID,
             uniqueIdPerStack: getXLSheetUniqueID(xlsheetDB.ID),
             structName: "XLSheet",
+            associationField: "",
             associatedStructName: "",
             children: new Array<GongNode>()
           }
@@ -449,6 +464,7 @@ export class SidebarComponent implements OnInit {
             id: xlsheetDB.ID,
             uniqueIdPerStack: 19 * nonInstanceNodeId,
             structName: "XLSheet",
+            associationField: "Rows",
             associatedStructName: "XLRow",
             children: new Array<GongNode>()
           }
@@ -464,6 +480,7 @@ export class SidebarComponent implements OnInit {
                 7 * getXLSheetUniqueID(xlsheetDB.ID)
                 + 11 * getXLRowUniqueID(xlrowDB.ID),
               structName: "XLRow",
+              associationField: "",
               associatedStructName: "",
               children: new Array<GongNode>()
             }
@@ -479,6 +496,7 @@ export class SidebarComponent implements OnInit {
             id: xlsheetDB.ID,
             uniqueIdPerStack: 19 * nonInstanceNodeId,
             structName: "XLSheet",
+            associationField: "SheetCells",
             associatedStructName: "XLCell",
             children: new Array<GongNode>()
           }
@@ -494,6 +512,7 @@ export class SidebarComponent implements OnInit {
                 7 * getXLSheetUniqueID(xlsheetDB.ID)
                 + 11 * getXLCellUniqueID(xlcellDB.ID),
               structName: "XLCell",
+              associationField: "",
               associatedStructName: "",
               children: new Array<GongNode>()
             }
@@ -574,7 +593,7 @@ export class SidebarComponent implements OnInit {
   setEditorSpecialRouterOutlet( node: GongFlatNode) {
     this.router.navigate([{
       outlets: {
-        github_com_fullstack_lang_gongxlsx_go_editor: ["github_com_fullstack_lang_gongxlsx_go-" + node.associatedStructName.toLowerCase() + "-adder", node.id, node.structName + "_" + node.name]
+        github_com_fullstack_lang_gongxlsx_go_editor: ["github_com_fullstack_lang_gongxlsx_go-" + node.associatedStructName.toLowerCase() + "-adder", node.id, node.structName, node.associationField]
       }
     }]);
   }

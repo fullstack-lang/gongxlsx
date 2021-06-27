@@ -1,8 +1,8 @@
 <form *ngIf="xlsheet" class="details">
-    <h1 class="details__title">xlsheet</h1>
+    <h2 class="details__title">xlsheet</h2>
     <!-- insertion point for fields specific code -->
-    <mat-grid-list *ngIf='!isATextArea("Name")' cols="4" rowHeight="6:1">
-        <mat-grid-tile [colspan]="3">
+    <mat-grid-list *ngIf='!isATextArea("Name")' cols="5" rowHeight="2:1">
+        <mat-grid-tile [colspan]="4">
             <mat-form-field mat-form-field class="detail-full-width">
                 <mat-label>Name</mat-label>
                 <input name="" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlsheet.Name">
@@ -39,42 +39,34 @@
         <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlsheet.NbRows" [ngModelOptions]="{standalone: true}">
     </mat-form-field>
 
-    <mat-grid-list cols="2" rowHeight="6:1">
-        <mat-grid-tile>
-            <div style="width: 100vw; text-align: right;">
-                <button mat-raised-button
-                    (click)="openReverseSelection('XLRow', 'XLSheet_RowsDBID')">Rows</button>
-            </div>
+    <mat-grid-list cols="5" rowHeight="2:1">
+        <mat-grid-tile [colspan]="4">
+            <button mat-raised-button
+                (click)="openReverseSelection('XLRow', 'XLSheet_RowsDBID')">Rows</button>
         </mat-grid-tile>
         <mat-grid-tile>
-            <div style="width: 100vw; text-align: left;">
-                <button mat-raised-button (click)="openDragAndDropOrdering('XLRow', 'XLSheet_RowsDBID')">
-                    <mat-icon>
-                        shuffle
-                    </mat-icon>
-                </button>
-            </div>
+            <button mat-raised-button (click)="openDragAndDropOrdering('XLRow', 'XLSheet_RowsDBID')">
+                <mat-icon>
+                    shuffle
+                </mat-icon>
+            </button>
         </mat-grid-tile>
     </mat-grid-list>
-    <mat-grid-list cols="2" rowHeight="6:1">
-        <mat-grid-tile>
-            <div style="width: 100vw; text-align: right;">
-                <button mat-raised-button
-                    (click)="openReverseSelection('XLCell', 'XLSheet_SheetCellsDBID')">SheetCells</button>
-            </div>
+    <mat-grid-list cols="5" rowHeight="2:1">
+        <mat-grid-tile [colspan]="4">
+            <button mat-raised-button
+                (click)="openReverseSelection('XLCell', 'XLSheet_SheetCellsDBID')">SheetCells</button>
         </mat-grid-tile>
         <mat-grid-tile>
-            <div style="width: 100vw; text-align: left;">
-                <button mat-raised-button (click)="openDragAndDropOrdering('XLCell', 'XLSheet_SheetCellsDBID')">
-                    <mat-icon>
-                        shuffle
-                    </mat-icon>
-                </button>
-            </div>
+            <button mat-raised-button (click)="openDragAndDropOrdering('XLCell', 'XLSheet_SheetCellsDBID')">
+                <mat-icon>
+                    shuffle
+                </mat-icon>
+            </button>
         </mat-grid-tile>
     </mat-grid-list>
     <mat-form-field class="detail-full-width">
-        <mat-label><- Sheets</mat-label>
+        <mat-label>(XLFile) Sheets</mat-label>
         <mat-select [compareWith]="compareObjects" [(ngModel)]="xlsheet.XLFile_Sheets_reverse" [ngModelOptions]="{standalone: true}">
             <mat-option>None</mat-option>
             <mat-option *ngFor="let xlfile of frontRepo.XLFiles_array" [value]="xlfile">

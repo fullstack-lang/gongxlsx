@@ -17,6 +17,15 @@ import { MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatDialogConfig } from '@angu
 
 import { NullInt64 } from '../front-repo.service'
 
+// XLRowDetailComponent is initilizaed from different routes
+// XLRowDetailComponentState detail different cases 
+enum XLRowDetailComponentState {
+	CREATE_INSTANCE,
+	UPDATE_INSTANCE,
+	// insertion point for declarations of enum values of state
+	CREATE_INSTANCE_WITH_ASSOCIATION_XLSheet_Rows_SET,
+}
+
 @Component({
 	selector: 'app-xlrow-detail',
 	templateUrl: './xlrow-detail.component.html',
@@ -37,6 +46,17 @@ export class XLRowDetailComponent implements OnInit {
 	// if true, it is inputed with a <textarea ...> </textarea>
 	mapFields_displayAsTextArea = new Map<string, boolean>()
 
+	// the state at initialization (CREATION, UPDATE or CREATE with one association set)
+	state: XLRowDetailComponentState
+
+	// in UDPATE state, if is the id of the instance to update
+	// in CREATE state with one association set, this is the id of the associated instance
+	id: number
+
+	// in CREATE state with one association set, this is the id of the associated instance
+	originStruct: string
+	originStructFieldName: string
+
 	constructor(
 		private xlrowService: XLRowService,
 		private frontRepoService: FrontRepoService,
@@ -47,6 +67,31 @@ export class XLRowDetailComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
+
+		// compute state
+		this.id = +this.route.snapshot.paramMap.get('id');
+		this.originStruct = this.route.snapshot.paramMap.get('originStruct');
+		this.originStructFieldName = this.route.snapshot.paramMap.get('originStructFieldName');
+
+		const association = this.route.snapshot.paramMap.get('association');
+		if (this.id == 0) {
+			this.state = XLRowDetailComponentState.CREATE_INSTANCE
+		} else {
+			if (this.originStruct == undefined) {
+				this.state = XLRowDetailComponentState.UPDATE_INSTANCE
+			} else {
+				switch (this.originStructFieldName) {
+					// insertion point for state computation
+					case "Rows":
+						console.log("XLRow" + " is instanciated with back pointer to instance " + this.id + " XLSheet association Rows")
+						this.state = XLRowDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLSheet_Rows_SET
+						break;
+					default:
+						console.log(this.originStructFieldName + " is unkown association")
+				}
+			}
+		}
+
 		this.getXLRow()
 
 		// observable for changes in structs
@@ -62,16 +107,25 @@ export class XLRowDetailComponent implements OnInit {
 	}
 
 	getXLRow(): void {
-		const id = +this.route.snapshot.paramMap.get('id');
-		const association = this.route.snapshot.paramMap.get('association');
 
 		this.frontRepoService.pull().subscribe(
 			frontRepo => {
 				this.frontRepo = frontRepo
-				if (id != 0 && association == undefined) {
-					this.xlrow = frontRepo.XLRows.get(id)
-				} else {
-					this.xlrow = new (XLRowDB)
+
+				switch (this.state) {
+					case XLRowDetailComponentState.CREATE_INSTANCE:
+						this.xlrow = new (XLRowDB)
+						break;
+					case XLRowDetailComponentState.UPDATE_INSTANCE:
+						this.xlrow = frontRepo.XLRows.get(this.id)
+						break;
+					// insertion point for init of association field
+					case XLRowDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLSheet_Rows_SET:
+						this.xlrow = new (XLRowDB)
+						this.xlrow.XLSheet_Rows_reverse = frontRepo.XLSheets.get(this.id)
+						break;
+					default:
+						console.log(this.state + " is unkown state")
 				}
 
 				// insertion point for recovery of form controls value for bool fields
@@ -82,8 +136,6 @@ export class XLRowDetailComponent implements OnInit {
 	}
 
 	save(): void {
-		const id = +this.route.snapshot.paramMap.get('id');
-		const association = this.route.snapshot.paramMap.get('association');
 
 		// some fields needs to be translated into serializable forms
 		// pointers fields, after the translation, are nulled in order to perform serialization
@@ -91,45 +143,33 @@ export class XLRowDetailComponent implements OnInit {
 		// insertion point for translation/nullation of each field
 
 		// save from the front pointer space to the non pointer space for serialization
-		if (association == undefined) {
-			// insertion point for translation/nullation of each pointers
-			if (this.xlrow.XLSheet_Rows_reverse != undefined) {
-				if (this.xlrow.XLSheet_RowsDBID == undefined) {
-					this.xlrow.XLSheet_RowsDBID = new NullInt64
-				}
-				this.xlrow.XLSheet_RowsDBID.Int64 = this.xlrow.XLSheet_Rows_reverse.ID
-				this.xlrow.XLSheet_RowsDBID.Valid = true
-				if (this.xlrow.XLSheet_RowsDBID_Index == undefined) {
-					this.xlrow.XLSheet_RowsDBID_Index = new NullInt64
-				}
-				this.xlrow.XLSheet_RowsDBID_Index.Valid = true
-				this.xlrow.XLSheet_Rows_reverse = undefined // very important, otherwise, circular JSON
+
+		// insertion point for translation/nullation of each pointers
+		if (this.xlrow.XLSheet_Rows_reverse != undefined) {
+			if (this.xlrow.XLSheet_RowsDBID == undefined) {
+				this.xlrow.XLSheet_RowsDBID = new NullInt64
 			}
+			this.xlrow.XLSheet_RowsDBID.Int64 = this.xlrow.XLSheet_Rows_reverse.ID
+			this.xlrow.XLSheet_RowsDBID.Valid = true
+			if (this.xlrow.XLSheet_RowsDBID_Index == undefined) {
+				this.xlrow.XLSheet_RowsDBID_Index = new NullInt64
+			}
+			this.xlrow.XLSheet_RowsDBID_Index.Valid = true
+			this.xlrow.XLSheet_Rows_reverse = undefined // very important, otherwise, circular JSON
 		}
 
-		if (id != 0 && association == undefined) {
-
-			this.xlrowService.updateXLRow(this.xlrow)
-				.subscribe(xlrow => {
-					this.xlrowService.XLRowServiceChanged.next("update")
+		switch (this.state) {
+			case XLRowDetailComponentState.UPDATE_INSTANCE:
+				this.xlrowService.updateXLRow(this.xlrow)
+					.subscribe(xlrow => {
+						this.xlrowService.XLRowServiceChanged.next("update")
+					});
+				break;
+			default:
+				this.xlrowService.postXLRow(this.xlrow).subscribe(xlrow => {
+					this.xlrowService.XLRowServiceChanged.next("post")
+					this.xlrow = {} // reset fields
 				});
-		} else {
-			switch (association) {
-				// insertion point for saving value of ONE_MANY association reverse pointer
-				case "XLSheet_Rows":
-					this.xlrow.XLSheet_RowsDBID = new NullInt64
-					this.xlrow.XLSheet_RowsDBID.Int64 = id
-					this.xlrow.XLSheet_RowsDBID.Valid = true
-					this.xlrow.XLSheet_RowsDBID_Index = new NullInt64
-					this.xlrow.XLSheet_RowsDBID_Index.Valid = true
-					break
-			}
-			this.xlrowService.postXLRow(this.xlrow).subscribe(xlrow => {
-
-				this.xlrowService.XLRowServiceChanged.next("post")
-
-				this.xlrow = {} // reset fields
-			});
 		}
 	}
 

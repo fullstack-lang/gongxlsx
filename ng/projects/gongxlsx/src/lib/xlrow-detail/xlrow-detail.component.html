@@ -1,8 +1,8 @@
 <form *ngIf="xlrow" class="details">
-    <h1 class="details__title">xlrow</h1>
+    <h2 class="details__title">xlrow</h2>
     <!-- insertion point for fields specific code -->
-    <mat-grid-list *ngIf='!isATextArea("Name")' cols="4" rowHeight="6:1">
-        <mat-grid-tile [colspan]="3">
+    <mat-grid-list *ngIf='!isATextArea("Name")' cols="5" rowHeight="2:1">
+        <mat-grid-tile [colspan]="4">
             <mat-form-field mat-form-field class="detail-full-width">
                 <mat-label>Name</mat-label>
                 <input name="" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlrow.Name">
@@ -33,25 +33,21 @@
         <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlrow.NbCols" [ngModelOptions]="{standalone: true}">
     </mat-form-field>
 
-    <mat-grid-list cols="2" rowHeight="6:1">
-        <mat-grid-tile>
-            <div style="width: 100vw; text-align: right;">
-                <button mat-raised-button
-                    (click)="openReverseSelection('XLCell', 'XLRow_CellsDBID')">Cells</button>
-            </div>
+    <mat-grid-list cols="5" rowHeight="2:1">
+        <mat-grid-tile [colspan]="4">
+            <button mat-raised-button
+                (click)="openReverseSelection('XLCell', 'XLRow_CellsDBID')">Cells</button>
         </mat-grid-tile>
         <mat-grid-tile>
-            <div style="width: 100vw; text-align: left;">
-                <button mat-raised-button (click)="openDragAndDropOrdering('XLCell', 'XLRow_CellsDBID')">
-                    <mat-icon>
-                        shuffle
-                    </mat-icon>
-                </button>
-            </div>
+            <button mat-raised-button (click)="openDragAndDropOrdering('XLCell', 'XLRow_CellsDBID')">
+                <mat-icon>
+                    shuffle
+                </mat-icon>
+            </button>
         </mat-grid-tile>
     </mat-grid-list>
     <mat-form-field class="detail-full-width">
-        <mat-label><- Rows</mat-label>
+        <mat-label>(XLSheet) Rows</mat-label>
         <mat-select [compareWith]="compareObjects" [(ngModel)]="xlrow.XLSheet_Rows_reverse" [ngModelOptions]="{standalone: true}">
             <mat-option>None</mat-option>
             <mat-option *ngFor="let xlsheet of frontRepo.XLSheets_array" [value]="xlsheet">

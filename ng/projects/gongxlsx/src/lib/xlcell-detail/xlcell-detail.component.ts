@@ -17,6 +17,16 @@ import { MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatDialogConfig } from '@angu
 
 import { NullInt64 } from '../front-repo.service'
 
+// XLCellDetailComponent is initilizaed from different routes
+// XLCellDetailComponentState detail different cases 
+enum XLCellDetailComponentState {
+	CREATE_INSTANCE,
+	UPDATE_INSTANCE,
+	// insertion point for declarations of enum values of state
+	CREATE_INSTANCE_WITH_ASSOCIATION_XLRow_Cells_SET,
+	CREATE_INSTANCE_WITH_ASSOCIATION_XLSheet_SheetCells_SET,
+}
+
 @Component({
 	selector: 'app-xlcell-detail',
 	templateUrl: './xlcell-detail.component.html',
@@ -37,6 +47,17 @@ export class XLCellDetailComponent implements OnInit {
 	// if true, it is inputed with a <textarea ...> </textarea>
 	mapFields_displayAsTextArea = new Map<string, boolean>()
 
+	// the state at initialization (CREATION, UPDATE or CREATE with one association set)
+	state: XLCellDetailComponentState
+
+	// in UDPATE state, if is the id of the instance to update
+	// in CREATE state with one association set, this is the id of the associated instance
+	id: number
+
+	// in CREATE state with one association set, this is the id of the associated instance
+	originStruct: string
+	originStructFieldName: string
+
 	constructor(
 		private xlcellService: XLCellService,
 		private frontRepoService: FrontRepoService,
@@ -47,6 +68,35 @@ export class XLCellDetailComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
+
+		// compute state
+		this.id = +this.route.snapshot.paramMap.get('id');
+		this.originStruct = this.route.snapshot.paramMap.get('originStruct');
+		this.originStructFieldName = this.route.snapshot.paramMap.get('originStructFieldName');
+
+		const association = this.route.snapshot.paramMap.get('association');
+		if (this.id == 0) {
+			this.state = XLCellDetailComponentState.CREATE_INSTANCE
+		} else {
+			if (this.originStruct == undefined) {
+				this.state = XLCellDetailComponentState.UPDATE_INSTANCE
+			} else {
+				switch (this.originStructFieldName) {
+					// insertion point for state computation
+					case "Cells":
+						console.log("XLCell" + " is instanciated with back pointer to instance " + this.id + " XLRow association Cells")
+						this.state = XLCellDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLRow_Cells_SET
+						break;
+					case "SheetCells":
+						console.log("XLCell" + " is instanciated with back pointer to instance " + this.id + " XLSheet association SheetCells")
+						this.state = XLCellDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLSheet_SheetCells_SET
+						break;
+					default:
+						console.log(this.originStructFieldName + " is unkown association")
+				}
+			}
+		}
+
 		this.getXLCell()
 
 		// observable for changes in structs
@@ -62,16 +112,29 @@ export class XLCellDetailComponent implements OnInit {
 	}
 
 	getXLCell(): void {
-		const id = +this.route.snapshot.paramMap.get('id');
-		const association = this.route.snapshot.paramMap.get('association');
 
 		this.frontRepoService.pull().subscribe(
 			frontRepo => {
 				this.frontRepo = frontRepo
-				if (id != 0 && association == undefined) {
-					this.xlcell = frontRepo.XLCells.get(id)
-				} else {
-					this.xlcell = new (XLCellDB)
+
+				switch (this.state) {
+					case XLCellDetailComponentState.CREATE_INSTANCE:
+						this.xlcell = new (XLCellDB)
+						break;
+					case XLCellDetailComponentState.UPDATE_INSTANCE:
+						this.xlcell = frontRepo.XLCells.get(this.id)
+						break;
+					// insertion point for init of association field
+					case XLCellDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLRow_Cells_SET:
+						this.xlcell = new (XLCellDB)
+						this.xlcell.XLRow_Cells_reverse = frontRepo.XLRows.get(this.id)
+						break;
+					case XLCellDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLSheet_SheetCells_SET:
+						this.xlcell = new (XLCellDB)
+						this.xlcell.XLSheet_SheetCells_reverse = frontRepo.XLSheets.get(this.id)
+						break;
+					default:
+						console.log(this.state + " is unkown state")
 				}
 
 				// insertion point for recovery of form controls value for bool fields
@@ -82,8 +145,6 @@ export class XLCellDetailComponent implements OnInit {
 	}
 
 	save(): void {
-		const id = +this.route.snapshot.paramMap.get('id');
-		const association = this.route.snapshot.paramMap.get('association');
 
 		// some fields needs to be translated into serializable forms
 		// pointers fields, after the translation, are nulled in order to perform serialization
@@ -91,64 +152,45 @@ export class XLCellDetailComponent implements OnInit {
 		// insertion point for translation/nullation of each field
 
 		// save from the front pointer space to the non pointer space for serialization
-		if (association == undefined) {
-			// insertion point for translation/nullation of each pointers
-			if (this.xlcell.XLRow_Cells_reverse != undefined) {
-				if (this.xlcell.XLRow_CellsDBID == undefined) {
-					this.xlcell.XLRow_CellsDBID = new NullInt64
-				}
-				this.xlcell.XLRow_CellsDBID.Int64 = this.xlcell.XLRow_Cells_reverse.ID
-				this.xlcell.XLRow_CellsDBID.Valid = true
-				if (this.xlcell.XLRow_CellsDBID_Index == undefined) {
-					this.xlcell.XLRow_CellsDBID_Index = new NullInt64
-				}
-				this.xlcell.XLRow_CellsDBID_Index.Valid = true
-				this.xlcell.XLRow_Cells_reverse = undefined // very important, otherwise, circular JSON
+
+		// insertion point for translation/nullation of each pointers
+		if (this.xlcell.XLRow_Cells_reverse != undefined) {
+			if (this.xlcell.XLRow_CellsDBID == undefined) {
+				this.xlcell.XLRow_CellsDBID = new NullInt64
 			}
-			if (this.xlcell.XLSheet_SheetCells_reverse != undefined) {
-				if (this.xlcell.XLSheet_SheetCellsDBID == undefined) {
-					this.xlcell.XLSheet_SheetCellsDBID = new NullInt64
-				}
-				this.xlcell.XLSheet_SheetCellsDBID.Int64 = this.xlcell.XLSheet_SheetCells_reverse.ID
-				this.xlcell.XLSheet_SheetCellsDBID.Valid = true
-				if (this.xlcell.XLSheet_SheetCellsDBID_Index == undefined) {
-					this.xlcell.XLSheet_SheetCellsDBID_Index = new NullInt64
-				}
-				this.xlcell.XLSheet_SheetCellsDBID_Index.Valid = true
-				this.xlcell.XLSheet_SheetCells_reverse = undefined // very important, otherwise, circular JSON
+			this.xlcell.XLRow_CellsDBID.Int64 = this.xlcell.XLRow_Cells_reverse.ID
+			this.xlcell.XLRow_CellsDBID.Valid = true
+			if (this.xlcell.XLRow_CellsDBID_Index == undefined) {
+				this.xlcell.XLRow_CellsDBID_Index = new NullInt64
 			}
+			this.xlcell.XLRow_CellsDBID_Index.Valid = true
+			this.xlcell.XLRow_Cells_reverse = undefined // very important, otherwise, circular JSON
+		}
+		if (this.xlcell.XLSheet_SheetCells_reverse != undefined) {
+			if (this.xlcell.XLSheet_SheetCellsDBID == undefined) {
+				this.xlcell.XLSheet_SheetCellsDBID = new NullInt64
+			}
+			this.xlcell.XLSheet_SheetCellsDBID.Int64 = this.xlcell.XLSheet_SheetCells_reverse.ID
+			this.xlcell.XLSheet_SheetCellsDBID.Valid = true
+			if (this.xlcell.XLSheet_SheetCellsDBID_Index == undefined) {
+				this.xlcell.XLSheet_SheetCellsDBID_Index = new NullInt64
+			}
+			this.xlcell.XLSheet_SheetCellsDBID_Index.Valid = true
+			this.xlcell.XLSheet_SheetCells_reverse = undefined // very important, otherwise, circular JSON
 		}
 
-		if (id != 0 && association == undefined) {
-
-			this.xlcellService.updateXLCell(this.xlcell)
-				.subscribe(xlcell => {
-					this.xlcellService.XLCellServiceChanged.next("update")
+		switch (this.state) {
+			case XLCellDetailComponentState.UPDATE_INSTANCE:
+				this.xlcellService.updateXLCell(this.xlcell)
+					.subscribe(xlcell => {
+						this.xlcellService.XLCellServiceChanged.next("update")
+					});
+				break;
+			default:
+				this.xlcellService.postXLCell(this.xlcell).subscribe(xlcell => {
+					this.xlcellService.XLCellServiceChanged.next("post")
+					this.xlcell = {} // reset fields
 				});
-		} else {
-			switch (association) {
-				// insertion point for saving value of ONE_MANY association reverse pointer
-				case "XLRow_Cells":
-					this.xlcell.XLRow_CellsDBID = new NullInt64
-					this.xlcell.XLRow_CellsDBID.Int64 = id
-					this.xlcell.XLRow_CellsDBID.Valid = true
-					this.xlcell.XLRow_CellsDBID_Index = new NullInt64
-					this.xlcell.XLRow_CellsDBID_Index.Valid = true
-					break
-				case "XLSheet_SheetCells":
-					this.xlcell.XLSheet_SheetCellsDBID = new NullInt64
-					this.xlcell.XLSheet_SheetCellsDBID.Int64 = id
-					this.xlcell.XLSheet_SheetCellsDBID.Valid = true
-					this.xlcell.XLSheet_SheetCellsDBID_Index = new NullInt64
-					this.xlcell.XLSheet_SheetCellsDBID_Index.Valid = true
-					break
-			}
-			this.xlcellService.postXLCell(this.xlcell).subscribe(xlcell => {
-
-				this.xlcellService.XLCellServiceChanged.next("post")
-
-				this.xlcell = {} // reset fields
-			});
 		}
 	}
 
