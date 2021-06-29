@@ -7,7 +7,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatButton } from '@angular/material/button'
 
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog'
-import { DialogData } from '../front-repo.service'
+import { DialogData, FrontRepoService, FrontRepo, NullInt64, SelectionMode } from '../front-repo.service'
 import { SelectionModel } from '@angular/cdk/collections';
 
 const allowMultiSelect = true;
@@ -16,7 +16,13 @@ import { Router, RouterState } from '@angular/router';
 import { XLSheetDB } from '../xlsheet-db'
 import { XLSheetService } from '../xlsheet.service'
 
-import { FrontRepoService, FrontRepo } from '../front-repo.service'
+// TableComponent is initilizaed from different routes
+// TableComponentMode detail different cases 
+enum TableComponentMode {
+  DISPLAY_MODE,
+  ONE_MANY_ASSOCIATION_MODE,
+  MANY_MANY_ASSOCIATION_MODE,
+}
 
 // generated table component
 @Component({
@@ -26,6 +32,9 @@ import { FrontRepoService, FrontRepo } from '../front-repo.service'
 })
 export class XLSheetsTableComponent implements OnInit {
 
+  // mode at invocation
+  mode: TableComponentMode
+
   // used if the component is called as a selection component of XLSheet instances
   selection: SelectionModel<XLSheetDB>;
   initialSelection = new Array<XLSheetDB>();
@@ -33,7 +42,6 @@ export class XLSheetsTableComponent implements OnInit {
   // the data source for the table
   xlsheets: XLSheetDB[];
   matTableDataSource: MatTableDataSource<XLSheetDB>
-
 
   // front repo, that will be referenced by this.xlsheets
   frontRepo: FrontRepo
@@ -48,50 +56,50 @@ export class XLSheetsTableComponent implements OnInit {
 
   ngAfterViewInit() {
 
-	// enable sorting on all fields (including pointers and reverse pointer)
-	this.matTableDataSource.sortingDataAccessor = (xlsheetDB: XLSheetDB, property: string) => {
-		switch (property) {
-				// insertion point for specific sorting accessor
-			case 'Name':
-				return xlsheetDB.Name;
+    // enable sorting on all fields (including pointers and reverse pointer)
+    this.matTableDataSource.sortingDataAccessor = (xlsheetDB: XLSheetDB, property: string) => {
+      switch (property) {
+        // insertion point for specific sorting accessor
+        case 'Name':
+          return xlsheetDB.Name;
 
-			case 'MaxRow':
-				return xlsheetDB.MaxRow;
+        case 'MaxRow':
+          return xlsheetDB.MaxRow;
 
-			case 'MaxCol':
-				return xlsheetDB.MaxCol;
+        case 'MaxCol':
+          return xlsheetDB.MaxCol;
 
-			case 'NbRows':
-				return xlsheetDB.NbRows;
+        case 'NbRows':
+          return xlsheetDB.NbRows;
 
-				case 'Sheets':
-					return this.frontRepo.XLFiles.get(xlsheetDB.XLFile_SheetsDBID.Int64)?.Name;
+        case 'Sheets':
+          return this.frontRepo.XLFiles.get(xlsheetDB.XLFile_SheetsDBID.Int64)?.Name;
 
-				default:
-					return XLSheetDB[property];
-		}
-	}; 
+        default:
+          return XLSheetDB[property];
+      }
+    };
 
-	// enable filtering on all fields (including pointers and reverse pointer, which is not done by default)
-	this.matTableDataSource.filterPredicate = (xlsheetDB: XLSheetDB, filter: string) => {
+    // enable filtering on all fields (including pointers and reverse pointer, which is not done by default)
+    this.matTableDataSource.filterPredicate = (xlsheetDB: XLSheetDB, filter: string) => {
 
-		// filtering is based on finding a lower case filter into a concatenated string
-		// the xlsheetDB properties
-		let mergedContent = ""
+      // filtering is based on finding a lower case filter into a concatenated string
+      // the xlsheetDB properties
+      let mergedContent = ""
 
-		// insertion point for merging of fields
-		mergedContent += xlsheetDB.Name.toLowerCase()
-		mergedContent += xlsheetDB.MaxRow.toString()
-		mergedContent += xlsheetDB.MaxCol.toString()
-		mergedContent += xlsheetDB.NbRows.toString()
-		if (xlsheetDB.XLFile_SheetsDBID.Int64 != 0) {
-        	mergedContent += this.frontRepo.XLFiles.get(xlsheetDB.XLFile_SheetsDBID.Int64)?.Name.toLowerCase()
-    	}
+      // insertion point for merging of fields
+      mergedContent += xlsheetDB.Name.toLowerCase()
+      mergedContent += xlsheetDB.MaxRow.toString()
+      mergedContent += xlsheetDB.MaxCol.toString()
+      mergedContent += xlsheetDB.NbRows.toString()
+      if (xlsheetDB.XLFile_SheetsDBID.Int64 != 0) {
+        mergedContent += this.frontRepo.XLFiles.get(xlsheetDB.XLFile_SheetsDBID.Int64)?.Name.toLowerCase()
+      }
 
 
-		let isSelected = mergedContent.includes(filter.toLowerCase())
-		return isSelected
-	};
+      let isSelected = mergedContent.includes(filter.toLowerCase())
+      return isSelected
+    };
 
     this.matTableDataSource.sort = this.sort;
     this.matTableDataSource.paginator = this.paginator;
@@ -112,6 +120,22 @@ export class XLSheetsTableComponent implements OnInit {
 
     private router: Router,
   ) {
+
+    // compute mode
+    if (dialogData == undefined) {
+      this.mode = TableComponentMode.DISPLAY_MODE
+    } else {
+      switch (dialogData.SelectionMode) {
+        case SelectionMode.ONE_MANY_ASSOCIATION_MODE:
+          this.mode = TableComponentMode.ONE_MANY_ASSOCIATION_MODE
+          break
+        case SelectionMode.MANY_MANY_ASSOCIATION_MODE:
+          this.mode = TableComponentMode.MANY_MANY_ASSOCIATION_MODE
+          break
+        default:
+      }
+    }
+
     // observable for changes in structs
     this.xlsheetService.XLSheetServiceChanged.subscribe(
       message => {
@@ -120,7 +144,7 @@ export class XLSheetsTableComponent implements OnInit {
         }
       }
     )
-    if (dialogData == undefined) {
+    if (this.mode == TableComponentMode.DISPLAY_MODE) {
       this.displayedColumns = ['ID', 'Edit', 'Delete', // insertion point for columns to display
         "Name",
         "MaxRow",
@@ -156,7 +180,7 @@ export class XLSheetsTableComponent implements OnInit {
         // insertion point for variables Recoveries
 
         // in case the component is called as a selection component
-        if (this.dialogData != undefined) {
+        if (this.mode == TableComponentMode.ONE_MANY_ASSOCIATION_MODE) {
           this.xlsheets.forEach(
             xlsheet => {
               let ID = this.dialogData.ID
@@ -166,6 +190,20 @@ export class XLSheetsTableComponent implements OnInit {
               }
             }
           )
+          this.selection = new SelectionModel<XLSheetDB>(allowMultiSelect, this.initialSelection);
+        }
+
+        if (this.mode == TableComponentMode.MANY_MANY_ASSOCIATION_MODE) {
+
+          let mapOfSourceInstances = this.frontRepo[this.dialogData.SourceStruct + "s"]
+          let sourceInstance = mapOfSourceInstances.get(this.dialogData.ID)
+
+          if (sourceInstance[this.dialogData.SourceField]) {
+            for (let associationInstance of sourceInstance[this.dialogData.SourceField]) {
+              let xlsheet = associationInstance[this.dialogData.IntermediateStructField]
+              this.initialSelection.push(xlsheet)
+            }
+          }
           this.selection = new SelectionModel<XLSheetDB>(allowMultiSelect, this.initialSelection);
         }
 
@@ -234,36 +272,106 @@ export class XLSheetsTableComponent implements OnInit {
 
   save() {
 
-    let toUpdate = new Set<XLSheetDB>()
+    if (this.mode == TableComponentMode.ONE_MANY_ASSOCIATION_MODE) {
 
-    // reset all initial selection of xlsheet that belong to xlsheet through Anarrayofb
-    this.initialSelection.forEach(
-      xlsheet => {
-        xlsheet[this.dialogData.ReversePointer].Int64 = 0
-        xlsheet[this.dialogData.ReversePointer].Valid = true
-        toUpdate.add(xlsheet)
-      }
-    )
+      let toUpdate = new Set<XLSheetDB>()
 
-    // from selection, set xlsheet that belong to xlsheet through Anarrayofb
-    this.selection.selected.forEach(
-      xlsheet => {
-        let ID = +this.dialogData.ID
-        xlsheet[this.dialogData.ReversePointer].Int64 = ID
-        xlsheet[this.dialogData.ReversePointer].Valid = true
-        toUpdate.add(xlsheet)
-      }
-    )
+      // reset all initial selection of xlsheet that belong to xlsheet
+      this.initialSelection.forEach(
+        xlsheet => {
+          xlsheet[this.dialogData.ReversePointer].Int64 = 0
+          xlsheet[this.dialogData.ReversePointer].Valid = true
+          toUpdate.add(xlsheet)
+        }
+      )
 
-    // update all xlsheet (only update selection & initial selection)
-    toUpdate.forEach(
-      xlsheet => {
-        this.xlsheetService.updateXLSheet(xlsheet)
-          .subscribe(xlsheet => {
-            this.xlsheetService.XLSheetServiceChanged.next("update")
-          });
+      // from selection, set xlsheet that belong to xlsheet
+      this.selection.selected.forEach(
+        xlsheet => {
+          let ID = +this.dialogData.ID
+          xlsheet[this.dialogData.ReversePointer].Int64 = ID
+          xlsheet[this.dialogData.ReversePointer].Valid = true
+          toUpdate.add(xlsheet)
+        }
+      )
+
+      // update all xlsheet (only update selection & initial selection)
+      toUpdate.forEach(
+        xlsheet => {
+          this.xlsheetService.updateXLSheet(xlsheet)
+            .subscribe(xlsheet => {
+              this.xlsheetService.XLSheetServiceChanged.next("update")
+            });
+        }
+      )
+    }
+
+    if (this.mode == TableComponentMode.MANY_MANY_ASSOCIATION_MODE) {
+
+      let mapOfSourceInstances = this.frontRepo[this.dialogData.SourceStruct + "s"]
+      let sourceInstance = mapOfSourceInstances.get(this.dialogData.ID)
+
+      // First, parse all instance of the association struct and remove the instance
+      // that have unselect
+      let unselectedXLSheet = new Set<number>()
+      for (let xlsheet of this.initialSelection) {
+        if (this.selection.selected.includes(xlsheet)) {
+          // console.log("xlsheet " + xlsheet.Name + " is still selected")
+        } else {
+          console.log("xlsheet " + xlsheet.Name + " has been unselected")
+          unselectedXLSheet.add(xlsheet.ID)
+          console.log("is unselected " + unselectedXLSheet.has(xlsheet.ID))
+        }
       }
-    )
+
+      // delete the association instance
+      if (sourceInstance[this.dialogData.SourceField]) {
+        for (let associationInstance of sourceInstance[this.dialogData.SourceField]) {
+          let xlsheet = associationInstance[this.dialogData.IntermediateStructField]
+          if (unselectedXLSheet.has(xlsheet.ID)) {
+
+            this.frontRepoService.deleteService( this.dialogData.IntermediateStruct, associationInstance )
+          }
+        }
+      }
+
+      // is the source array is emptyn create it
+      if (sourceInstance[this.dialogData.SourceField] == undefined) {
+        sourceInstance[this.dialogData.SourceField] = new Array<any>()
+      }
+
+      // second, parse all instance of the selected
+      if (sourceInstance[this.dialogData.SourceField]) {
+        this.selection.selected.forEach(
+          xlsheet => {
+            if (!this.initialSelection.includes(xlsheet)) {
+              // console.log("xlsheet " + xlsheet.Name + " has been added to the selection")
+
+              let associationInstance = {
+                Name: sourceInstance["Name"] + "-" + xlsheet.Name,
+              }
+
+              associationInstance[this.dialogData.IntermediateStructField+"ID"] = new NullInt64
+              associationInstance[this.dialogData.IntermediateStructField+"ID"].Int64 = xlsheet.ID
+              associationInstance[this.dialogData.IntermediateStructField+"ID"].Valid = true
+
+              associationInstance[this.dialogData.SourceStruct + "_" + this.dialogData.SourceField + "DBID"] = new NullInt64
+              associationInstance[this.dialogData.SourceStruct + "_" + this.dialogData.SourceField + "DBID"].Int64 = sourceInstance["ID"]
+              associationInstance[this.dialogData.SourceStruct + "_" + this.dialogData.SourceField + "DBID"].Valid = true
+
+              this.frontRepoService.postService( this.dialogData.IntermediateStruct, associationInstance )
+
+            } else {
+              // console.log("xlsheet " + xlsheet.Name + " is still selected")
+            }
+          }
+        )
+      }
+
+      // this.selection = new SelectionModel<XLSheetDB>(allowMultiSelect, this.initialSelection);
+    }
+
+    // why pizza ?
     this.dialogRef.close('Pizza!');
   }
 }

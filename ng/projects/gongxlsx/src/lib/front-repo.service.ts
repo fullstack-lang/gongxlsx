@@ -40,16 +40,45 @@ export const FrontRepoSingloton = new (FrontRepo)
 
 // define the type of nullable Int64 in order to support back pointers IDs
 export class NullInt64 {
-    Int64: number
-    Valid: boolean
+  Int64: number
+  Valid: boolean
 }
 
-// define the interface for information that is forwarded from the calling instance to 
+// the table component is called in different ways
+//
+// DISPLAY or ASSOCIATION MODE
+//
+// in ASSOCIATION MODE, it is invoked within a diaglo and a Dialog Data item is used to
+// configure the component
+// DialogData define the interface for information that is forwarded from the calling instance to 
 // the select table
-export interface DialogData {
+export class DialogData {
   ID: number; // ID of the calling instance
+
+  // the reverse pointer is the name of the generated field on the destination
+  // struct of the ONE-MANY association
   ReversePointer: string; // field of {{Structname}} that serve as reverse pointer
   OrderingMode: boolean; // if true, this is for ordering items
+
+  // there are different selection mode : ONE_MANY or MANY_MANY
+  SelectionMode: SelectionMode;
+
+  // used if SelectionMode is MANY_MANY_ASSOCIATION_MODE
+  //
+  // In Gong, a MANY-MANY association is implemented as a ONE-ZERO/ONE followed by a ONE_MANY association
+  // 
+  // in the MANY_MANY_ASSOCIATION_MODE case, we need also the Struct and the FieldName that are
+  // at the end of the ONE-MANY association
+  SourceStruct: string;  // The "Aclass"
+  SourceField: string; // the "AnarrayofbUse"
+  IntermediateStruct: string; // the "AclassBclassUse" 
+  IntermediateStructField: string; // the "Bclass" as field
+  NextAssociationStruct: string; // the "Bclass"
+}
+
+export enum SelectionMode {
+  ONE_MANY_ASSOCIATION_MODE = "ONE_MANY_ASSOCIATION_MODE",
+  MANY_MANY_ASSOCIATION_MODE = "MANY_MANY_ASSOCIATION_MODE",
 }
 
 //
@@ -71,6 +100,26 @@ export class FrontRepoService {
     private xlrowService: XLRowService,
     private xlsheetService: XLSheetService,
   ) { }
+
+  // postService provides a post function for each struct name
+  postService(structName: string, instanceToBePosted: any) {
+    let service = this[structName.toLowerCase() + "Service"]
+    service["post" + structName](instanceToBePosted).subscribe(
+      instance => {
+        service[structName + "ServiceChanged"].next("post")
+      }
+    );
+  }
+
+  // deleteService provides a delete function for each struct name
+  deleteService(structName: string, instanceToBeDeleted: any) {
+    let service = this[structName.toLowerCase() + "Service"]
+    service["delete" + structName](instanceToBeDeleted).subscribe(
+      instance => {
+        service[structName + "ServiceChanged"].next("delete")
+      }
+    );
+  }
 
   // typing of observable can be messy in typescript. Therefore, one force the type
   observableFrontRepo: [ // insertion point sub template 
@@ -122,14 +171,14 @@ export class FrontRepoService {
 
             // clear the map that counts XLCell in the GET
             FrontRepoSingloton.XLCells_batch.clear()
-            
+
             xlcells.forEach(
               xlcell => {
                 FrontRepoSingloton.XLCells.set(xlcell.ID, xlcell)
                 FrontRepoSingloton.XLCells_batch.set(xlcell.ID, xlcell)
               }
             )
-            
+
             // clear xlcells that are absent from the batch
             FrontRepoSingloton.XLCells.forEach(
               xlcell => {
@@ -138,7 +187,7 @@ export class FrontRepoService {
                 }
               }
             )
-            
+
             // sort XLCells_array array
             FrontRepoSingloton.XLCells_array.sort((t1, t2) => {
               if (t1.Name > t2.Name) {
@@ -149,20 +198,20 @@ export class FrontRepoService {
               }
               return 0;
             });
-            
+
             // init the array
             FrontRepoSingloton.XLFiles_array = xlfiles
 
             // clear the map that counts XLFile in the GET
             FrontRepoSingloton.XLFiles_batch.clear()
-            
+
             xlfiles.forEach(
               xlfile => {
                 FrontRepoSingloton.XLFiles.set(xlfile.ID, xlfile)
                 FrontRepoSingloton.XLFiles_batch.set(xlfile.ID, xlfile)
               }
             )
-            
+
             // clear xlfiles that are absent from the batch
             FrontRepoSingloton.XLFiles.forEach(
               xlfile => {
@@ -171,7 +220,7 @@ export class FrontRepoService {
                 }
               }
             )
-            
+
             // sort XLFiles_array array
             FrontRepoSingloton.XLFiles_array.sort((t1, t2) => {
               if (t1.Name > t2.Name) {
@@ -182,20 +231,20 @@ export class FrontRepoService {
               }
               return 0;
             });
-            
+
             // init the array
             FrontRepoSingloton.XLRows_array = xlrows
 
             // clear the map that counts XLRow in the GET
             FrontRepoSingloton.XLRows_batch.clear()
-            
+
             xlrows.forEach(
               xlrow => {
                 FrontRepoSingloton.XLRows.set(xlrow.ID, xlrow)
                 FrontRepoSingloton.XLRows_batch.set(xlrow.ID, xlrow)
               }
             )
-            
+
             // clear xlrows that are absent from the batch
             FrontRepoSingloton.XLRows.forEach(
               xlrow => {
@@ -204,7 +253,7 @@ export class FrontRepoService {
                 }
               }
             )
-            
+
             // sort XLRows_array array
             FrontRepoSingloton.XLRows_array.sort((t1, t2) => {
               if (t1.Name > t2.Name) {
@@ -215,20 +264,20 @@ export class FrontRepoService {
               }
               return 0;
             });
-            
+
             // init the array
             FrontRepoSingloton.XLSheets_array = xlsheets
 
             // clear the map that counts XLSheet in the GET
             FrontRepoSingloton.XLSheets_batch.clear()
-            
+
             xlsheets.forEach(
               xlsheet => {
                 FrontRepoSingloton.XLSheets.set(xlsheet.ID, xlsheet)
                 FrontRepoSingloton.XLSheets_batch.set(xlsheet.ID, xlsheet)
               }
             )
-            
+
             // clear xlsheets that are absent from the batch
             FrontRepoSingloton.XLSheets.forEach(
               xlsheet => {
@@ -237,7 +286,7 @@ export class FrontRepoService {
                 }
               }
             )
-            
+
             // sort XLSheets_array array
             FrontRepoSingloton.XLSheets_array.sort((t1, t2) => {
               if (t1.Name > t2.Name) {
@@ -248,7 +297,7 @@ export class FrontRepoService {
               }
               return 0;
             });
-            
+
 
             // 
             // Second Step: redeem pointers between instances (thanks to maps in the First Step)
@@ -368,9 +417,9 @@ export class FrontRepoService {
                 FrontRepoSingloton.XLCells.set(xlcell.ID, xlcell)
                 FrontRepoSingloton.XLCells_batch.set(xlcell.ID, xlcell)
 
-                // insertion point for redeeming ONE/ZERO-ONE associations 
+                // insertion point for redeeming ONE/ZERO-ONE associations
 
-                // insertion point for redeeming ONE-MANY associations 
+                // insertion point for redeeming ONE-MANY associations
                 // insertion point for slice of pointer field XLRow.Cells redeeming
                 {
                   let _xlrow = FrontRepoSingloton.XLRows.get(xlcell.XLRow_CellsDBID.Int64)
@@ -445,9 +494,9 @@ export class FrontRepoService {
                 FrontRepoSingloton.XLFiles.set(xlfile.ID, xlfile)
                 FrontRepoSingloton.XLFiles_batch.set(xlfile.ID, xlfile)
 
-                // insertion point for redeeming ONE/ZERO-ONE associations 
+                // insertion point for redeeming ONE/ZERO-ONE associations
 
-                // insertion point for redeeming ONE-MANY associations 
+                // insertion point for redeeming ONE-MANY associations
               }
             )
 
@@ -496,9 +545,9 @@ export class FrontRepoService {
                 FrontRepoSingloton.XLRows.set(xlrow.ID, xlrow)
                 FrontRepoSingloton.XLRows_batch.set(xlrow.ID, xlrow)
 
-                // insertion point for redeeming ONE/ZERO-ONE associations 
+                // insertion point for redeeming ONE/ZERO-ONE associations
 
-                // insertion point for redeeming ONE-MANY associations 
+                // insertion point for redeeming ONE-MANY associations
                 // insertion point for slice of pointer field XLSheet.Rows redeeming
                 {
                   let _xlsheet = FrontRepoSingloton.XLSheets.get(xlrow.XLSheet_RowsDBID.Int64)
@@ -560,9 +609,9 @@ export class FrontRepoService {
                 FrontRepoSingloton.XLSheets.set(xlsheet.ID, xlsheet)
                 FrontRepoSingloton.XLSheets_batch.set(xlsheet.ID, xlsheet)
 
-                // insertion point for redeeming ONE/ZERO-ONE associations 
+                // insertion point for redeeming ONE/ZERO-ONE associations
 
-                // insertion point for redeeming ONE-MANY associations 
+                // insertion point for redeeming ONE-MANY associations
                 // insertion point for slice of pointer field XLFile.Sheets redeeming
                 {
                   let _xlfile = FrontRepoSingloton.XLFiles.get(xlsheet.XLFile_SheetsDBID.Int64)
