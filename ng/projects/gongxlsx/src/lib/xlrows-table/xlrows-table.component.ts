@@ -69,7 +69,7 @@ export class XLRowsTableComponent implements OnInit {
         case 'NbCols':
           return xlrowDB.NbCols;
 
-        case 'Rows':
+        case 'XLSheet_Rows':
           return this.frontRepo.XLSheets.get(xlrowDB.XLSheet_RowsDBID.Int64)?.Name;
 
         default:
@@ -145,14 +145,14 @@ export class XLRowsTableComponent implements OnInit {
         "Name",
         "RowIndex",
         "NbCols",
-        "Rows",
+        "XLSheet_Rows",
       ]
     } else {
       this.displayedColumns = ['select', 'ID', // insertion point for columns to display
         "Name",
         "RowIndex",
         "NbCols",
-        "Rows",
+        "XLSheet_Rows",
       ]
       this.selection = new SelectionModel<XLRowDB>(allowMultiSelect, this.initialSelection);
     }

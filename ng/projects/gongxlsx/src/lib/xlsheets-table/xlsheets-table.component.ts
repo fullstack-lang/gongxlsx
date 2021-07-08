@@ -72,7 +72,7 @@ export class XLSheetsTableComponent implements OnInit {
         case 'NbRows':
           return xlsheetDB.NbRows;
 
-        case 'Sheets':
+        case 'XLFile_Sheets':
           return this.frontRepo.XLFiles.get(xlsheetDB.XLFile_SheetsDBID.Int64)?.Name;
 
         default:
@@ -150,7 +150,7 @@ export class XLSheetsTableComponent implements OnInit {
         "MaxRow",
         "MaxCol",
         "NbRows",
-        "Sheets",
+        "XLFile_Sheets",
       ]
     } else {
       this.displayedColumns = ['select', 'ID', // insertion point for columns to display
@@ -158,7 +158,7 @@ export class XLSheetsTableComponent implements OnInit {
         "MaxRow",
         "MaxCol",
         "NbRows",
-        "Sheets",
+        "XLFile_Sheets",
       ]
       this.selection = new SelectionModel<XLSheetDB>(allowMultiSelect, this.initialSelection);
     }

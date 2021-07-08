@@ -40,14 +40,14 @@
             </td>
         </ng-container>
         <!-- -->
-        <ng-container matColumnDef="Cells">
+        <ng-container matColumnDef="XLRow_Cells">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> <-- (XLRow) Cells </th>
             <td mat-cell *matCellDef="let xlcell">
                 {{frontRepo.XLRows.get(xlcell.XLRow_CellsDBID.Int64)?.Name}}
             </td>
         </ng-container>
         <!-- -->
-        <ng-container matColumnDef="SheetCells">
+        <ng-container matColumnDef="XLSheet_SheetCells">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> <-- (XLSheet) SheetCells </th>
             <td mat-cell *matCellDef="let xlcell">
                 {{frontRepo.XLSheets.get(xlcell.XLSheet_SheetCellsDBID.Int64)?.Name}}

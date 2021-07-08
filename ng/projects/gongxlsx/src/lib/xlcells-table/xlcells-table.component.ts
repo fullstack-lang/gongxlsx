@@ -69,10 +69,10 @@ export class XLCellsTableComponent implements OnInit {
         case 'Y':
           return xlcellDB.Y;
 
-        case 'Cells':
+        case 'XLRow_Cells':
           return this.frontRepo.XLRows.get(xlcellDB.XLRow_CellsDBID.Int64)?.Name;
 
-        case 'SheetCells':
+        case 'XLSheet_SheetCells':
           return this.frontRepo.XLSheets.get(xlcellDB.XLSheet_SheetCellsDBID.Int64)?.Name;
 
         default:
@@ -152,16 +152,16 @@ export class XLCellsTableComponent implements OnInit {
         "Name",
         "X",
         "Y",
-        "Cells",
-        "SheetCells",
+        "XLRow_Cells",
+        "XLSheet_SheetCells",
       ]
     } else {
       this.displayedColumns = ['select', 'ID', // insertion point for columns to display
         "Name",
         "X",
         "Y",
-        "Cells",
-        "SheetCells",
+        "XLRow_Cells",
+        "XLSheet_SheetCells",
       ]
       this.selection = new SelectionModel<XLCellDB>(allowMultiSelect, this.initialSelection);
     }
