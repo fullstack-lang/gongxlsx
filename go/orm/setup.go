@@ -53,6 +53,8 @@ func AutoMigrate(db *gorm.DB) {
 		panic("problem with migration " + msg + " on package github.com/fullstack-lang/gongxlsx/go")
 	}
 	log.Printf("Database Migration of package github.com/fullstack-lang/gongxlsx/go is OK")
+
+	BackRepo.init(db)
 }
 
 func ResetDB(db *gorm.DB) { // insertion point for reference to structs

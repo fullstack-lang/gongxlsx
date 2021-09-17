@@ -21,8 +21,8 @@ import (
 )
 
 // dummy variable to have the import declaration wihthout compile failure (even if no code needing this import is generated)
-var dummy_XLFile sql.NullBool
-var __XLFile_time__dummyDeclaration time.Duration
+var dummy_XLFile_sql sql.NullBool
+var dummy_XLFile_time time.Duration
 var dummy_XLFile_sort sort.Float64Slice
 
 // XLFileAPI is the input in POST API
