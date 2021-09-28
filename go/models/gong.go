@@ -60,17 +60,17 @@ type BackRepoInterface interface {
 
 // swagger:ignore instructs the gong compiler (gongc) to avoid this particular struct
 var Stage StageStruct = StageStruct{ // insertion point for array initiatialisation
-	XLCells:           make(map[*XLCell]struct{}, 0),
-	XLCells_mapString: make(map[string]*XLCell, 0),
+	XLCells:           make(map[*XLCell]struct{}),
+	XLCells_mapString: make(map[string]*XLCell),
 
-	XLFiles:           make(map[*XLFile]struct{}, 0),
-	XLFiles_mapString: make(map[string]*XLFile, 0),
+	XLFiles:           make(map[*XLFile]struct{}),
+	XLFiles_mapString: make(map[string]*XLFile),
 
-	XLRows:           make(map[*XLRow]struct{}, 0),
-	XLRows_mapString: make(map[string]*XLRow, 0),
+	XLRows:           make(map[*XLRow]struct{}),
+	XLRows_mapString: make(map[string]*XLRow),
 
-	XLSheets:           make(map[*XLSheet]struct{}, 0),
-	XLSheets_mapString: make(map[string]*XLSheet, 0),
+	XLSheets:           make(map[*XLSheet]struct{}),
+	XLSheets_mapString: make(map[string]*XLSheet),
 
 	// end of insertion point
 }
@@ -540,17 +540,17 @@ type AllModelsStructDeleteInterface interface { // insertion point for Callbacks
 }
 
 func (stage *StageStruct) Reset() { // insertion point for array reset
-	stage.XLCells = make(map[*XLCell]struct{}, 0)
-	stage.XLCells_mapString = make(map[string]*XLCell, 0)
+	stage.XLCells = make(map[*XLCell]struct{})
+	stage.XLCells_mapString = make(map[string]*XLCell)
 
-	stage.XLFiles = make(map[*XLFile]struct{}, 0)
-	stage.XLFiles_mapString = make(map[string]*XLFile, 0)
+	stage.XLFiles = make(map[*XLFile]struct{})
+	stage.XLFiles_mapString = make(map[string]*XLFile)
 
-	stage.XLRows = make(map[*XLRow]struct{}, 0)
-	stage.XLRows_mapString = make(map[string]*XLRow, 0)
+	stage.XLRows = make(map[*XLRow]struct{})
+	stage.XLRows_mapString = make(map[string]*XLRow)
 
-	stage.XLSheets = make(map[*XLSheet]struct{}, 0)
-	stage.XLSheets_mapString = make(map[string]*XLSheet, 0)
+	stage.XLSheets = make(map[*XLSheet]struct{})
+	stage.XLSheets_mapString = make(map[string]*XLSheet)
 
 }
 
