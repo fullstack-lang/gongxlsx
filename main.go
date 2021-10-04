@@ -41,9 +41,15 @@ func main() {
 	r.Use(cors.Default())
 
 	// setup GORM
-	orm.SetupModels(*logDBFlag, ":memory:")
-	// mandatory, otherwise, bizarre errors occurs
-	// db.DB().SetMaxOpenConns(1)
+	db := orm.SetupModels(*logDBFlag, ":memory:")
+	dbDB, err := db.DB()
+
+	// since gongsim is a multi threaded application. It is important to set up
+	// only one open connexion at a time
+	if err != nil {
+		panic("cannot access DB of db" + err.Error())
+	}
+	dbDB.SetMaxOpenConns(1)
 
 	controllers.RegisterControllers(r)
 

@@ -778,8 +778,7 @@ responses:
       XLRow_CellsDBID_Index:
         description: implementation of the index of the withing the slice
       XLSheet_SheetCellsDBID:
-        description: Implementation of a reverse ID for field XLSheet{}.SheetCells
-          []*XLCell
+        description: Implementation of a reverse ID for field XLSheet{}.SheetCells []*XLCell
       XLSheet_SheetCellsDBID_Index:
         description: implementation of the index of the withing the slice
       Y_Data:
@@ -807,8 +806,7 @@ responses:
           insertion for basic fields declaration
           Declation for basic field xlfileDB.Name {{BasicKind}} (to be completed)
       NbSheets_Data:
-        description: Declation for basic field xlfileDB.NbSheets {{BasicKind}} (to
-          be completed)
+        description: Declation for basic field xlfileDB.NbSheets {{BasicKind}} (to be completed)
       UpdatedAt:
         format: date-time
         type: string
@@ -835,11 +833,9 @@ responses:
           insertion for basic fields declaration
           Declation for basic field xlrowDB.Name {{BasicKind}} (to be completed)
       NbCols_Data:
-        description: Declation for basic field xlrowDB.NbCols {{BasicKind}} (to be
-          completed)
+        description: Declation for basic field xlrowDB.NbCols {{BasicKind}} (to be completed)
       RowIndex_Data:
-        description: Declation for basic field xlrowDB.RowIndex {{BasicKind}} (to
-          be completed)
+        description: Declation for basic field xlrowDB.RowIndex {{BasicKind}} (to be completed)
       UpdatedAt:
         format: date-time
         type: string
@@ -868,18 +864,15 @@ responses:
         format: uint64
         type: integer
       MaxCol_Data:
-        description: Declation for basic field xlsheetDB.MaxCol {{BasicKind}} (to
-          be completed)
+        description: Declation for basic field xlsheetDB.MaxCol {{BasicKind}} (to be completed)
       MaxRow_Data:
-        description: Declation for basic field xlsheetDB.MaxRow {{BasicKind}} (to
-          be completed)
+        description: Declation for basic field xlsheetDB.MaxRow {{BasicKind}} (to be completed)
       Name_Data:
         description: |-
           insertion for basic fields declaration
           Declation for basic field xlsheetDB.Name {{BasicKind}} (to be completed)
       NbRows_Data:
-        description: Declation for basic field xlsheetDB.NbRows {{BasicKind}} (to
-          be completed)
+        description: Declation for basic field xlsheetDB.NbRows {{BasicKind}} (to be completed)
       UpdatedAt:
         format: date-time
         type: string
