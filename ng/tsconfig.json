@@ -9,8 +9,6 @@
     "paths": {
       "gongxlsx": [
         "projects/gongxlsx/src/public-api.ts",
-        "dist/gongxlsx/gongxlsx",
-        "dist/gongxlsx"
       ]
     },
     "downlevelIteration": true,
