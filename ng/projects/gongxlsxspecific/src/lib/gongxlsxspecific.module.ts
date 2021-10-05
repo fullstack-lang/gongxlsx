@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { GongxlsxspecificComponent } from './gongxlsxspecific.component';
 import { DisplaysheetComponent } from './displaysheet/displaysheet.component';
+import {MatTableModule} from '@angular/material/table';
+
 
 
 
@@ -10,6 +12,7 @@ import { DisplaysheetComponent } from './displaysheet/displaysheet.component';
     DisplaysheetComponent
   ],
   imports: [
+    MatTableModule,
   ],
   exports: [
     GongxlsxspecificComponent,
