@@ -1,16 +1,19 @@
 import { NgModule } from '@angular/core';
 import { GongxlsxspecificComponent } from './gongxlsxspecific.component';
+import { DisplaysheetComponent } from './displaysheet/displaysheet.component';
 
 
 
 @NgModule({
   declarations: [
-    GongxlsxspecificComponent
+    GongxlsxspecificComponent,
+    DisplaysheetComponent
   ],
   imports: [
   ],
   exports: [
-    GongxlsxspecificComponent
+    GongxlsxspecificComponent,
+    DisplaysheetComponent
   ]
 })
 export class GongxlsxspecificModule { }
