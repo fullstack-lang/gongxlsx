@@ -7,6 +7,18 @@
     "sourceMap": true,
     "declaration": false,
     "paths": {
+      "@angular/*": [
+        "./node_modules/@angular/*"
+      ],
+      "rxjs/operators": [
+        "./node_modules/rxjs/operators"
+      ],
+      "rxjs": [
+        "./node_modules/rxjs"
+      ],
+      "tslib": [
+        "./node_modules/tslib"
+      ],
       "gongxlsx": [
         "projects/gongxlsx/src/public-api.ts",
       ],
