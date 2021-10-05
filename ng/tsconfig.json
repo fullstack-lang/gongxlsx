@@ -9,7 +9,13 @@
     "paths": {
       "gongxlsx": [
         "projects/gongxlsx/src/public-api.ts",
-      ]
+      ],
+      "gongxlsxspecific": [
+        "projects/gongxlsxspecific/src/public-api.ts"
+      ],
+      "angular-split": [
+        "./node_modules/angular-split"
+      ],
     },
     "downlevelIteration": true,
     "experimentalDecorators": true,

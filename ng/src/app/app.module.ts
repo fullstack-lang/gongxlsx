@@ -5,9 +5,11 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { GongxlsxModule } from 'gongxlsx'
+import { GongxlsxspecificModule } from 'gongxlsxspecific'
 
 // mandatory
 import { HttpClientModule } from '@angular/common/http';
+import { AngularSplitModule } from 'angular-split';
 
 @NgModule({
   declarations: [
@@ -17,8 +19,11 @@ import { HttpClientModule } from '@angular/common/http';
     BrowserModule,
     BrowserAnimationsModule,
 
+    AngularSplitModule,
+
     HttpClientModule,
-    GongxlsxModule
+    GongxlsxModule,
+    GongxlsxspecificModule
   ],
   providers: [],
   bootstrap: [AppComponent]

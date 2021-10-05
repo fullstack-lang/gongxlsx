@@ -160,6 +160,46 @@
           }
         }
       }
+    },
+    "gongxlsxspecific": {
+      "projectType": "library",
+      "root": "projects/gongxlsxspecific",
+      "sourceRoot": "projects/gongxlsxspecific/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/gongxlsxspecific/tsconfig.lib.json",
+            "project": "projects/gongxlsxspecific/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/gongxlsxspecific/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/gongxlsxspecific/src/test.ts",
+            "tsConfig": "projects/gongxlsxspecific/tsconfig.spec.json",
+            "karmaConfig": "projects/gongxlsxspecific/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/gongxlsxspecific/tsconfig.lib.json",
+              "projects/gongxlsxspecific/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
     }
   },
   "defaultProject": "ng"
