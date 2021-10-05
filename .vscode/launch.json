@@ -33,6 +33,19 @@
             ]
         },
         {
+            "name": "go server on dub compare",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "args": [
+                "-compare",
+                "../../../r/DEV_COHERENCE/compareDUB/CCTP SySCA V3 DUB0.4.2 export DOORS.xlsx",
+                "../../../r/DEV_COHERENCE/compareDUB/20210324  AC-PJD-6330-0001-MOSS 1.0 PJD CLA v04.xlsx",
+                // "-compare=\"../../../r/DEV_COHERENCE/compareDUB/CCTP SySCA V3 DUB0.4.2 export DOORS.xls\""
+            ]
+        },
+        {
             "name": "Launch firefox localhost:4200",
             "type": "firefox",
             "request": "launch",
