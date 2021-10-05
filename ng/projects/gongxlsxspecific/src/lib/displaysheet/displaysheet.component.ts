@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import * as gongxlsx from 'gongxlsx'
 
@@ -9,17 +9,7 @@ export interface PeriodicElement {
   symbol: string;
 }
 
-const ELEMENT_DATA: PeriodicElement[] = [
-  {position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H'},
-  {position: 2, name: 'Helium', weight: 4.0026, symbol: 'He'},
-  {position: 3, name: 'Lithium', weight: 6.941, symbol: 'Li'},
-  {position: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be'},
-  {position: 5, name: 'Boron', weight: 10.811, symbol: 'B'},
-  {position: 6, name: 'Carbon', weight: 12.0107, symbol: 'C'},
-  {position: 7, name: 'Nitrogen', weight: 14.0067, symbol: 'N'},
-  {position: 8, name: 'Oxygen', weight: 15.9994, symbol: 'O'},
-  {position: 9, name: 'Fluorine', weight: 18.9984, symbol: 'F'},
-  {position: 10, name: 'Neon', weight: 20.1797, symbol: 'Ne'},
+const ELEMENT_DATA: any[] = [
 ];
 @Component({
   selector: 'lib-displaysheet',
@@ -28,30 +18,9 @@ const ELEMENT_DATA: PeriodicElement[] = [
 })
 export class DisplaysheetComponent implements OnInit {
 
-  columns = [
-    {
-      columnDef: 'position',
-      header: 'No.',
-      cell: (element: PeriodicElement) => `${element.position}`
-    },
-    {
-      columnDef: 'name',
-      header: 'Name',
-      cell: (element: PeriodicElement) => `${element.name}`
-    },
-    {
-      columnDef: 'weight',
-      header: 'Weight',
-      cell: (element: PeriodicElement) => `${element.weight}`
-    },
-    {
-      columnDef: 'symbol',
-      header: 'Symbol',
-      cell: (element: PeriodicElement) => `${element.symbol}`
-    }
-  ];
+  columns = [];
   dataSource = ELEMENT_DATA;
-  displayedColumns = this.columns.map(c => c.columnDef);
+  displayedColumns: string[]
 
   public gongxlsxFrontRepo: gongxlsx.FrontRepo
 
@@ -60,44 +29,64 @@ export class DisplaysheetComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // this.gongxlsxFrontRepoService.pull().subscribe(
-    //   gongxlsxsFrontRepo => {
-    //     this.gongxlsxFrontRepo = gongxlsxsFrontRepo
+    this.gongxlsxFrontRepoService.pull().subscribe(
+      gongxlsxsFrontRepo => {
+        this.gongxlsxFrontRepo = gongxlsxsFrontRepo
 
-    //     if (this.gongxlsxFrontRepo.XLFiles.size == 0) {
-    //       console.error("cannot deal with 0 file")
-    //     }
+        if (this.gongxlsxFrontRepo.XLFiles.size == 0) {
+          console.error("cannot deal with 0 file")
+        }
 
-    //     let gongXLFile = this.gongxlsxFrontRepo.XLFiles_array[0];
+        let gongXLFile = this.gongxlsxFrontRepo.XLFiles_array[0];
 
-    //     if (gongXLFile.Sheets.length == 0) {
-    //       console.error("cannot deal with 0 sheets")
-    //     }
+        if (gongXLFile.Sheets.length == 0) {
+          console.error("cannot deal with 0 sheets")
+        }
 
-    //     let gongXLSheet = gongXLFile.Sheets[0]
+        let gongXLSheet = gongXLFile.Sheets[0]
 
-    //     for (let gongXLCell of gongXLSheet.SheetCells) {
+        // cells are provided in random order. on need to order them in the correct order
+        let contentArray = new Array<string[]>(gongXLSheet.NbRows)
 
-    //       // only display cells of first line
-    //       if (gongXLCell.Y == 0) {
-    //         console.log(gongXLCell.Name)
+        for (let rowNb = 0; rowNb < gongXLSheet.NbRows; rowNb++) {
+          contentArray[rowNb] = new Array<string>(gongXLSheet.MaxCol)
+        }
 
-    //         // this.columns.push(
-    //         //   {
-    //         //     columnDef: gongXLCell.Name,
-    //         //     header: gongXLCell.Name,
-    //         //     cell: (element: PeriodicElement) => `${element.symbol}`
-    //         //   }
-    //         // )
-    //       }
-    //     }
+        for (let gongXLCell of gongXLSheet.SheetCells) {
+          contentArray[gongXLCell.Y][gongXLCell.X] = gongXLCell.Name
+        }
 
-    //     // make up displayed columns
-    //     // this.displayedColumns = this.columns.map(c => c.columnDef);
+        // now one need to fill up element data with synthetic object
+        for (let rowNb = 1; rowNb < gongXLSheet.NbRows; rowNb++) {
+          let oneRow = {}
+          for (let columnNb = 0; columnNb < gongXLSheet.MaxCol; columnNb++) {
+            oneRow[contentArray[0][columnNb]] = contentArray[rowNb][columnNb]
+          }
+          ELEMENT_DATA.push(oneRow)
+        }
 
-    //     console.log(this.displayedColumns)
-    //   }
-    // )
+
+        for (let gongXLCell of gongXLSheet.SheetCells) {
+          // only display cells of first line
+          if (gongXLCell.Y == 0) {
+            console.log(gongXLCell.Name)
+
+            this.columns.push(
+              {
+                columnDef: gongXLCell.Name,
+                header: gongXLCell.Name,
+                cell: (element: PeriodicElement) => `${element[gongXLCell.Name]}`
+              }
+            )
+          }
+        }
+
+        // make up displayed columns
+        this.displayedColumns = this.columns.map(c => c.columnDef);
+
+        console.log(this.displayedColumns)
+      }
+    )
   }
 
 }
