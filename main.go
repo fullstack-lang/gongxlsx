@@ -26,7 +26,7 @@ var (
 
 func main() {
 
-	log.SetPrefix("gongxslx: ")
+	log.SetPrefix("gongxlsx: ")
 	log.SetFlags(0)
 
 	// parse program arguments
