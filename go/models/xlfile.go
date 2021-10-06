@@ -43,7 +43,6 @@ func (xlfile *XLFile) Open(path string) {
 		for !emptyRow {
 
 			cell, err := sh.Cell(rowIndex, 0)
-			rowIndex = rowIndex + 1
 			if err != nil {
 				continue
 			}
@@ -58,7 +57,7 @@ func (xlfile *XLFile) Open(path string) {
 			xlrow.Name = cell.Value
 			xlsheet.Rows = append(xlsheet.Rows, xlrow)
 
-			xlsheet.NbRows = rowIndex
+			xlsheet.NbRows = rowIndex + 1
 
 			// get cells
 			for colIndex := 0; colIndex < xlsheet.MaxCol; colIndex = colIndex + 1 {
@@ -75,6 +74,7 @@ func (xlfile *XLFile) Open(path string) {
 				xlrow.Cells = append(xlrow.Cells, xlcell)
 				xlsheet.SheetCells = append(xlsheet.SheetCells, xlcell)
 			}
+			rowIndex = rowIndex + 1
 		}
 		fmt.Println("Sheet ", xlsheet.Name, "Nb Rows", xlsheet.NbRows)
 	}

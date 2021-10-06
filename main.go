@@ -19,9 +19,9 @@ import (
 )
 
 var (
-	logDBFlag  = flag.Bool("logDB", false, "log mode for db")
-	logGINFlag = flag.Bool("logGIN", false, "log mode for gin")
-	apiFlag    = flag.Bool("api", false, "it true, use api controllers instead of default controllers")
+	logDBFlag   = flag.Bool("logDB", false, "log mode for db")
+	logGINFlag  = flag.Bool("logGIN", false, "log mode for gin")
+	compareFlag = flag.String("compare", "sampleFile", "compare to the other file")
 )
 
 func main() {
@@ -61,12 +61,21 @@ func main() {
 		c.Abort()
 	})
 
-	if len(flag.Args()) != 1 {
-		log.Panicf("should be a file")
+	nbArgs := flag.Args()
+	if len(nbArgs) < 1 {
+		log.Panicf("there should be at least one file argument")
 	}
 
 	file := new(models.XLFile).Stage()
 	file.Open(flag.Arg(0))
+
+	if *compareFlag == "sampleFile" {
+		log.Println("no file to compare")
+	} else {
+		fileToCompare := new(models.XLFile).Stage()
+		fileToCompare.Open(*compareFlag)
+
+	}
 
 	models.Stage.Commit()
 
