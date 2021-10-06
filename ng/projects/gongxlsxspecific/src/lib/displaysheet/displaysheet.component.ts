@@ -66,19 +66,15 @@ export class DisplaysheetComponent implements OnInit {
         }
 
 
-        for (let gongXLCell of gongXLSheet.SheetCells) {
-          // only display cells of first line
-          if (gongXLCell.Y == 0) {
-            console.log(gongXLCell.Name)
+        for (let columnNb = 0; columnNb < gongXLSheet.MaxCol; columnNb++) {
 
-            this.columns.push(
-              {
-                columnDef: gongXLCell.Name,
-                header: gongXLCell.Name,
-                cell: (element: PeriodicElement) => `${element[gongXLCell.Name]}`
-              }
-            )
-          }
+          this.columns.push(
+            {
+              columnDef: contentArray[0][columnNb],
+              header: contentArray[0][columnNb],
+              cell: (element: any) => `${element[contentArray[0][columnNb]]}`
+            }
+          )
         }
 
         // make up displayed columns
