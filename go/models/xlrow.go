@@ -10,7 +10,5 @@ type XLRow struct {
 
 	row *xlsx.Row
 
-	NbCols int
-
 	Cells []*XLCell
 }
