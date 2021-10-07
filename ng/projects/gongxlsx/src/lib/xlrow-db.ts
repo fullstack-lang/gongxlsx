@@ -13,7 +13,6 @@ export class XLRowDB {
 	// insertion point for basic fields declarations
 	Name?: string
 	RowIndex?: number
-	NbCols?: number
 
 	// insertion point for other declarations
 	Cells?: Array<XLCellDB>

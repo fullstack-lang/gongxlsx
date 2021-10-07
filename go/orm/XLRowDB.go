@@ -68,9 +68,6 @@ type XLRowDB struct {
 	// Declation for basic field xlrowDB.RowIndex {{BasicKind}} (to be completed)
 	RowIndex_Data sql.NullInt64
 
-	// Declation for basic field xlrowDB.NbCols {{BasicKind}} (to be completed)
-	NbCols_Data sql.NullInt64
-
 	// encoding of pointers
 	XLRowPointersEnconding
 }
@@ -95,8 +92,6 @@ type XLRowWOP struct {
 	Name string
 
 	RowIndex int
-
-	NbCols int
 	// insertion for WOP pointer fields
 }
 
@@ -105,7 +100,6 @@ var XLRow_Fields = []string{
 	"ID",
 	"Name",
 	"RowIndex",
-	"NbCols",
 }
 
 type BackRepoXLRowStruct struct {
@@ -438,9 +432,6 @@ func (xlrowDB *XLRowDB) CopyBasicFieldsFromXLRow(xlrow *models.XLRow) {
 	xlrowDB.RowIndex_Data.Int64 = int64(xlrow.RowIndex)
 	xlrowDB.RowIndex_Data.Valid = true
 
-	xlrowDB.NbCols_Data.Int64 = int64(xlrow.NbCols)
-	xlrowDB.NbCols_Data.Valid = true
-
 }
 
 // CopyBasicFieldsFromXLRowWOP
@@ -452,9 +443,6 @@ func (xlrowDB *XLRowDB) CopyBasicFieldsFromXLRowWOP(xlrow *XLRowWOP) {
 	xlrowDB.RowIndex_Data.Int64 = int64(xlrow.RowIndex)
 	xlrowDB.RowIndex_Data.Valid = true
 
-	xlrowDB.NbCols_Data.Int64 = int64(xlrow.NbCols)
-	xlrowDB.NbCols_Data.Valid = true
-
 }
 
 // CopyBasicFieldsToXLRow
@@ -462,7 +450,6 @@ func (xlrowDB *XLRowDB) CopyBasicFieldsToXLRow(xlrow *models.XLRow) {
 	// insertion point for checkout of basic fields (back repo to stage)
 	xlrow.Name = xlrowDB.Name_Data.String
 	xlrow.RowIndex = int(xlrowDB.RowIndex_Data.Int64)
-	xlrow.NbCols = int(xlrowDB.NbCols_Data.Int64)
 }
 
 // CopyBasicFieldsToXLRowWOP
@@ -471,7 +458,6 @@ func (xlrowDB *XLRowDB) CopyBasicFieldsToXLRowWOP(xlrow *XLRowWOP) {
 	// insertion point for checkout of basic fields (back repo to stage)
 	xlrow.Name = xlrowDB.Name_Data.String
 	xlrow.RowIndex = int(xlrowDB.RowIndex_Data.Int64)
-	xlrow.NbCols = int(xlrowDB.NbCols_Data.Int64)
 }
 
 // Backup generates a json file from a slice of all XLRowDB instances in the backrepo

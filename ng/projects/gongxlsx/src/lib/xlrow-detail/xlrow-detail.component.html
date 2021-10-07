@@ -27,12 +27,6 @@
         <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlrow.RowIndex" [ngModelOptions]="{standalone: true}">
     </mat-form-field>
 
-    <!-- -->
-    <mat-form-field class="detail-full-width">
-        <mat-label>NbCols</mat-label>
-        <input type="number" [ngModelOptions]="{standalone: true}" matInput [(ngModel)]="xlrow.NbCols" [ngModelOptions]="{standalone: true}">
-    </mat-form-field>
-
     <mat-grid-list cols="5" rowHeight="2:1">
         <mat-grid-tile [colspan]="3">
             <button mat-raised-button (click)="openReverseSelection('XLCell', 'XLRow_CellsDBID', 'ONE_MANY_ASSOCIATION_MODE', '', '', '')">Cells</button>

@@ -66,9 +66,6 @@ export class XLRowsTableComponent implements OnInit {
         case 'RowIndex':
           return xlrowDB.RowIndex;
 
-        case 'NbCols':
-          return xlrowDB.NbCols;
-
         case 'XLSheet_Rows':
           return this.frontRepo.XLSheets.get(xlrowDB.XLSheet_RowsDBID.Int64)?.Name;
 
@@ -87,7 +84,6 @@ export class XLRowsTableComponent implements OnInit {
       // insertion point for merging of fields
       mergedContent += xlrowDB.Name.toLowerCase()
       mergedContent += xlrowDB.RowIndex.toString()
-      mergedContent += xlrowDB.NbCols.toString()
       if (xlrowDB.XLSheet_RowsDBID.Int64 != 0) {
         mergedContent += this.frontRepo.XLSheets.get(xlrowDB.XLSheet_RowsDBID.Int64)?.Name.toLowerCase()
       }
@@ -144,14 +140,12 @@ export class XLRowsTableComponent implements OnInit {
       this.displayedColumns = ['ID', 'Edit', 'Delete', // insertion point for columns to display
         "Name",
         "RowIndex",
-        "NbCols",
         "XLSheet_Rows",
       ]
     } else {
       this.displayedColumns = ['select', 'ID', // insertion point for columns to display
         "Name",
         "RowIndex",
-        "NbCols",
         "XLSheet_Rows",
       ]
       this.selection = new SelectionModel<XLRowDB>(allowMultiSelect, this.initialSelection);
