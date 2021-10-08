@@ -33,26 +33,26 @@ enum TableComponentMode {
 export class XLCellsTableComponent implements OnInit {
 
   // mode at invocation
-  mode: TableComponentMode
+  mode: TableComponentMode = TableComponentMode.DISPLAY_MODE
 
   // used if the component is called as a selection component of XLCell instances
-  selection: SelectionModel<XLCellDB>;
+  selection: SelectionModel<XLCellDB> = new SelectionModel<XLCellDB>(false, []);
   initialSelection = new Array<XLCellDB>();
 
   // the data source for the table
-  xlcells: XLCellDB[];
-  matTableDataSource: MatTableDataSource<XLCellDB>
+  xlcells: XLCellDB[] = [];
+  matTableDataSource: MatTableDataSource<XLCellDB> = new MatTableDataSource()
 
   // front repo, that will be referenced by this.xlcells
-  frontRepo: FrontRepo
+  frontRepo: FrontRepo = new FrontRepo
 
   // displayedColumns is referenced by the MatTable component for specify what columns
   // have to be displayed and in what order
   displayedColumns: string[];
 
   // for sorting & pagination
-  @ViewChild(MatSort) sort: MatSort;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatSort) sort: MatSort = new MatSort;
+  @ViewChild(MatPaginator) paginator?: MatPaginator;
 
   ngAfterViewInit() {
 
@@ -61,22 +61,22 @@ export class XLCellsTableComponent implements OnInit {
       switch (property) {
         // insertion point for specific sorting accessor
         case 'Name':
-          return xlcellDB.Name;
+          return xlcellDB.Name!;
 
         case 'X':
-          return xlcellDB.X;
+          return xlcellDB.X!;
 
         case 'Y':
-          return xlcellDB.Y;
+          return xlcellDB.Y!;
 
         case 'XLRow_Cells':
-          return this.frontRepo.XLRows.get(xlcellDB.XLRow_CellsDBID.Int64)?.Name;
+          return this.frontRepo.XLRows.get(xlcellDB.XLRow_CellsDBID!.Int64)!.Name!;
 
         case 'XLSheet_SheetCells':
-          return this.frontRepo.XLSheets.get(xlcellDB.XLSheet_SheetCellsDBID.Int64)?.Name;
+          return this.frontRepo.XLSheets.get(xlcellDB.XLSheet_SheetCellsDBID!.Int64)!.Name!;
 
         default:
-          return XLCellDB[property];
+          return "";
       }
     };
 
@@ -333,7 +333,7 @@ export class XLCellsTableComponent implements OnInit {
           let xlcell = associationInstance[this.dialogData.IntermediateStructField]
           if (unselectedXLCell.has(xlcell.ID)) {
 
-            this.frontRepoService.deleteService( this.dialogData.IntermediateStruct, associationInstance )
+            this.frontRepoService.deleteService(this.dialogData.IntermediateStruct, associationInstance)
           }
         }
       }
@@ -354,15 +354,15 @@ export class XLCellsTableComponent implements OnInit {
                 Name: sourceInstance["Name"] + "-" + xlcell.Name,
               }
 
-              associationInstance[this.dialogData.IntermediateStructField+"ID"] = new NullInt64
-              associationInstance[this.dialogData.IntermediateStructField+"ID"].Int64 = xlcell.ID
-              associationInstance[this.dialogData.IntermediateStructField+"ID"].Valid = true
+              associationInstance[this.dialogData.IntermediateStructField + "ID"] = new NullInt64
+              associationInstance[this.dialogData.IntermediateStructField + "ID"].Int64 = xlcell.ID
+              associationInstance[this.dialogData.IntermediateStructField + "ID"].Valid = true
 
               associationInstance[this.dialogData.SourceStruct + "_" + this.dialogData.SourceField + "DBID"] = new NullInt64
               associationInstance[this.dialogData.SourceStruct + "_" + this.dialogData.SourceField + "DBID"].Int64 = sourceInstance["ID"]
               associationInstance[this.dialogData.SourceStruct + "_" + this.dialogData.SourceField + "DBID"].Valid = true
 
-              this.frontRepoService.postService( this.dialogData.IntermediateStruct, associationInstance )
+              this.frontRepoService.postService(this.dialogData.IntermediateStruct, associationInstance)
 
             } else {
               // console.log("xlcell " + xlcell.Name + " is still selected")

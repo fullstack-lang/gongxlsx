@@ -37,10 +37,10 @@ export class XLCellDetailComponent implements OnInit {
 	// insertion point for declarations
 
 	// the XLCellDB of interest
-	xlcell: XLCellDB;
+	xlcell?: XLCellDB;
 
 	// front repo
-	frontRepo: FrontRepo
+	frontRepo?: FrontRepo
 
 	// this stores the information related to string fields
 	// if false, the field is inputed with an <input ...> form 
@@ -48,15 +48,15 @@ export class XLCellDetailComponent implements OnInit {
 	mapFields_displayAsTextArea = new Map<string, boolean>()
 
 	// the state at initialization (CREATION, UPDATE or CREATE with one association set)
-	state: XLCellDetailComponentState
+	state?: XLCellDetailComponentState
 
 	// in UDPATE state, if is the id of the instance to update
 	// in CREATE state with one association set, this is the id of the associated instance
-	id: number
+	id?: number
 
 	// in CREATE state with one association set, this is the id of the associated instance
-	originStruct: string
-	originStructFieldName: string
+	originStruct?: string
+	originStructFieldName?: string
 
 	constructor(
 		private xlcellService: XLCellService,
@@ -70,9 +70,9 @@ export class XLCellDetailComponent implements OnInit {
 	ngOnInit(): void {
 
 		// compute state
-		this.id = +this.route.snapshot.paramMap.get('id');
-		this.originStruct = this.route.snapshot.paramMap.get('originStruct');
-		this.originStructFieldName = this.route.snapshot.paramMap.get('originStructFieldName');
+		this.id = +this.route.snapshot!.paramMap!.get('id')!;
+		this.originStruct = this.route.snapshot!.paramMap!.get('originStruct')!;
+		this.originStructFieldName = this.route.snapshot!.paramMap!.get('originStructFieldName')!;
 
 		const association = this.route.snapshot.paramMap.get('association');
 		if (this.id == 0) {
@@ -122,16 +122,16 @@ export class XLCellDetailComponent implements OnInit {
 						this.xlcell = new (XLCellDB)
 						break;
 					case XLCellDetailComponentState.UPDATE_INSTANCE:
-						this.xlcell = frontRepo.XLCells.get(this.id)
+						this.xlcell = frontRepo.XLCells.get(this.id!)
 						break;
 					// insertion point for init of association field
 					case XLCellDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLRow_Cells_SET:
 						this.xlcell = new (XLCellDB)
-						this.xlcell.XLRow_Cells_reverse = frontRepo.XLRows.get(this.id)
+						this.xlcell.XLRow_Cells_reverse = frontRepo.XLRows.get(this.id!)
 						break;
 					case XLCellDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLSheet_SheetCells_SET:
 						this.xlcell = new (XLCellDB)
-						this.xlcell.XLSheet_SheetCells_reverse = frontRepo.XLSheets.get(this.id)
+						this.xlcell.XLSheet_SheetCells_reverse = frontRepo.XLSheets.get(this.id!)
 						break;
 					default:
 						console.log(this.state + " is unkown state")
@@ -154,11 +154,11 @@ export class XLCellDetailComponent implements OnInit {
 		// save from the front pointer space to the non pointer space for serialization
 
 		// insertion point for translation/nullation of each pointers
-		if (this.xlcell.XLRow_Cells_reverse != undefined) {
+		if (this.xlcell?.XLRow_Cells_reverse != undefined) {
 			if (this.xlcell.XLRow_CellsDBID == undefined) {
 				this.xlcell.XLRow_CellsDBID = new NullInt64
 			}
-			this.xlcell.XLRow_CellsDBID.Int64 = this.xlcell.XLRow_Cells_reverse.ID
+			this.xlcell.XLRow_CellsDBID.Int64 = this.xlcell.XLRow_Cells_reverse.ID!
 			this.xlcell.XLRow_CellsDBID.Valid = true
 			if (this.xlcell.XLRow_CellsDBID_Index == undefined) {
 				this.xlcell.XLRow_CellsDBID_Index = new NullInt64
@@ -166,11 +166,11 @@ export class XLCellDetailComponent implements OnInit {
 			this.xlcell.XLRow_CellsDBID_Index.Valid = true
 			this.xlcell.XLRow_Cells_reverse = undefined // very important, otherwise, circular JSON
 		}
-		if (this.xlcell.XLSheet_SheetCells_reverse != undefined) {
+		if (this.xlcell?.XLSheet_SheetCells_reverse != undefined) {
 			if (this.xlcell.XLSheet_SheetCellsDBID == undefined) {
 				this.xlcell.XLSheet_SheetCellsDBID = new NullInt64
 			}
-			this.xlcell.XLSheet_SheetCellsDBID.Int64 = this.xlcell.XLSheet_SheetCells_reverse.ID
+			this.xlcell.XLSheet_SheetCellsDBID.Int64 = this.xlcell.XLSheet_SheetCells_reverse.ID!
 			this.xlcell.XLSheet_SheetCellsDBID.Valid = true
 			if (this.xlcell.XLSheet_SheetCellsDBID_Index == undefined) {
 				this.xlcell.XLSheet_SheetCellsDBID_Index = new NullInt64
@@ -181,13 +181,13 @@ export class XLCellDetailComponent implements OnInit {
 
 		switch (this.state) {
 			case XLCellDetailComponentState.UPDATE_INSTANCE:
-				this.xlcellService.updateXLCell(this.xlcell)
+				this.xlcellService.updateXLCell(this.xlcell!)
 					.subscribe(xlcell => {
 						this.xlcellService.XLCellServiceChanged.next("update")
 					});
 				break;
 			default:
-				this.xlcellService.postXLCell(this.xlcell).subscribe(xlcell => {
+				this.xlcellService.postXLCell(this.xlcell!).subscribe(xlcell => {
 					this.xlcellService.XLCellServiceChanged.next("post")
 					this.xlcell = {} // reset fields
 				});
@@ -198,7 +198,7 @@ export class XLCellDetailComponent implements OnInit {
 	// ONE-MANY association
 	// It uses the MapOfComponent provided by the front repo
 	openReverseSelection(AssociatedStruct: string, reverseField: string, selectionMode: string,
-		sourceField: string, intermediateStructField: string, nextAssociatedStruct: string ) {
+		sourceField: string, intermediateStructField: string, nextAssociatedStruct: string) {
 
 		console.log("mode " + selectionMode)
 
@@ -212,7 +212,7 @@ export class XLCellDetailComponent implements OnInit {
 		dialogConfig.height = "50%"
 		if (selectionMode == SelectionMode.ONE_MANY_ASSOCIATION_MODE) {
 
-			dialogData.ID = this.xlcell.ID
+			dialogData.ID = this.xlcell!.ID!
 			dialogData.ReversePointer = reverseField
 			dialogData.OrderingMode = false
 			dialogData.SelectionMode = selectionMode
@@ -228,7 +228,7 @@ export class XLCellDetailComponent implements OnInit {
 			});
 		}
 		if (selectionMode == SelectionMode.MANY_MANY_ASSOCIATION_MODE) {
-			dialogData.ID = this.xlcell.ID
+			dialogData.ID = this.xlcell!.ID!
 			dialogData.ReversePointer = reverseField
 			dialogData.OrderingMode = false
 			dialogData.SelectionMode = selectionMode
@@ -264,7 +264,7 @@ export class XLCellDetailComponent implements OnInit {
 		// dialogConfig.disableClose = true;
 		dialogConfig.autoFocus = true;
 		dialogConfig.data = {
-			ID: this.xlcell.ID,
+			ID: this.xlcell!.ID,
 			ReversePointer: reverseField,
 			OrderingMode: true,
 		};
@@ -279,9 +279,9 @@ export class XLCellDetailComponent implements OnInit {
 		});
 	}
 
-	fillUpNameIfEmpty(event) {
-		if (this.xlcell.Name == undefined) {
-			this.xlcell.Name = event.value.Name
+	fillUpNameIfEmpty(event: { value: { Name: string | undefined; }; }) {
+		if (this.xlcell!.Name == undefined) {
+			this.xlcell!.Name = event.value.Name
 		}
 	}
 
@@ -296,7 +296,7 @@ export class XLCellDetailComponent implements OnInit {
 
 	isATextArea(fieldName: string): boolean {
 		if (this.mapFields_displayAsTextArea.has(fieldName)) {
-			return this.mapFields_displayAsTextArea.get(fieldName)
+			return this.mapFields_displayAsTextArea.has(fieldName)
 		} else {
 			return false
 		}
