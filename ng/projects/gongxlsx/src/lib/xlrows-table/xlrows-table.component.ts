@@ -173,16 +173,14 @@ export class XLRowsTableComponent implements OnInit {
 
         // in case the component is called as a selection component
         if (this.mode == TableComponentMode.ONE_MANY_ASSOCIATION_MODE) {
-          this.xlrows.forEach(
-            xlrow => {
-              let ID = this.dialogData.ID
-              let revPointer = xlrow[this.dialogData.ReversePointer as keyof XLRowDB] as unknown as NullInt64
-              if (revPointer.Int64 == ID) {
-                this.initialSelection.push(xlrow)
-              }
+          for (let xlrow of this.xlrows) {
+            let ID = this.dialogData.ID
+            let revPointer = xlrow[this.dialogData.ReversePointer as keyof XLRowDB] as unknown as NullInt64
+            if (revPointer.Int64 == ID) {
+              this.initialSelection.push(xlrow)
             }
-          )
-          this.selection = new SelectionModel<XLRowDB>(allowMultiSelect, this.initialSelection);
+            this.selection = new SelectionModel<XLRowDB>(allowMultiSelect, this.initialSelection);
+          }
         }
 
         if (this.mode == TableComponentMode.MANY_MANY_ASSOCIATION_MODE) {
@@ -269,34 +267,31 @@ export class XLRowsTableComponent implements OnInit {
       let toUpdate = new Set<XLRowDB>()
 
       // reset all initial selection of xlrow that belong to xlrow
-      this.initialSelection.forEach(
-        xlrow => {
-          let index = xlrow[this.dialogData.ReversePointer as keyof XLRowDB] as unknown as NullInt64
-          index.Int64 = 0
-          index.Valid = true
-          toUpdate.add(xlrow)
-        }
-      )
+      for (let xlrow of this.initialSelection) {
+        let index = xlrow[this.dialogData.ReversePointer as keyof XLRowDB] as unknown as NullInt64
+        index.Int64 = 0
+        index.Valid = true
+        toUpdate.add(xlrow)
+
+      }
 
       // from selection, set xlrow that belong to xlrow
-      this.selection.selected.forEach(
-        xlrow => {
-          let ID = this.dialogData.ID as number
-          let reversePointer = xlrow[this.dialogData.ReversePointer  as keyof XLRowDB] as unknown as NullInt64
-          reversePointer.Int64 = ID
-          toUpdate.add(xlrow)
-        }
-      )
+      for (let xlrow of this.selection.selected) {
+        let ID = this.dialogData.ID as number
+        let reversePointer = xlrow[this.dialogData.ReversePointer as keyof XLRowDB] as unknown as NullInt64
+        reversePointer.Int64 = ID
+        reversePointer.Valid = true
+        toUpdate.add(xlrow)
+      }
+
 
       // update all xlrow (only update selection & initial selection)
-      toUpdate.forEach(
-        xlrow => {
-          this.xlrowService.updateXLRow(xlrow)
-            .subscribe(xlrow => {
-              this.xlrowService.XLRowServiceChanged.next("update")
-            });
-        }
-      )
+      for (let xlrow of toUpdate) {
+        this.xlrowService.updateXLRow(xlrow)
+          .subscribe(xlrow => {
+            this.xlrowService.XLRowServiceChanged.next("update")
+          });
+      }
     }
 
     if (this.mode == TableComponentMode.MANY_MANY_ASSOCIATION_MODE) {
@@ -343,13 +338,15 @@ export class XLRowsTableComponent implements OnInit {
                 Name: sourceInstance["Name"] + "-" + xlrow.Name,
               }
 
-              let index = associationInstance[this.dialogData.IntermediateStructField+"ID" as keyof typeof associationInstance] as unknown as NullInt64
+              let index = associationInstance[this.dialogData.IntermediateStructField + "ID" as keyof typeof associationInstance] as unknown as NullInt64
               index.Int64 = xlrow.ID
+              index.Valid = true
 
-              let indexDB = associationInstance[this.dialogData.IntermediateStructField+"DBID" as keyof typeof associationInstance] as unknown as NullInt64
+              let indexDB = associationInstance[this.dialogData.IntermediateStructField + "DBID" as keyof typeof associationInstance] as unknown as NullInt64
               indexDB.Int64 = xlrow.ID
+              index.Valid = true
 
-              this.frontRepoService.postService( this.dialogData.IntermediateStruct, associationInstance )
+              this.frontRepoService.postService(this.dialogData.IntermediateStruct, associationInstance)
 
             } else {
               // console.log("xlrow " + xlrow.Name + " is still selected")

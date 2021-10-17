@@ -188,16 +188,14 @@ export class XLCellsTableComponent implements OnInit {
 
         // in case the component is called as a selection component
         if (this.mode == TableComponentMode.ONE_MANY_ASSOCIATION_MODE) {
-          this.xlcells.forEach(
-            xlcell => {
-              let ID = this.dialogData.ID
-              let revPointer = xlcell[this.dialogData.ReversePointer as keyof XLCellDB] as unknown as NullInt64
-              if (revPointer.Int64 == ID) {
-                this.initialSelection.push(xlcell)
-              }
+          for (let xlcell of this.xlcells) {
+            let ID = this.dialogData.ID
+            let revPointer = xlcell[this.dialogData.ReversePointer as keyof XLCellDB] as unknown as NullInt64
+            if (revPointer.Int64 == ID) {
+              this.initialSelection.push(xlcell)
             }
-          )
-          this.selection = new SelectionModel<XLCellDB>(allowMultiSelect, this.initialSelection);
+            this.selection = new SelectionModel<XLCellDB>(allowMultiSelect, this.initialSelection);
+          }
         }
 
         if (this.mode == TableComponentMode.MANY_MANY_ASSOCIATION_MODE) {
@@ -284,34 +282,31 @@ export class XLCellsTableComponent implements OnInit {
       let toUpdate = new Set<XLCellDB>()
 
       // reset all initial selection of xlcell that belong to xlcell
-      this.initialSelection.forEach(
-        xlcell => {
-          let index = xlcell[this.dialogData.ReversePointer as keyof XLCellDB] as unknown as NullInt64
-          index.Int64 = 0
-          index.Valid = true
-          toUpdate.add(xlcell)
-        }
-      )
+      for (let xlcell of this.initialSelection) {
+        let index = xlcell[this.dialogData.ReversePointer as keyof XLCellDB] as unknown as NullInt64
+        index.Int64 = 0
+        index.Valid = true
+        toUpdate.add(xlcell)
+
+      }
 
       // from selection, set xlcell that belong to xlcell
-      this.selection.selected.forEach(
-        xlcell => {
-          let ID = this.dialogData.ID as number
-          let reversePointer = xlcell[this.dialogData.ReversePointer  as keyof XLCellDB] as unknown as NullInt64
-          reversePointer.Int64 = ID
-          toUpdate.add(xlcell)
-        }
-      )
+      for (let xlcell of this.selection.selected) {
+        let ID = this.dialogData.ID as number
+        let reversePointer = xlcell[this.dialogData.ReversePointer as keyof XLCellDB] as unknown as NullInt64
+        reversePointer.Int64 = ID
+        reversePointer.Valid = true
+        toUpdate.add(xlcell)
+      }
+
 
       // update all xlcell (only update selection & initial selection)
-      toUpdate.forEach(
-        xlcell => {
-          this.xlcellService.updateXLCell(xlcell)
-            .subscribe(xlcell => {
-              this.xlcellService.XLCellServiceChanged.next("update")
-            });
-        }
-      )
+      for (let xlcell of toUpdate) {
+        this.xlcellService.updateXLCell(xlcell)
+          .subscribe(xlcell => {
+            this.xlcellService.XLCellServiceChanged.next("update")
+          });
+      }
     }
 
     if (this.mode == TableComponentMode.MANY_MANY_ASSOCIATION_MODE) {
@@ -358,13 +353,15 @@ export class XLCellsTableComponent implements OnInit {
                 Name: sourceInstance["Name"] + "-" + xlcell.Name,
               }
 
-              let index = associationInstance[this.dialogData.IntermediateStructField+"ID" as keyof typeof associationInstance] as unknown as NullInt64
+              let index = associationInstance[this.dialogData.IntermediateStructField + "ID" as keyof typeof associationInstance] as unknown as NullInt64
               index.Int64 = xlcell.ID
+              index.Valid = true
 
-              let indexDB = associationInstance[this.dialogData.IntermediateStructField+"DBID" as keyof typeof associationInstance] as unknown as NullInt64
+              let indexDB = associationInstance[this.dialogData.IntermediateStructField + "DBID" as keyof typeof associationInstance] as unknown as NullInt64
               indexDB.Int64 = xlcell.ID
+              index.Valid = true
 
-              this.frontRepoService.postService( this.dialogData.IntermediateStruct, associationInstance )
+              this.frontRepoService.postService(this.dialogData.IntermediateStruct, associationInstance)
 
             } else {
               // console.log("xlcell " + xlcell.Name + " is still selected")

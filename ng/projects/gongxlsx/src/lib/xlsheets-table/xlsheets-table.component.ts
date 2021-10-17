@@ -185,16 +185,14 @@ export class XLSheetsTableComponent implements OnInit {
 
         // in case the component is called as a selection component
         if (this.mode == TableComponentMode.ONE_MANY_ASSOCIATION_MODE) {
-          this.xlsheets.forEach(
-            xlsheet => {
-              let ID = this.dialogData.ID
-              let revPointer = xlsheet[this.dialogData.ReversePointer as keyof XLSheetDB] as unknown as NullInt64
-              if (revPointer.Int64 == ID) {
-                this.initialSelection.push(xlsheet)
-              }
+          for (let xlsheet of this.xlsheets) {
+            let ID = this.dialogData.ID
+            let revPointer = xlsheet[this.dialogData.ReversePointer as keyof XLSheetDB] as unknown as NullInt64
+            if (revPointer.Int64 == ID) {
+              this.initialSelection.push(xlsheet)
             }
-          )
-          this.selection = new SelectionModel<XLSheetDB>(allowMultiSelect, this.initialSelection);
+            this.selection = new SelectionModel<XLSheetDB>(allowMultiSelect, this.initialSelection);
+          }
         }
 
         if (this.mode == TableComponentMode.MANY_MANY_ASSOCIATION_MODE) {
@@ -281,34 +279,31 @@ export class XLSheetsTableComponent implements OnInit {
       let toUpdate = new Set<XLSheetDB>()
 
       // reset all initial selection of xlsheet that belong to xlsheet
-      this.initialSelection.forEach(
-        xlsheet => {
-          let index = xlsheet[this.dialogData.ReversePointer as keyof XLSheetDB] as unknown as NullInt64
-          index.Int64 = 0
-          index.Valid = true
-          toUpdate.add(xlsheet)
-        }
-      )
+      for (let xlsheet of this.initialSelection) {
+        let index = xlsheet[this.dialogData.ReversePointer as keyof XLSheetDB] as unknown as NullInt64
+        index.Int64 = 0
+        index.Valid = true
+        toUpdate.add(xlsheet)
+
+      }
 
       // from selection, set xlsheet that belong to xlsheet
-      this.selection.selected.forEach(
-        xlsheet => {
-          let ID = this.dialogData.ID as number
-          let reversePointer = xlsheet[this.dialogData.ReversePointer  as keyof XLSheetDB] as unknown as NullInt64
-          reversePointer.Int64 = ID
-          toUpdate.add(xlsheet)
-        }
-      )
+      for (let xlsheet of this.selection.selected) {
+        let ID = this.dialogData.ID as number
+        let reversePointer = xlsheet[this.dialogData.ReversePointer as keyof XLSheetDB] as unknown as NullInt64
+        reversePointer.Int64 = ID
+        reversePointer.Valid = true
+        toUpdate.add(xlsheet)
+      }
+
 
       // update all xlsheet (only update selection & initial selection)
-      toUpdate.forEach(
-        xlsheet => {
-          this.xlsheetService.updateXLSheet(xlsheet)
-            .subscribe(xlsheet => {
-              this.xlsheetService.XLSheetServiceChanged.next("update")
-            });
-        }
-      )
+      for (let xlsheet of toUpdate) {
+        this.xlsheetService.updateXLSheet(xlsheet)
+          .subscribe(xlsheet => {
+            this.xlsheetService.XLSheetServiceChanged.next("update")
+          });
+      }
     }
 
     if (this.mode == TableComponentMode.MANY_MANY_ASSOCIATION_MODE) {
@@ -355,13 +350,15 @@ export class XLSheetsTableComponent implements OnInit {
                 Name: sourceInstance["Name"] + "-" + xlsheet.Name,
               }
 
-              let index = associationInstance[this.dialogData.IntermediateStructField+"ID" as keyof typeof associationInstance] as unknown as NullInt64
+              let index = associationInstance[this.dialogData.IntermediateStructField + "ID" as keyof typeof associationInstance] as unknown as NullInt64
               index.Int64 = xlsheet.ID
+              index.Valid = true
 
-              let indexDB = associationInstance[this.dialogData.IntermediateStructField+"DBID" as keyof typeof associationInstance] as unknown as NullInt64
+              let indexDB = associationInstance[this.dialogData.IntermediateStructField + "DBID" as keyof typeof associationInstance] as unknown as NullInt64
               indexDB.Int64 = xlsheet.ID
+              index.Valid = true
 
-              this.frontRepoService.postService( this.dialogData.IntermediateStruct, associationInstance )
+              this.frontRepoService.postService(this.dialogData.IntermediateStruct, associationInstance)
 
             } else {
               // console.log("xlsheet " + xlsheet.Name + " is still selected")

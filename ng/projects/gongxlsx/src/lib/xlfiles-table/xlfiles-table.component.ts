@@ -164,16 +164,14 @@ export class XLFilesTableComponent implements OnInit {
 
         // in case the component is called as a selection component
         if (this.mode == TableComponentMode.ONE_MANY_ASSOCIATION_MODE) {
-          this.xlfiles.forEach(
-            xlfile => {
-              let ID = this.dialogData.ID
-              let revPointer = xlfile[this.dialogData.ReversePointer as keyof XLFileDB] as unknown as NullInt64
-              if (revPointer.Int64 == ID) {
-                this.initialSelection.push(xlfile)
-              }
+          for (let xlfile of this.xlfiles) {
+            let ID = this.dialogData.ID
+            let revPointer = xlfile[this.dialogData.ReversePointer as keyof XLFileDB] as unknown as NullInt64
+            if (revPointer.Int64 == ID) {
+              this.initialSelection.push(xlfile)
             }
-          )
-          this.selection = new SelectionModel<XLFileDB>(allowMultiSelect, this.initialSelection);
+            this.selection = new SelectionModel<XLFileDB>(allowMultiSelect, this.initialSelection);
+          }
         }
 
         if (this.mode == TableComponentMode.MANY_MANY_ASSOCIATION_MODE) {
@@ -260,34 +258,31 @@ export class XLFilesTableComponent implements OnInit {
       let toUpdate = new Set<XLFileDB>()
 
       // reset all initial selection of xlfile that belong to xlfile
-      this.initialSelection.forEach(
-        xlfile => {
-          let index = xlfile[this.dialogData.ReversePointer as keyof XLFileDB] as unknown as NullInt64
-          index.Int64 = 0
-          index.Valid = true
-          toUpdate.add(xlfile)
-        }
-      )
+      for (let xlfile of this.initialSelection) {
+        let index = xlfile[this.dialogData.ReversePointer as keyof XLFileDB] as unknown as NullInt64
+        index.Int64 = 0
+        index.Valid = true
+        toUpdate.add(xlfile)
+
+      }
 
       // from selection, set xlfile that belong to xlfile
-      this.selection.selected.forEach(
-        xlfile => {
-          let ID = this.dialogData.ID as number
-          let reversePointer = xlfile[this.dialogData.ReversePointer  as keyof XLFileDB] as unknown as NullInt64
-          reversePointer.Int64 = ID
-          toUpdate.add(xlfile)
-        }
-      )
+      for (let xlfile of this.selection.selected) {
+        let ID = this.dialogData.ID as number
+        let reversePointer = xlfile[this.dialogData.ReversePointer as keyof XLFileDB] as unknown as NullInt64
+        reversePointer.Int64 = ID
+        reversePointer.Valid = true
+        toUpdate.add(xlfile)
+      }
+
 
       // update all xlfile (only update selection & initial selection)
-      toUpdate.forEach(
-        xlfile => {
-          this.xlfileService.updateXLFile(xlfile)
-            .subscribe(xlfile => {
-              this.xlfileService.XLFileServiceChanged.next("update")
-            });
-        }
-      )
+      for (let xlfile of toUpdate) {
+        this.xlfileService.updateXLFile(xlfile)
+          .subscribe(xlfile => {
+            this.xlfileService.XLFileServiceChanged.next("update")
+          });
+      }
     }
 
     if (this.mode == TableComponentMode.MANY_MANY_ASSOCIATION_MODE) {
@@ -334,13 +329,15 @@ export class XLFilesTableComponent implements OnInit {
                 Name: sourceInstance["Name"] + "-" + xlfile.Name,
               }
 
-              let index = associationInstance[this.dialogData.IntermediateStructField+"ID" as keyof typeof associationInstance] as unknown as NullInt64
+              let index = associationInstance[this.dialogData.IntermediateStructField + "ID" as keyof typeof associationInstance] as unknown as NullInt64
               index.Int64 = xlfile.ID
+              index.Valid = true
 
-              let indexDB = associationInstance[this.dialogData.IntermediateStructField+"DBID" as keyof typeof associationInstance] as unknown as NullInt64
+              let indexDB = associationInstance[this.dialogData.IntermediateStructField + "DBID" as keyof typeof associationInstance] as unknown as NullInt64
               indexDB.Int64 = xlfile.ID
+              index.Valid = true
 
-              this.frontRepoService.postService( this.dialogData.IntermediateStruct, associationInstance )
+              this.frontRepoService.postService(this.dialogData.IntermediateStruct, associationInstance)
 
             } else {
               // console.log("xlfile " + xlfile.Name + " is still selected")
