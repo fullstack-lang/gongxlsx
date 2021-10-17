@@ -13,6 +13,9 @@ import { catchError, map, tap } from 'rxjs/operators';
 
 import { XLRowDB } from './xlrow-db';
 
+// insertion point for imports
+import { XLSheetDB } from './xlsheet-db'
+
 @Injectable({
   providedIn: 'root'
 })
@@ -35,14 +38,14 @@ export class XLRowService {
   ) {
     // path to the service share the same origin with the path to the document
     // get the origin in the URL to the document
-	let origin = this.document.location.origin
-    
-	// if debugging with ng, replace 4200 with 8080
-	origin = origin.replace("4200", "8080")
+    let origin = this.document.location.origin
+
+    // if debugging with ng, replace 4200 with 8080
+    origin = origin.replace("4200", "8080")
 
     // compute path to the service
     this.xlrowsUrl = origin + '/api/github.com/fullstack-lang/gongxlsx/go/v1/xlrows';
-   }
+  }
 
   /** GET xlrows from the server */
   getXLRows(): Observable<XLRowDB[]> {
@@ -67,19 +70,19 @@ export class XLRowService {
   /** POST: add a new xlrow to the server */
   postXLRow(xlrowdb: XLRowDB): Observable<XLRowDB> {
 
-		// insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
     xlrowdb.Cells = []
     let _XLSheet_Rows_reverse = xlrowdb.XLSheet_Rows_reverse
-    xlrowdb.XLSheet_Rows_reverse = {}
+    xlrowdb.XLSheet_Rows_reverse = new XLSheetDB
 
-		return this.http.post<XLRowDB>(this.xlrowsUrl, xlrowdb, this.httpOptions).pipe(
-			tap(_ => {
-				// insertion point for restoration of reverse pointers
+    return this.http.post<XLRowDB>(this.xlrowsUrl, xlrowdb, this.httpOptions).pipe(
+      tap(_ => {
+        // insertion point for restoration of reverse pointers
         xlrowdb.XLSheet_Rows_reverse = _XLSheet_Rows_reverse
-				this.log(`posted xlrowdb id=${xlrowdb.ID}`)
-			}),
-			catchError(this.handleError<XLRowDB>('postXLRow'))
-		);
+        this.log(`posted xlrowdb id=${xlrowdb.ID}`)
+      }),
+      catchError(this.handleError<XLRowDB>('postXLRow'))
+    );
   }
 
   /** DELETE: delete the xlrowdb from the server */
@@ -101,9 +104,9 @@ export class XLRowService {
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
     xlrowdb.Cells = []
     let _XLSheet_Rows_reverse = xlrowdb.XLSheet_Rows_reverse
-    xlrowdb.XLSheet_Rows_reverse = {}
+    xlrowdb.XLSheet_Rows_reverse = new XLSheetDB
 
-    return this.http.put(url, xlrowdb, this.httpOptions).pipe(
+    return this.http.put<XLRowDB>(url, xlrowdb, this.httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
         xlrowdb.XLSheet_Rows_reverse = _XLSheet_Rows_reverse

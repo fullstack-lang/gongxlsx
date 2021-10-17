@@ -10,12 +10,13 @@ import { MapOfComponents } from '../map-components'
 import { MapOfSortingComponents } from '../map-components'
 
 // insertion point for imports
+import { XLFileDB } from '../xlfile-db'
 
 import { Router, RouterState, ActivatedRoute } from '@angular/router';
 
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatDialogConfig } from '@angular/material/dialog';
 
-import { NullInt64 } from '../front-repo.service'
+import { NullInt64 } from '../null-int64'
 
 // XLSheetDetailComponent is initilizaed from different routes
 // XLSheetDetailComponentState detail different cases 
@@ -36,10 +37,10 @@ export class XLSheetDetailComponent implements OnInit {
 	// insertion point for declarations
 
 	// the XLSheetDB of interest
-	xlsheet: XLSheetDB;
+	xlsheet: XLSheetDB = new XLSheetDB
 
 	// front repo
-	frontRepo: FrontRepo
+	frontRepo: FrontRepo = new FrontRepo
 
 	// this stores the information related to string fields
 	// if false, the field is inputed with an <input ...> form 
@@ -47,15 +48,15 @@ export class XLSheetDetailComponent implements OnInit {
 	mapFields_displayAsTextArea = new Map<string, boolean>()
 
 	// the state at initialization (CREATION, UPDATE or CREATE with one association set)
-	state: XLSheetDetailComponentState
+	state: XLSheetDetailComponentState = XLSheetDetailComponentState.CREATE_INSTANCE
 
 	// in UDPATE state, if is the id of the instance to update
 	// in CREATE state with one association set, this is the id of the associated instance
-	id: number
+	id: number = 0
 
 	// in CREATE state with one association set, this is the id of the associated instance
-	originStruct: string
-	originStructFieldName: string
+	originStruct: string = ""
+	originStructFieldName: string = ""
 
 	constructor(
 		private xlsheetService: XLSheetService,
@@ -69,9 +70,9 @@ export class XLSheetDetailComponent implements OnInit {
 	ngOnInit(): void {
 
 		// compute state
-		this.id = +this.route.snapshot.paramMap.get('id');
-		this.originStruct = this.route.snapshot.paramMap.get('originStruct');
-		this.originStructFieldName = this.route.snapshot.paramMap.get('originStructFieldName');
+		this.id = +this.route.snapshot.paramMap.get('id')!;
+		this.originStruct = this.route.snapshot.paramMap.get('originStruct')!;
+		this.originStructFieldName = this.route.snapshot.paramMap.get('originStructFieldName')!;
 
 		const association = this.route.snapshot.paramMap.get('association');
 		if (this.id == 0) {
@@ -83,7 +84,7 @@ export class XLSheetDetailComponent implements OnInit {
 				switch (this.originStructFieldName) {
 					// insertion point for state computation
 					case "Sheets":
-						console.log("XLSheet" + " is instanciated with back pointer to instance " + this.id + " XLFile association Sheets")
+						// console.log("XLSheet" + " is instanciated with back pointer to instance " + this.id + " XLFile association Sheets")
 						this.state = XLSheetDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLFile_Sheets_SET
 						break;
 					default:
@@ -117,12 +118,14 @@ export class XLSheetDetailComponent implements OnInit {
 						this.xlsheet = new (XLSheetDB)
 						break;
 					case XLSheetDetailComponentState.UPDATE_INSTANCE:
-						this.xlsheet = frontRepo.XLSheets.get(this.id)
+						let xlsheet = frontRepo.XLSheets.get(this.id)
+						console.assert(xlsheet != undefined, "missing xlsheet with id:" + this.id)
+						this.xlsheet = xlsheet!
 						break;
 					// insertion point for init of association field
 					case XLSheetDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLFile_Sheets_SET:
 						this.xlsheet = new (XLSheetDB)
-						this.xlsheet.XLFile_Sheets_reverse = frontRepo.XLFiles.get(this.id)
+						this.xlsheet.XLFile_Sheets_reverse = frontRepo.XLFiles.get(this.id)!
 						break;
 					default:
 						console.log(this.state + " is unkown state")
@@ -155,7 +158,7 @@ export class XLSheetDetailComponent implements OnInit {
 				this.xlsheet.XLFile_SheetsDBID_Index = new NullInt64
 			}
 			this.xlsheet.XLFile_SheetsDBID_Index.Valid = true
-			this.xlsheet.XLFile_Sheets_reverse = undefined // very important, otherwise, circular JSON
+			this.xlsheet.XLFile_Sheets_reverse = new XLFileDB // very important, otherwise, circular JSON
 		}
 
 		switch (this.state) {
@@ -168,7 +171,7 @@ export class XLSheetDetailComponent implements OnInit {
 			default:
 				this.xlsheetService.postXLSheet(this.xlsheet).subscribe(xlsheet => {
 					this.xlsheetService.XLSheetServiceChanged.next("post")
-					this.xlsheet = {} // reset fields
+					this.xlsheet = new (XLSheetDB) // reset fields
 				});
 		}
 	}
@@ -177,7 +180,7 @@ export class XLSheetDetailComponent implements OnInit {
 	// ONE-MANY association
 	// It uses the MapOfComponent provided by the front repo
 	openReverseSelection(AssociatedStruct: string, reverseField: string, selectionMode: string,
-		sourceField: string, intermediateStructField: string, nextAssociatedStruct: string ) {
+		sourceField: string, intermediateStructField: string, nextAssociatedStruct: string) {
 
 		console.log("mode " + selectionMode)
 
@@ -191,7 +194,7 @@ export class XLSheetDetailComponent implements OnInit {
 		dialogConfig.height = "50%"
 		if (selectionMode == SelectionMode.ONE_MANY_ASSOCIATION_MODE) {
 
-			dialogData.ID = this.xlsheet.ID
+			dialogData.ID = this.xlsheet.ID!
 			dialogData.ReversePointer = reverseField
 			dialogData.OrderingMode = false
 			dialogData.SelectionMode = selectionMode
@@ -207,7 +210,7 @@ export class XLSheetDetailComponent implements OnInit {
 			});
 		}
 		if (selectionMode == SelectionMode.MANY_MANY_ASSOCIATION_MODE) {
-			dialogData.ID = this.xlsheet.ID
+			dialogData.ID = this.xlsheet.ID!
 			dialogData.ReversePointer = reverseField
 			dialogData.OrderingMode = false
 			dialogData.SelectionMode = selectionMode
@@ -258,7 +261,7 @@ export class XLSheetDetailComponent implements OnInit {
 		});
 	}
 
-	fillUpNameIfEmpty(event) {
+	fillUpNameIfEmpty(event: { value: { Name: string; }; }) {
 		if (this.xlsheet.Name == undefined) {
 			this.xlsheet.Name = event.value.Name
 		}
@@ -275,7 +278,7 @@ export class XLSheetDetailComponent implements OnInit {
 
 	isATextArea(fieldName: string): boolean {
 		if (this.mapFields_displayAsTextArea.has(fieldName)) {
-			return this.mapFields_displayAsTextArea.get(fieldName)
+			return this.mapFields_displayAsTextArea.get(fieldName)!
 		} else {
 			return false
 		}

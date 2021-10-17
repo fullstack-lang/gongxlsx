@@ -23,13 +23,13 @@ export class XLFilePresentationComponent implements OnInit {
 
 	// insertion point for declarations
 
-	displayedColumns: string[] = [];
-	dataSource = ELEMENT_DATA;
+	displayedColumns: string[] = []
+	dataSource = ELEMENT_DATA
 
-	xlfile: XLFileDB;
+	xlfile: XLFileDB = new (XLFileDB)
 
 	// front repo
-	frontRepo: FrontRepo
+	frontRepo: FrontRepo = new (FrontRepo)
  
 	constructor(
 		private xlfileService: XLFileService,
@@ -56,12 +56,12 @@ export class XLFilePresentationComponent implements OnInit {
 	}
 
 	getXLFile(): void {
-		const id = +this.route.snapshot.paramMap.get('id');
+		const id = +this.route.snapshot.paramMap.get('id')!
 		this.frontRepoService.pull().subscribe(
 			frontRepo => {
 				this.frontRepo = frontRepo
 
-				this.xlfile = this.frontRepo.XLFiles.get(id)
+				this.xlfile = this.frontRepo.XLFiles.get(id)!
 
 				// insertion point for recovery of durations
 			}

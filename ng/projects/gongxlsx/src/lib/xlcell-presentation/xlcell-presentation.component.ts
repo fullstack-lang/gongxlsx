@@ -23,13 +23,13 @@ export class XLCellPresentationComponent implements OnInit {
 
 	// insertion point for declarations
 
-	displayedColumns: string[] = [];
-	dataSource = ELEMENT_DATA;
+	displayedColumns: string[] = []
+	dataSource = ELEMENT_DATA
 
-	xlcell: XLCellDB;
+	xlcell: XLCellDB = new (XLCellDB)
 
 	// front repo
-	frontRepo: FrontRepo
+	frontRepo: FrontRepo = new (FrontRepo)
  
 	constructor(
 		private xlcellService: XLCellService,
@@ -56,12 +56,12 @@ export class XLCellPresentationComponent implements OnInit {
 	}
 
 	getXLCell(): void {
-		const id = +this.route.snapshot.paramMap.get('id');
+		const id = +this.route.snapshot.paramMap.get('id')!
 		this.frontRepoService.pull().subscribe(
 			frontRepo => {
 				this.frontRepo = frontRepo
 
-				this.xlcell = this.frontRepo.XLCells.get(id)
+				this.xlcell = this.frontRepo.XLCells.get(id)!
 
 				// insertion point for recovery of durations
 			}

@@ -10,12 +10,14 @@ import { MapOfComponents } from '../map-components'
 import { MapOfSortingComponents } from '../map-components'
 
 // insertion point for imports
+import { XLRowDB } from '../xlrow-db'
+import { XLSheetDB } from '../xlsheet-db'
 
 import { Router, RouterState, ActivatedRoute } from '@angular/router';
 
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatDialogConfig } from '@angular/material/dialog';
 
-import { NullInt64 } from '../front-repo.service'
+import { NullInt64 } from '../null-int64'
 
 // XLCellDetailComponent is initilizaed from different routes
 // XLCellDetailComponentState detail different cases 
@@ -37,10 +39,10 @@ export class XLCellDetailComponent implements OnInit {
 	// insertion point for declarations
 
 	// the XLCellDB of interest
-	xlcell: XLCellDB;
+	xlcell: XLCellDB = new XLCellDB
 
 	// front repo
-	frontRepo: FrontRepo
+	frontRepo: FrontRepo = new FrontRepo
 
 	// this stores the information related to string fields
 	// if false, the field is inputed with an <input ...> form 
@@ -48,15 +50,15 @@ export class XLCellDetailComponent implements OnInit {
 	mapFields_displayAsTextArea = new Map<string, boolean>()
 
 	// the state at initialization (CREATION, UPDATE or CREATE with one association set)
-	state: XLCellDetailComponentState
+	state: XLCellDetailComponentState = XLCellDetailComponentState.CREATE_INSTANCE
 
 	// in UDPATE state, if is the id of the instance to update
 	// in CREATE state with one association set, this is the id of the associated instance
-	id: number
+	id: number = 0
 
 	// in CREATE state with one association set, this is the id of the associated instance
-	originStruct: string
-	originStructFieldName: string
+	originStruct: string = ""
+	originStructFieldName: string = ""
 
 	constructor(
 		private xlcellService: XLCellService,
@@ -70,9 +72,9 @@ export class XLCellDetailComponent implements OnInit {
 	ngOnInit(): void {
 
 		// compute state
-		this.id = +this.route.snapshot.paramMap.get('id');
-		this.originStruct = this.route.snapshot.paramMap.get('originStruct');
-		this.originStructFieldName = this.route.snapshot.paramMap.get('originStructFieldName');
+		this.id = +this.route.snapshot.paramMap.get('id')!;
+		this.originStruct = this.route.snapshot.paramMap.get('originStruct')!;
+		this.originStructFieldName = this.route.snapshot.paramMap.get('originStructFieldName')!;
 
 		const association = this.route.snapshot.paramMap.get('association');
 		if (this.id == 0) {
@@ -84,11 +86,11 @@ export class XLCellDetailComponent implements OnInit {
 				switch (this.originStructFieldName) {
 					// insertion point for state computation
 					case "Cells":
-						console.log("XLCell" + " is instanciated with back pointer to instance " + this.id + " XLRow association Cells")
+						// console.log("XLCell" + " is instanciated with back pointer to instance " + this.id + " XLRow association Cells")
 						this.state = XLCellDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLRow_Cells_SET
 						break;
 					case "SheetCells":
-						console.log("XLCell" + " is instanciated with back pointer to instance " + this.id + " XLSheet association SheetCells")
+						// console.log("XLCell" + " is instanciated with back pointer to instance " + this.id + " XLSheet association SheetCells")
 						this.state = XLCellDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLSheet_SheetCells_SET
 						break;
 					default:
@@ -122,16 +124,18 @@ export class XLCellDetailComponent implements OnInit {
 						this.xlcell = new (XLCellDB)
 						break;
 					case XLCellDetailComponentState.UPDATE_INSTANCE:
-						this.xlcell = frontRepo.XLCells.get(this.id)
+						let xlcell = frontRepo.XLCells.get(this.id)
+						console.assert(xlcell != undefined, "missing xlcell with id:" + this.id)
+						this.xlcell = xlcell!
 						break;
 					// insertion point for init of association field
 					case XLCellDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLRow_Cells_SET:
 						this.xlcell = new (XLCellDB)
-						this.xlcell.XLRow_Cells_reverse = frontRepo.XLRows.get(this.id)
+						this.xlcell.XLRow_Cells_reverse = frontRepo.XLRows.get(this.id)!
 						break;
 					case XLCellDetailComponentState.CREATE_INSTANCE_WITH_ASSOCIATION_XLSheet_SheetCells_SET:
 						this.xlcell = new (XLCellDB)
-						this.xlcell.XLSheet_SheetCells_reverse = frontRepo.XLSheets.get(this.id)
+						this.xlcell.XLSheet_SheetCells_reverse = frontRepo.XLSheets.get(this.id)!
 						break;
 					default:
 						console.log(this.state + " is unkown state")
@@ -164,7 +168,7 @@ export class XLCellDetailComponent implements OnInit {
 				this.xlcell.XLRow_CellsDBID_Index = new NullInt64
 			}
 			this.xlcell.XLRow_CellsDBID_Index.Valid = true
-			this.xlcell.XLRow_Cells_reverse = undefined // very important, otherwise, circular JSON
+			this.xlcell.XLRow_Cells_reverse = new XLRowDB // very important, otherwise, circular JSON
 		}
 		if (this.xlcell.XLSheet_SheetCells_reverse != undefined) {
 			if (this.xlcell.XLSheet_SheetCellsDBID == undefined) {
@@ -176,7 +180,7 @@ export class XLCellDetailComponent implements OnInit {
 				this.xlcell.XLSheet_SheetCellsDBID_Index = new NullInt64
 			}
 			this.xlcell.XLSheet_SheetCellsDBID_Index.Valid = true
-			this.xlcell.XLSheet_SheetCells_reverse = undefined // very important, otherwise, circular JSON
+			this.xlcell.XLSheet_SheetCells_reverse = new XLSheetDB // very important, otherwise, circular JSON
 		}
 
 		switch (this.state) {
@@ -189,7 +193,7 @@ export class XLCellDetailComponent implements OnInit {
 			default:
 				this.xlcellService.postXLCell(this.xlcell).subscribe(xlcell => {
 					this.xlcellService.XLCellServiceChanged.next("post")
-					this.xlcell = {} // reset fields
+					this.xlcell = new (XLCellDB) // reset fields
 				});
 		}
 	}
@@ -198,7 +202,7 @@ export class XLCellDetailComponent implements OnInit {
 	// ONE-MANY association
 	// It uses the MapOfComponent provided by the front repo
 	openReverseSelection(AssociatedStruct: string, reverseField: string, selectionMode: string,
-		sourceField: string, intermediateStructField: string, nextAssociatedStruct: string ) {
+		sourceField: string, intermediateStructField: string, nextAssociatedStruct: string) {
 
 		console.log("mode " + selectionMode)
 
@@ -212,7 +216,7 @@ export class XLCellDetailComponent implements OnInit {
 		dialogConfig.height = "50%"
 		if (selectionMode == SelectionMode.ONE_MANY_ASSOCIATION_MODE) {
 
-			dialogData.ID = this.xlcell.ID
+			dialogData.ID = this.xlcell.ID!
 			dialogData.ReversePointer = reverseField
 			dialogData.OrderingMode = false
 			dialogData.SelectionMode = selectionMode
@@ -228,7 +232,7 @@ export class XLCellDetailComponent implements OnInit {
 			});
 		}
 		if (selectionMode == SelectionMode.MANY_MANY_ASSOCIATION_MODE) {
-			dialogData.ID = this.xlcell.ID
+			dialogData.ID = this.xlcell.ID!
 			dialogData.ReversePointer = reverseField
 			dialogData.OrderingMode = false
 			dialogData.SelectionMode = selectionMode
@@ -279,7 +283,7 @@ export class XLCellDetailComponent implements OnInit {
 		});
 	}
 
-	fillUpNameIfEmpty(event) {
+	fillUpNameIfEmpty(event: { value: { Name: string; }; }) {
 		if (this.xlcell.Name == undefined) {
 			this.xlcell.Name = event.value.Name
 		}
@@ -296,7 +300,7 @@ export class XLCellDetailComponent implements OnInit {
 
 	isATextArea(fieldName: string): boolean {
 		if (this.mapFields_displayAsTextArea.has(fieldName)) {
-			return this.mapFields_displayAsTextArea.get(fieldName)
+			return this.mapFields_displayAsTextArea.get(fieldName)!
 		} else {
 			return false
 		}

@@ -7,7 +7,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatButton } from '@angular/material/button'
 
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog'
-import { DialogData, FrontRepoService, FrontRepo, NullInt64, SelectionMode } from '../front-repo.service'
+import { DialogData, FrontRepoService, FrontRepo, SelectionMode } from '../front-repo.service'
+import { NullInt64 } from '../null-int64'
 import { SelectionModel } from '@angular/cdk/collections';
 
 const allowMultiSelect = true;
@@ -33,26 +34,28 @@ enum TableComponentMode {
 export class XLRowsTableComponent implements OnInit {
 
   // mode at invocation
-  mode: TableComponentMode
+  mode: TableComponentMode = TableComponentMode.DISPLAY_MODE
 
   // used if the component is called as a selection component of XLRow instances
-  selection: SelectionModel<XLRowDB>;
-  initialSelection = new Array<XLRowDB>();
+  selection: SelectionModel<XLRowDB> = new (SelectionModel)
+  initialSelection = new Array<XLRowDB>()
 
   // the data source for the table
-  xlrows: XLRowDB[];
-  matTableDataSource: MatTableDataSource<XLRowDB>
+  xlrows: XLRowDB[] = []
+  matTableDataSource: MatTableDataSource<XLRowDB> = new (MatTableDataSource)
 
   // front repo, that will be referenced by this.xlrows
-  frontRepo: FrontRepo
+  frontRepo: FrontRepo = new (FrontRepo)
 
   // displayedColumns is referenced by the MatTable component for specify what columns
   // have to be displayed and in what order
   displayedColumns: string[];
 
   // for sorting & pagination
-  @ViewChild(MatSort) sort: MatSort;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatSort)
+  sort: MatSort | undefined
+  @ViewChild(MatPaginator)
+  paginator: MatPaginator | undefined;
 
   ngAfterViewInit() {
 
@@ -67,10 +70,11 @@ export class XLRowsTableComponent implements OnInit {
           return xlrowDB.RowIndex;
 
         case 'XLSheet_Rows':
-          return this.frontRepo.XLSheets.get(xlrowDB.XLSheet_RowsDBID.Int64)?.Name;
+          return this.frontRepo.XLSheets.get(xlrowDB.XLSheet_RowsDBID.Int64)!.Name;
 
         default:
-          return XLRowDB[property];
+          console.assert(false, "Unknown field")
+          return "";
       }
     };
 
@@ -85,7 +89,7 @@ export class XLRowsTableComponent implements OnInit {
       mergedContent += xlrowDB.Name.toLowerCase()
       mergedContent += xlrowDB.RowIndex.toString()
       if (xlrowDB.XLSheet_RowsDBID.Int64 != 0) {
-        mergedContent += this.frontRepo.XLSheets.get(xlrowDB.XLSheet_RowsDBID.Int64)?.Name.toLowerCase()
+        mergedContent += this.frontRepo.XLSheets.get(xlrowDB.XLSheet_RowsDBID.Int64)!.Name.toLowerCase()
       }
 
 
@@ -93,8 +97,8 @@ export class XLRowsTableComponent implements OnInit {
       return isSelected
     };
 
-    this.matTableDataSource.sort = this.sort;
-    this.matTableDataSource.paginator = this.paginator;
+    this.matTableDataSource.sort = this.sort!
+    this.matTableDataSource.paginator = this.paginator!
   }
 
   applyFilter(event: Event) {
@@ -172,7 +176,7 @@ export class XLRowsTableComponent implements OnInit {
           this.xlrows.forEach(
             xlrow => {
               let ID = this.dialogData.ID
-              let revPointer = xlrow[this.dialogData.ReversePointer]
+              let revPointer = xlrow[this.dialogData.ReversePointer as keyof XLRowDB] as unknown as NullInt64
               if (revPointer.Int64 == ID) {
                 this.initialSelection.push(xlrow)
               }
@@ -183,15 +187,15 @@ export class XLRowsTableComponent implements OnInit {
 
         if (this.mode == TableComponentMode.MANY_MANY_ASSOCIATION_MODE) {
 
-          let mapOfSourceInstances = this.frontRepo[this.dialogData.SourceStruct + "s"]
-          let sourceInstance = mapOfSourceInstances.get(this.dialogData.ID)
+          let mapOfSourceInstances = this.frontRepo[this.dialogData.SourceStruct + "s" as keyof FrontRepo] as Map<number, XLRowDB>
+          let sourceInstance = mapOfSourceInstances.get(this.dialogData.ID)!
 
-          if (sourceInstance[this.dialogData.SourceField]) {
-            for (let associationInstance of sourceInstance[this.dialogData.SourceField]) {
-              let xlrow = associationInstance[this.dialogData.IntermediateStructField]
-              this.initialSelection.push(xlrow)
-            }
+          let sourceField = sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance]! as unknown as XLRowDB[]
+          for (let associationInstance of sourceField) {
+            let xlrow = associationInstance[this.dialogData.IntermediateStructField as keyof typeof associationInstance] as unknown as XLRowDB
+            this.initialSelection.push(xlrow)
           }
+
           this.selection = new SelectionModel<XLRowDB>(allowMultiSelect, this.initialSelection);
         }
 
@@ -267,8 +271,9 @@ export class XLRowsTableComponent implements OnInit {
       // reset all initial selection of xlrow that belong to xlrow
       this.initialSelection.forEach(
         xlrow => {
-          xlrow[this.dialogData.ReversePointer].Int64 = 0
-          xlrow[this.dialogData.ReversePointer].Valid = true
+          let index = xlrow[this.dialogData.ReversePointer as keyof XLRowDB] as unknown as NullInt64
+          index.Int64 = 0
+          index.Valid = true
           toUpdate.add(xlrow)
         }
       )
@@ -276,9 +281,9 @@ export class XLRowsTableComponent implements OnInit {
       // from selection, set xlrow that belong to xlrow
       this.selection.selected.forEach(
         xlrow => {
-          let ID = +this.dialogData.ID
-          xlrow[this.dialogData.ReversePointer].Int64 = ID
-          xlrow[this.dialogData.ReversePointer].Valid = true
+          let ID = this.dialogData.ID as number
+          let reversePointer = xlrow[this.dialogData.ReversePointer  as keyof XLRowDB] as unknown as NullInt64
+          reversePointer.Int64 = ID
           toUpdate.add(xlrow)
         }
       )
@@ -296,8 +301,9 @@ export class XLRowsTableComponent implements OnInit {
 
     if (this.mode == TableComponentMode.MANY_MANY_ASSOCIATION_MODE) {
 
-      let mapOfSourceInstances = this.frontRepo[this.dialogData.SourceStruct + "s"]
-      let sourceInstance = mapOfSourceInstances.get(this.dialogData.ID)
+      // get the source instance via the map of instances in the front repo
+      let mapOfSourceInstances = this.frontRepo[this.dialogData.SourceStruct + "s" as keyof FrontRepo] as Map<number, XLRowDB>
+      let sourceInstance = mapOfSourceInstances.get(this.dialogData.ID)!
 
       // First, parse all instance of the association struct and remove the instance
       // that have unselect
@@ -313,23 +319,21 @@ export class XLRowsTableComponent implements OnInit {
       }
 
       // delete the association instance
-      if (sourceInstance[this.dialogData.SourceField]) {
-        for (let associationInstance of sourceInstance[this.dialogData.SourceField]) {
-          let xlrow = associationInstance[this.dialogData.IntermediateStructField]
-          if (unselectedXLRow.has(xlrow.ID)) {
+      let associationInstance = sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance]
+      let xlrow = associationInstance![this.dialogData.IntermediateStructField as keyof typeof associationInstance] as unknown as XLRowDB
+      if (unselectedXLRow.has(xlrow.ID)) {
+        this.frontRepoService.deleteService(this.dialogData.IntermediateStruct, associationInstance)
 
-            this.frontRepoService.deleteService( this.dialogData.IntermediateStruct, associationInstance )
-          }
-        }
+
       }
 
-      // is the source array is emptyn create it
-      if (sourceInstance[this.dialogData.SourceField] == undefined) {
-        sourceInstance[this.dialogData.SourceField] = new Array<any>()
+      // is the source array is empty create it
+      if (sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance] == undefined) {
+        (sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance] as unknown as Array<XLRowDB>) = new Array<XLRowDB>()
       }
 
       // second, parse all instance of the selected
-      if (sourceInstance[this.dialogData.SourceField]) {
+      if (sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance]) {
         this.selection.selected.forEach(
           xlrow => {
             if (!this.initialSelection.includes(xlrow)) {
@@ -339,13 +343,11 @@ export class XLRowsTableComponent implements OnInit {
                 Name: sourceInstance["Name"] + "-" + xlrow.Name,
               }
 
-              associationInstance[this.dialogData.IntermediateStructField+"ID"] = new NullInt64
-              associationInstance[this.dialogData.IntermediateStructField+"ID"].Int64 = xlrow.ID
-              associationInstance[this.dialogData.IntermediateStructField+"ID"].Valid = true
+              let index = associationInstance[this.dialogData.IntermediateStructField+"ID" as keyof typeof associationInstance] as unknown as NullInt64
+              index.Int64 = xlrow.ID
 
-              associationInstance[this.dialogData.SourceStruct + "_" + this.dialogData.SourceField + "DBID"] = new NullInt64
-              associationInstance[this.dialogData.SourceStruct + "_" + this.dialogData.SourceField + "DBID"].Int64 = sourceInstance["ID"]
-              associationInstance[this.dialogData.SourceStruct + "_" + this.dialogData.SourceField + "DBID"].Valid = true
+              let indexDB = associationInstance[this.dialogData.IntermediateStructField+"DBID" as keyof typeof associationInstance] as unknown as NullInt64
+              indexDB.Int64 = xlrow.ID
 
               this.frontRepoService.postService( this.dialogData.IntermediateStruct, associationInstance )
 

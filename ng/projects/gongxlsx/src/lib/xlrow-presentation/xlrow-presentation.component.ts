@@ -23,13 +23,13 @@ export class XLRowPresentationComponent implements OnInit {
 
 	// insertion point for declarations
 
-	displayedColumns: string[] = [];
-	dataSource = ELEMENT_DATA;
+	displayedColumns: string[] = []
+	dataSource = ELEMENT_DATA
 
-	xlrow: XLRowDB;
+	xlrow: XLRowDB = new (XLRowDB)
 
 	// front repo
-	frontRepo: FrontRepo
+	frontRepo: FrontRepo = new (FrontRepo)
  
 	constructor(
 		private xlrowService: XLRowService,
@@ -56,12 +56,12 @@ export class XLRowPresentationComponent implements OnInit {
 	}
 
 	getXLRow(): void {
-		const id = +this.route.snapshot.paramMap.get('id');
+		const id = +this.route.snapshot.paramMap.get('id')!
 		this.frontRepoService.pull().subscribe(
 			frontRepo => {
 				this.frontRepo = frontRepo
 
-				this.xlrow = this.frontRepo.XLRows.get(id)
+				this.xlrow = this.frontRepo.XLRows.get(id)!
 
 				// insertion point for recovery of durations
 			}

@@ -2,12 +2,11 @@ import { Component, OnInit } from '@angular/core';
 
 import * as gongxlsx from 'gongxlsx'
 
-export interface PeriodicElement {
-  name: string;
-  position: number;
-  weight: number;
-  symbol: string;
-}
+
+type Constructor = new () => Object;
+
+const json2Instance = (source: string, destinationConstructor: Constructor) =>
+  Object.assign(new destinationConstructor(), JSON.parse(source));
 
 const ELEMENT_DATA: any[] = [
 ];
@@ -18,11 +17,11 @@ const ELEMENT_DATA: any[] = [
 })
 export class DisplaysheetComponent implements OnInit {
 
-  columns = [];
+  columns = [] as any
   dataSource = ELEMENT_DATA;
-  displayedColumns: string[]
+  displayedColumns: string[] = []
 
-  public gongxlsxFrontRepo: gongxlsx.FrontRepo
+  public gongxlsxFrontRepo?: gongxlsx.FrontRepo
 
   constructor(
     private gongxlsxFrontRepoService: gongxlsx.FrontRepoService,
@@ -37,13 +36,13 @@ export class DisplaysheetComponent implements OnInit {
           console.error("cannot deal with 0 file")
         }
 
-        let gongXLFile = this.gongxlsxFrontRepo.XLFiles_array[0];
+        let gongXLFile = this.gongxlsxFrontRepo.XLFiles_array[0]
 
-        if (gongXLFile.Sheets.length == 0) {
+        if (gongXLFile.Sheets!.length == 0) {
           console.error("cannot deal with 0 sheets")
         }
 
-        let gongXLSheet = gongXLFile.Sheets[0]
+        let gongXLSheet = gongXLFile.Sheets![0]
 
         // cells are provided in random order. on need to order them in the correct order
         let contentArray = new Array<string[]>(gongXLSheet.NbRows)
@@ -52,13 +51,13 @@ export class DisplaysheetComponent implements OnInit {
           contentArray[rowNb] = new Array<string>(gongXLSheet.MaxCol)
         }
 
-        for (let gongXLCell of gongXLSheet.SheetCells) {
+        for (let gongXLCell of gongXLSheet.SheetCells!) {
           contentArray[gongXLCell.Y][gongXLCell.X] = gongXLCell.Name
         }
 
         // now one need to fill up element data with synthetic object
         for (let rowNb = 1; rowNb < gongXLSheet.NbRows; rowNb++) {
-          let oneRow = {}
+          let oneRow = [] as any
           for (let columnNb = 0; columnNb < gongXLSheet.MaxCol; columnNb++) {
             oneRow[contentArray[0][columnNb]] = contentArray[rowNb][columnNb]
           }
@@ -78,7 +77,7 @@ export class DisplaysheetComponent implements OnInit {
         }
 
         // make up displayed columns
-        this.displayedColumns = this.columns.map(c => c.columnDef);
+        this.displayedColumns = this.columns.map((c: { columnDef: any; }) => c.columnDef);
 
         console.log(this.displayedColumns)
       }
