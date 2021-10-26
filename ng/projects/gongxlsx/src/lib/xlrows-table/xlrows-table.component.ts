@@ -62,6 +62,9 @@ export class XLRowsTableComponent implements OnInit {
     // enable sorting on all fields (including pointers and reverse pointer)
     this.matTableDataSource.sortingDataAccessor = (xlrowDB: XLRowDB, property: string) => {
       switch (property) {
+        case 'ID':
+          return xlrowDB.ID
+
         // insertion point for specific sorting accessor
         case 'Name':
           return xlrowDB.Name;
