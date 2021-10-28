@@ -45,6 +45,7 @@ type XLRowAPI struct {
 // reverse pointers of slice of poitners to Struct
 type XLRowPointersEnconding struct {
 	// insertion for pointer fields encoding declaration
+
 	// Implementation of a reverse ID for field XLSheet{}.Rows []*XLRow
 	XLSheet_RowsDBID sql.NullInt64
 
@@ -62,12 +63,12 @@ type XLRowDB struct {
 	gorm.Model
 
 	// insertion for basic fields declaration
+
 	// Declation for basic field xlrowDB.Name {{BasicKind}} (to be completed)
 	Name_Data sql.NullString
 
 	// Declation for basic field xlrowDB.RowIndex {{BasicKind}} (to be completed)
 	RowIndex_Data sql.NullInt64
-
 	// encoding of pointers
 	XLRowPointersEnconding
 }
@@ -85,13 +86,13 @@ type XLRowDBResponse struct {
 // XLRowWOP is a XLRow without pointers (WOP is an acronym for "Without Pointers")
 // it holds the same basic fields but pointers are encoded into uint
 type XLRowWOP struct {
-	ID int
+	ID int `xlsx:"0"`
 
 	// insertion for WOP basic fields
 
-	Name string
+	Name string `xlsx:"1"`
 
-	RowIndex int
+	RowIndex int `xlsx:"2"`
 	// insertion for WOP pointer fields
 }
 
@@ -426,23 +427,23 @@ func (backRepo *BackRepoStruct) CheckoutXLRow(xlrow *models.XLRow) {
 // CopyBasicFieldsFromXLRow
 func (xlrowDB *XLRowDB) CopyBasicFieldsFromXLRow(xlrow *models.XLRow) {
 	// insertion point for fields commit
+
 	xlrowDB.Name_Data.String = xlrow.Name
 	xlrowDB.Name_Data.Valid = true
 
 	xlrowDB.RowIndex_Data.Int64 = int64(xlrow.RowIndex)
 	xlrowDB.RowIndex_Data.Valid = true
-
 }
 
 // CopyBasicFieldsFromXLRowWOP
 func (xlrowDB *XLRowDB) CopyBasicFieldsFromXLRowWOP(xlrow *XLRowWOP) {
 	// insertion point for fields commit
+
 	xlrowDB.Name_Data.String = xlrow.Name
 	xlrowDB.Name_Data.Valid = true
 
 	xlrowDB.RowIndex_Data.Int64 = int64(xlrow.RowIndex)
 	xlrowDB.RowIndex_Data.Valid = true
-
 }
 
 // CopyBasicFieldsToXLRow
@@ -518,6 +519,51 @@ func (backRepoXLRow *BackRepoXLRowStruct) BackupXL(file *xlsx.File) {
 		row := sh.AddRow()
 		row.WriteStruct(&xlrowWOP, -1)
 	}
+}
+
+// RestoreXL from the "XLRow" sheet all XLRowDB instances
+func (backRepoXLRow *BackRepoXLRowStruct) RestoreXLPhaseOne(file *xlsx.File) {
+
+	// resets the map
+	BackRepoXLRowid_atBckpTime_newID = make(map[uint]uint)
+
+	sh, ok := file.Sheet["XLRow"]
+	_ = sh
+	if !ok {
+		log.Panic(errors.New("sheet not found"))
+	}
+
+	// log.Println("Max row is", sh.MaxRow)
+	err := sh.ForEachRow(backRepoXLRow.rowVisitorXLRow)
+	if err != nil {
+		log.Panic("Err=", err)
+	}
+}
+
+func (backRepoXLRow *BackRepoXLRowStruct) rowVisitorXLRow(row *xlsx.Row) error {
+
+	log.Printf("row line %d\n", row.GetCoordinate())
+	log.Println(row)
+
+	// skip first line
+	if row.GetCoordinate() > 0 {
+		var xlrowWOP XLRowWOP
+		row.ReadStruct(&xlrowWOP)
+
+		// add the unmarshalled struct to the stage
+		xlrowDB := new(XLRowDB)
+		xlrowDB.CopyBasicFieldsFromXLRowWOP(&xlrowWOP)
+
+		xlrowDB_ID_atBackupTime := xlrowDB.ID
+		xlrowDB.ID = 0
+		query := backRepoXLRow.db.Create(xlrowDB)
+		if query.Error != nil {
+			log.Panic(query.Error)
+		}
+		(*backRepoXLRow.Map_XLRowDBID_XLRowDB)[xlrowDB.ID] = xlrowDB
+		BackRepoXLRowid_atBckpTime_newID[xlrowDB_ID_atBackupTime] = xlrowDB.ID
+	}
+	return nil
 }
 
 // RestorePhaseOne read the file "XLRowDB.json" in dirPath that stores an array

@@ -45,11 +45,13 @@ type XLCellAPI struct {
 // reverse pointers of slice of poitners to Struct
 type XLCellPointersEnconding struct {
 	// insertion for pointer fields encoding declaration
+
 	// Implementation of a reverse ID for field XLRow{}.Cells []*XLCell
 	XLRow_CellsDBID sql.NullInt64
 
 	// implementation of the index of the withing the slice
 	XLRow_CellsDBID_Index sql.NullInt64
+
 	// Implementation of a reverse ID for field XLSheet{}.SheetCells []*XLCell
 	XLSheet_SheetCellsDBID sql.NullInt64
 
@@ -67,6 +69,7 @@ type XLCellDB struct {
 	gorm.Model
 
 	// insertion for basic fields declaration
+
 	// Declation for basic field xlcellDB.Name {{BasicKind}} (to be completed)
 	Name_Data sql.NullString
 
@@ -75,7 +78,6 @@ type XLCellDB struct {
 
 	// Declation for basic field xlcellDB.Y {{BasicKind}} (to be completed)
 	Y_Data sql.NullInt64
-
 	// encoding of pointers
 	XLCellPointersEnconding
 }
@@ -93,15 +95,15 @@ type XLCellDBResponse struct {
 // XLCellWOP is a XLCell without pointers (WOP is an acronym for "Without Pointers")
 // it holds the same basic fields but pointers are encoded into uint
 type XLCellWOP struct {
-	ID int
+	ID int `xlsx:"0"`
 
 	// insertion for WOP basic fields
 
-	Name string
+	Name string `xlsx:"1"`
 
-	X int
+	X int `xlsx:"2"`
 
-	Y int
+	Y int `xlsx:"3"`
 	// insertion for WOP pointer fields
 }
 
@@ -391,6 +393,7 @@ func (backRepo *BackRepoStruct) CheckoutXLCell(xlcell *models.XLCell) {
 // CopyBasicFieldsFromXLCell
 func (xlcellDB *XLCellDB) CopyBasicFieldsFromXLCell(xlcell *models.XLCell) {
 	// insertion point for fields commit
+
 	xlcellDB.Name_Data.String = xlcell.Name
 	xlcellDB.Name_Data.Valid = true
 
@@ -399,12 +402,12 @@ func (xlcellDB *XLCellDB) CopyBasicFieldsFromXLCell(xlcell *models.XLCell) {
 
 	xlcellDB.Y_Data.Int64 = int64(xlcell.Y)
 	xlcellDB.Y_Data.Valid = true
-
 }
 
 // CopyBasicFieldsFromXLCellWOP
 func (xlcellDB *XLCellDB) CopyBasicFieldsFromXLCellWOP(xlcell *XLCellWOP) {
 	// insertion point for fields commit
+
 	xlcellDB.Name_Data.String = xlcell.Name
 	xlcellDB.Name_Data.Valid = true
 
@@ -413,7 +416,6 @@ func (xlcellDB *XLCellDB) CopyBasicFieldsFromXLCellWOP(xlcell *XLCellWOP) {
 
 	xlcellDB.Y_Data.Int64 = int64(xlcell.Y)
 	xlcellDB.Y_Data.Valid = true
-
 }
 
 // CopyBasicFieldsToXLCell
@@ -491,6 +493,51 @@ func (backRepoXLCell *BackRepoXLCellStruct) BackupXL(file *xlsx.File) {
 		row := sh.AddRow()
 		row.WriteStruct(&xlcellWOP, -1)
 	}
+}
+
+// RestoreXL from the "XLCell" sheet all XLCellDB instances
+func (backRepoXLCell *BackRepoXLCellStruct) RestoreXLPhaseOne(file *xlsx.File) {
+
+	// resets the map
+	BackRepoXLCellid_atBckpTime_newID = make(map[uint]uint)
+
+	sh, ok := file.Sheet["XLCell"]
+	_ = sh
+	if !ok {
+		log.Panic(errors.New("sheet not found"))
+	}
+
+	// log.Println("Max row is", sh.MaxRow)
+	err := sh.ForEachRow(backRepoXLCell.rowVisitorXLCell)
+	if err != nil {
+		log.Panic("Err=", err)
+	}
+}
+
+func (backRepoXLCell *BackRepoXLCellStruct) rowVisitorXLCell(row *xlsx.Row) error {
+
+	log.Printf("row line %d\n", row.GetCoordinate())
+	log.Println(row)
+
+	// skip first line
+	if row.GetCoordinate() > 0 {
+		var xlcellWOP XLCellWOP
+		row.ReadStruct(&xlcellWOP)
+
+		// add the unmarshalled struct to the stage
+		xlcellDB := new(XLCellDB)
+		xlcellDB.CopyBasicFieldsFromXLCellWOP(&xlcellWOP)
+
+		xlcellDB_ID_atBackupTime := xlcellDB.ID
+		xlcellDB.ID = 0
+		query := backRepoXLCell.db.Create(xlcellDB)
+		if query.Error != nil {
+			log.Panic(query.Error)
+		}
+		(*backRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB.ID] = xlcellDB
+		BackRepoXLCellid_atBckpTime_newID[xlcellDB_ID_atBackupTime] = xlcellDB.ID
+	}
+	return nil
 }
 
 // RestorePhaseOne read the file "XLCellDB.json" in dirPath that stores an array

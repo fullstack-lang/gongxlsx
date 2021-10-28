@@ -57,12 +57,12 @@ type XLFileDB struct {
 	gorm.Model
 
 	// insertion for basic fields declaration
+
 	// Declation for basic field xlfileDB.Name {{BasicKind}} (to be completed)
 	Name_Data sql.NullString
 
 	// Declation for basic field xlfileDB.NbSheets {{BasicKind}} (to be completed)
 	NbSheets_Data sql.NullInt64
-
 	// encoding of pointers
 	XLFilePointersEnconding
 }
@@ -80,13 +80,13 @@ type XLFileDBResponse struct {
 // XLFileWOP is a XLFile without pointers (WOP is an acronym for "Without Pointers")
 // it holds the same basic fields but pointers are encoded into uint
 type XLFileWOP struct {
-	ID int
+	ID int `xlsx:"0"`
 
 	// insertion for WOP basic fields
 
-	Name string
+	Name string `xlsx:"1"`
 
-	NbSheets int
+	NbSheets int `xlsx:"2"`
 	// insertion for WOP pointer fields
 }
 
@@ -421,23 +421,23 @@ func (backRepo *BackRepoStruct) CheckoutXLFile(xlfile *models.XLFile) {
 // CopyBasicFieldsFromXLFile
 func (xlfileDB *XLFileDB) CopyBasicFieldsFromXLFile(xlfile *models.XLFile) {
 	// insertion point for fields commit
+
 	xlfileDB.Name_Data.String = xlfile.Name
 	xlfileDB.Name_Data.Valid = true
 
 	xlfileDB.NbSheets_Data.Int64 = int64(xlfile.NbSheets)
 	xlfileDB.NbSheets_Data.Valid = true
-
 }
 
 // CopyBasicFieldsFromXLFileWOP
 func (xlfileDB *XLFileDB) CopyBasicFieldsFromXLFileWOP(xlfile *XLFileWOP) {
 	// insertion point for fields commit
+
 	xlfileDB.Name_Data.String = xlfile.Name
 	xlfileDB.Name_Data.Valid = true
 
 	xlfileDB.NbSheets_Data.Int64 = int64(xlfile.NbSheets)
 	xlfileDB.NbSheets_Data.Valid = true
-
 }
 
 // CopyBasicFieldsToXLFile
@@ -513,6 +513,51 @@ func (backRepoXLFile *BackRepoXLFileStruct) BackupXL(file *xlsx.File) {
 		row := sh.AddRow()
 		row.WriteStruct(&xlfileWOP, -1)
 	}
+}
+
+// RestoreXL from the "XLFile" sheet all XLFileDB instances
+func (backRepoXLFile *BackRepoXLFileStruct) RestoreXLPhaseOne(file *xlsx.File) {
+
+	// resets the map
+	BackRepoXLFileid_atBckpTime_newID = make(map[uint]uint)
+
+	sh, ok := file.Sheet["XLFile"]
+	_ = sh
+	if !ok {
+		log.Panic(errors.New("sheet not found"))
+	}
+
+	// log.Println("Max row is", sh.MaxRow)
+	err := sh.ForEachRow(backRepoXLFile.rowVisitorXLFile)
+	if err != nil {
+		log.Panic("Err=", err)
+	}
+}
+
+func (backRepoXLFile *BackRepoXLFileStruct) rowVisitorXLFile(row *xlsx.Row) error {
+
+	log.Printf("row line %d\n", row.GetCoordinate())
+	log.Println(row)
+
+	// skip first line
+	if row.GetCoordinate() > 0 {
+		var xlfileWOP XLFileWOP
+		row.ReadStruct(&xlfileWOP)
+
+		// add the unmarshalled struct to the stage
+		xlfileDB := new(XLFileDB)
+		xlfileDB.CopyBasicFieldsFromXLFileWOP(&xlfileWOP)
+
+		xlfileDB_ID_atBackupTime := xlfileDB.ID
+		xlfileDB.ID = 0
+		query := backRepoXLFile.db.Create(xlfileDB)
+		if query.Error != nil {
+			log.Panic(query.Error)
+		}
+		(*backRepoXLFile.Map_XLFileDBID_XLFileDB)[xlfileDB.ID] = xlfileDB
+		BackRepoXLFileid_atBckpTime_newID[xlfileDB_ID_atBackupTime] = xlfileDB.ID
+	}
+	return nil
 }
 
 // RestorePhaseOne read the file "XLFileDB.json" in dirPath that stores an array
