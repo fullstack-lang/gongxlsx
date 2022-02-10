@@ -2,14 +2,14 @@ import { Component, OnInit } from '@angular/core';
 
 import * as gongxlsx from 'gongxlsx'
 
+import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 
 type Constructor = new () => Object;
 
 const json2Instance = (source: string, destinationConstructor: Constructor) =>
   Object.assign(new destinationConstructor(), JSON.parse(source));
 
-const ELEMENT_DATA: any[] = [
-];
 @Component({
   selector: 'lib-displaysheet',
   templateUrl: './displaysheet.component.html',
@@ -18,8 +18,10 @@ const ELEMENT_DATA: any[] = [
 export class DisplaysheetComponent implements OnInit {
 
   columns = [] as any
-  dataSource = ELEMENT_DATA;
   displayedColumns: string[] = []
+
+  sort: MatSort | undefined
+  matTableDataSource: MatTableDataSource<string> = new (MatTableDataSource)
 
   public gongxlsxFrontRepo?: gongxlsx.FrontRepo
 
@@ -61,7 +63,7 @@ export class DisplaysheetComponent implements OnInit {
           for (let columnNb = 0; columnNb < gongXLSheet.MaxCol; columnNb++) {
             oneRow[contentArray[0][columnNb]] = contentArray[rowNb][columnNb]
           }
-          ELEMENT_DATA.push(oneRow)
+          this.matTableDataSource.data.push(oneRow)
         }
 
 
@@ -82,6 +84,25 @@ export class DisplaysheetComponent implements OnInit {
         console.log(this.displayedColumns)
       }
     )
+
+
   }
 
+  ngAfterViewInit() {
+    // enable sorting on all fields (including pointers and reverse pointer)
+    this.matTableDataSource.sortingDataAccessor = (cell: any, property: string) => {
+      switch (property) {
+        case 'ID':
+          return cell
+
+        // insertion point for specific sorting accessor
+        case 'Name':
+          return cell
+
+        default:
+          return cell
+      };
+    }
+    this.matTableDataSource.sort = this.sort!
+  }
 }
