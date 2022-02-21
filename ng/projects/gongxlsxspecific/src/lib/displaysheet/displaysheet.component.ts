@@ -37,14 +37,35 @@ export class DisplaysheetComponent implements OnInit {
         if (this.gongxlsxFrontRepo.XLFiles.size == 0) {
           console.error("cannot deal with 0 file")
         }
-
         let gongXLFile = this.gongxlsxFrontRepo.XLFiles_array[0]
+
+        if (this.gongxlsxFrontRepo.DisplaySelections.size == 0) {
+          console.error("cannot deal with 0 display selections")
+        }
+        // default file to display is rank 0
+        let displayselection = this.gongxlsxFrontRepo.DisplaySelections_array[0]
+
+        // is selection is activated
+        if (displayselection.XLFile != null) {
+          gongXLFile = displayselection.XLFile
+        }
 
         if (gongXLFile.Sheets!.length == 0) {
           console.error("cannot deal with 0 sheets")
         }
-
+        // default display choice
         let gongXLSheet = gongXLFile.Sheets![0]
+
+        // if the selected sheet is among the sheets of the xl file, select it to display
+        for (let sheetId = 0; sheetId < gongXLFile.Sheets!.length; sheetId++) {
+          let gongXLSheet_ = gongXLFile.Sheets![sheetId]
+          if (displayselection.XLSheet != null) {
+
+            if (displayselection.XLSheet.ID == gongXLSheet_.ID) {
+              gongXLSheet = gongXLSheet_
+            }
+          }
+        }
 
         // cells are provided in random order. on need to order them in the correct order
         let contentArray = new Array<string[]>(gongXLSheet.NbRows)

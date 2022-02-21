@@ -8,6 +8,8 @@ import { FrontRepoService, FrontRepo } from '../front-repo.service'
 import { CommitNbService } from '../commitnb.service'
 
 // insertion point for per struct import code
+import { DisplaySelectionService } from '../displayselection.service'
+import { getDisplaySelectionUniqueID } from '../front-repo.service'
 import { XLCellService } from '../xlcell.service'
 import { getXLCellUniqueID } from '../front-repo.service'
 import { XLFileService } from '../xlfile.service'
@@ -151,6 +153,7 @@ export class SidebarComponent implements OnInit {
     private commitNbService: CommitNbService,
 
     // insertion point for per struct service declaration
+    private displayselectionService: DisplaySelectionService,
     private xlcellService: XLCellService,
     private xlfileService: XLFileService,
     private xlrowService: XLRowService,
@@ -161,6 +164,14 @@ export class SidebarComponent implements OnInit {
     this.refresh()
 
     // insertion point for per struct observable for refresh trigger
+    // observable for changes in structs
+    this.displayselectionService.DisplaySelectionServiceChanged.subscribe(
+      message => {
+        if (message == "post" || message == "update" || message == "delete") {
+          this.refresh()
+        }
+      }
+    )
     // observable for changes in structs
     this.xlcellService.XLCellServiceChanged.subscribe(
       message => {
@@ -217,6 +228,120 @@ export class SidebarComponent implements OnInit {
       this.gongNodeTree = new Array<GongNode>();
       
       // insertion point for per struct tree construction
+      /**
+      * fill up the DisplaySelection part of the mat tree
+      */
+      let displayselectionGongNodeStruct: GongNode = {
+        name: "DisplaySelection",
+        type: GongNodeType.STRUCT,
+        id: 0,
+        uniqueIdPerStack: 13 * nonInstanceNodeId,
+        structName: "DisplaySelection",
+        associationField: "",
+        associatedStructName: "",
+        children: new Array<GongNode>()
+      }
+      nonInstanceNodeId = nonInstanceNodeId + 1
+      this.gongNodeTree.push(displayselectionGongNodeStruct)
+
+      this.frontRepo.DisplaySelections_array.sort((t1, t2) => {
+        if (t1.Name > t2.Name) {
+          return 1;
+        }
+        if (t1.Name < t2.Name) {
+          return -1;
+        }
+        return 0;
+      });
+
+      this.frontRepo.DisplaySelections_array.forEach(
+        displayselectionDB => {
+          let displayselectionGongNodeInstance: GongNode = {
+            name: displayselectionDB.Name,
+            type: GongNodeType.INSTANCE,
+            id: displayselectionDB.ID,
+            uniqueIdPerStack: getDisplaySelectionUniqueID(displayselectionDB.ID),
+            structName: "DisplaySelection",
+            associationField: "",
+            associatedStructName: "",
+            children: new Array<GongNode>()
+          }
+          displayselectionGongNodeStruct.children!.push(displayselectionGongNodeInstance)
+
+          // insertion point for per field code
+          /**
+          * let append a node for the association XLFile
+          */
+          let XLFileGongNodeAssociation: GongNode = {
+            name: "(XLFile) XLFile",
+            type: GongNodeType.ONE__ZERO_ONE_ASSOCIATION,
+            id: displayselectionDB.ID,
+            uniqueIdPerStack: 17 * nonInstanceNodeId,
+            structName: "DisplaySelection",
+            associationField: "XLFile",
+            associatedStructName: "XLFile",
+            children: new Array<GongNode>()
+          }
+          nonInstanceNodeId = nonInstanceNodeId + 1
+          displayselectionGongNodeInstance.children!.push(XLFileGongNodeAssociation)
+
+          /**
+            * let append a node for the instance behind the asssociation XLFile
+            */
+          if (displayselectionDB.XLFile != undefined) {
+            let displayselectionGongNodeInstance_XLFile: GongNode = {
+              name: displayselectionDB.XLFile.Name,
+              type: GongNodeType.INSTANCE,
+              id: displayselectionDB.XLFile.ID,
+              uniqueIdPerStack: // godel numbering (thank you kurt)
+                3 * getDisplaySelectionUniqueID(displayselectionDB.ID)
+                + 5 * getXLFileUniqueID(displayselectionDB.XLFile.ID),
+              structName: "XLFile",
+              associationField: "",
+              associatedStructName: "",
+              children: new Array<GongNode>()
+            }
+            XLFileGongNodeAssociation.children.push(displayselectionGongNodeInstance_XLFile)
+          }
+
+          /**
+          * let append a node for the association XLSheet
+          */
+          let XLSheetGongNodeAssociation: GongNode = {
+            name: "(XLSheet) XLSheet",
+            type: GongNodeType.ONE__ZERO_ONE_ASSOCIATION,
+            id: displayselectionDB.ID,
+            uniqueIdPerStack: 17 * nonInstanceNodeId,
+            structName: "DisplaySelection",
+            associationField: "XLSheet",
+            associatedStructName: "XLSheet",
+            children: new Array<GongNode>()
+          }
+          nonInstanceNodeId = nonInstanceNodeId + 1
+          displayselectionGongNodeInstance.children!.push(XLSheetGongNodeAssociation)
+
+          /**
+            * let append a node for the instance behind the asssociation XLSheet
+            */
+          if (displayselectionDB.XLSheet != undefined) {
+            let displayselectionGongNodeInstance_XLSheet: GongNode = {
+              name: displayselectionDB.XLSheet.Name,
+              type: GongNodeType.INSTANCE,
+              id: displayselectionDB.XLSheet.ID,
+              uniqueIdPerStack: // godel numbering (thank you kurt)
+                3 * getDisplaySelectionUniqueID(displayselectionDB.ID)
+                + 5 * getXLSheetUniqueID(displayselectionDB.XLSheet.ID),
+              structName: "XLSheet",
+              associationField: "",
+              associatedStructName: "",
+              children: new Array<GongNode>()
+            }
+            XLSheetGongNodeAssociation.children.push(displayselectionGongNodeInstance_XLSheet)
+          }
+
+        }
+      )
+
       /**
       * fill up the XLCell part of the mat tree
       */

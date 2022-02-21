@@ -1,4 +1,6 @@
 // insertion point sub template for components imports 
+  import { DisplaySelectionsTableComponent } from './displayselections-table/displayselections-table.component'
+  import { DisplaySelectionSortingComponent } from './displayselection-sorting/displayselection-sorting.component'
   import { XLCellsTableComponent } from './xlcells-table/xlcells-table.component'
   import { XLCellSortingComponent } from './xlcell-sorting/xlcell-sorting.component'
   import { XLFilesTableComponent } from './xlfiles-table/xlfiles-table.component'
@@ -9,6 +11,8 @@
   import { XLSheetSortingComponent } from './xlsheet-sorting/xlsheet-sorting.component'
 
 // insertion point sub template for map of components per struct 
+  export const MapOfDisplaySelectionsComponents: Map<string, any> = new Map([["DisplaySelectionsTableComponent", DisplaySelectionsTableComponent],])
+  export const MapOfDisplaySelectionSortingComponents: Map<string, any> = new Map([["DisplaySelectionSortingComponent", DisplaySelectionSortingComponent],])
   export const MapOfXLCellsComponents: Map<string, any> = new Map([["XLCellsTableComponent", XLCellsTableComponent],])
   export const MapOfXLCellSortingComponents: Map<string, any> = new Map([["XLCellSortingComponent", XLCellSortingComponent],])
   export const MapOfXLFilesComponents: Map<string, any> = new Map([["XLFilesTableComponent", XLFilesTableComponent],])
@@ -23,6 +27,7 @@ export const MapOfComponents: Map<string, any> =
   new Map(
     [
       // insertion point sub template for map of components 
+      ["DisplaySelection", MapOfDisplaySelectionsComponents],
       ["XLCell", MapOfXLCellsComponents],
       ["XLFile", MapOfXLFilesComponents],
       ["XLRow", MapOfXLRowsComponents],
@@ -35,6 +40,7 @@ export const MapOfSortingComponents: Map<string, any> =
   new Map(
     [
     // insertion point sub template for map of sorting components 
+      ["DisplaySelection", MapOfDisplaySelectionSortingComponents],
       ["XLCell", MapOfXLCellSortingComponents],
       ["XLFile", MapOfXLFileSortingComponents],
       ["XLRow", MapOfXLRowSortingComponents],

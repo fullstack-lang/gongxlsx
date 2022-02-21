@@ -67,8 +67,8 @@ func main() {
 		log.Panicf("there should be at least one file argument")
 	}
 
-	file := new(models.XLFile).Stage()
-	file.Open(flag.Arg(0))
+	sampleXLFile := new(models.XLFile).Stage()
+	sampleXLFile.Open(flag.Arg(0))
 
 	if *compareFlag == "sampleFile" {
 		log.Println("no file to compare")
@@ -77,6 +77,12 @@ func main() {
 		fileToCompare.Open(*compareFlag)
 
 	}
+
+	// create a singloton display selection object
+	selection := new(models.DisplaySelection).Stage()
+	selection.Name = "File and Sheet to display"
+	selection.XLFile = sampleXLFile
+	selection.XLSheet = sampleXLFile.Sheets[1]
 
 	models.Stage.Commit()
 
