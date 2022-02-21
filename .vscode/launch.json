@@ -34,7 +34,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}",
+            "program": "${workspaceFolder}/go/cmd/gongxlsx",
             "args": [
                 "samplefile.xlsx"
             ]
@@ -44,7 +44,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}",
+            "program": "${workspaceFolder}/go/cmd/gongxlsx",
             "args": [
                 "-compare",
                 "../../../r/DEV_COHERENCE/compareDUB/CCTP SySCA V3 DUB0.4.2 export DOORS.xlsx",
