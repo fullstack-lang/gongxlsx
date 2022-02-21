@@ -4,6 +4,7 @@ import * as gongxlsx from 'gongxlsx'
 
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
+import { Observable, timer } from 'rxjs';
 
 type Constructor = new () => Object;
 
@@ -25,11 +26,51 @@ export class DisplaysheetComponent implements OnInit {
 
   public gongxlsxFrontRepo?: gongxlsx.FrontRepo
 
+  // autonmatic refresh of sheet display
+  obsTimer: Observable<number> = timer(1000, 500) // due time 1', period 0.5'
+
+  // commitNb stores the number of commit on the backend
+  commitFromBackNb: number = 0
+  
+  // commitNb stores the number of commit on the frontend
+  commitFromFrontNb: number = 0
+
   constructor(
     private gongxlsxFrontRepoService: gongxlsx.FrontRepoService,
+    private commitNbService: gongxlsx.CommitNbService,
+    private pushFromFrontService: gongxlsx.PushFromFrontNbService,
   ) { }
 
   ngOnInit(): void {
+    this.displaySelectedSheet()
+
+    // timer to refresh the sheet if something has changed in the back
+    this.obsTimer.subscribe(
+      () => {
+        this.commitNbService.getCommitNb().subscribe(
+          commitFromBackNb => {
+            console.log("commit nb in the back " + commitFromBackNb + " local commit nb " + this.commitFromBackNb)
+            if (commitFromBackNb > this.commitFromBackNb) {
+              this.displaySelectedSheet()
+              this.commitFromBackNb = commitFromBackNb
+            }
+          }
+        )
+
+        this.pushFromFrontService.getPushFromFrontNb().subscribe(
+          commitFromFrontNb => {
+            console.log("commit nb from the front " + commitFromFrontNb + " local commit nb " + this.commitFromFrontNb)
+            if (commitFromFrontNb > this.commitFromFrontNb) {
+              this.displaySelectedSheet()
+              this.commitFromFrontNb = commitFromFrontNb
+            }
+          }
+        )
+      }
+    )
+  }
+
+  displaySelectedSheet() {
     this.gongxlsxFrontRepoService.pull().subscribe(
       gongxlsxsFrontRepo => {
         this.gongxlsxFrontRepo = gongxlsxsFrontRepo
@@ -87,7 +128,7 @@ export class DisplaysheetComponent implements OnInit {
           this.matTableDataSource.data.push(oneRow)
         }
 
-
+        this.columns = []
         for (let columnNb = 0; columnNb < gongXLSheet.MaxCol; columnNb++) {
 
           this.columns.push(
@@ -103,13 +144,32 @@ export class DisplaysheetComponent implements OnInit {
         this.displayedColumns = this.columns.map((c: { columnDef: any; }) => c.columnDef);
 
         console.log(this.displayedColumns)
+
+        this.postProcessing()
       }
+      
     )
-
-
   }
 
   ngAfterViewInit() {
+    // enable sorting on all fields (including pointers and reverse pointer)
+    this.matTableDataSource.sortingDataAccessor = (cell: any, property: string) => {
+      switch (property) {
+        case 'ID':
+          return cell
+
+        // insertion point for specific sorting accessor
+        case 'Name':
+          return cell
+
+        default:
+          return cell
+      };
+    }
+    this.matTableDataSource.sort = this.sort!
+  }
+
+  postProcessing() {
     // enable sorting on all fields (including pointers and reverse pointer)
     this.matTableDataSource.sortingDataAccessor = (cell: any, property: string) => {
       switch (property) {
