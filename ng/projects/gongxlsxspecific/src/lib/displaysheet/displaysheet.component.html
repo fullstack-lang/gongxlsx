@@ -1,3 +1,17 @@
+<mat-tab-group [selectedIndex]="selectedFile.value" (selectedFileIndexChange)="selectedFile.setValue($event)" (selectedTabChange)="onTableSelection($event)">
+    <mat-tab *ngFor="let tabFile of tabsForFile; let index = index" [label]="tabFile">
+        <!-- Contents for {{tabFile}} XL File, index is {{index}} -->
+
+        <mat-tab-group [selectedIndex]="selectedSheet.value" (selectedFileIndexChange)="selectedSheet.setValue($event)" (selectedTabChange)="onSheetSelection($event)">
+            <mat-tab *ngFor="let tabSheet of tabsForSheetsOfFile[index]; let indexSheet = index" [label]="tabSheet">
+                <!-- Contents for {{tabSheet}} XL File, index is {{indexSheet}} -->
+            </mat-tab>
+        </mat-tab-group>
+
+    </mat-tab>
+</mat-tab-group>
+
+<h4></h4>
 <table mat-table [dataSource]="matTableDataSource" class="mat-elevation-z8 demo-table" matSort>
     <ng-container *ngFor="let column of columns" [matColumnDef]="column.columnDef">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>

@@ -84,10 +84,10 @@ func main() {
 	}
 
 	// create a singloton display selection object
-	selection := new(models.DisplaySelection).Stage()
-	selection.Name = "File and Sheet to display"
-	selection.XLFile = sampleXLFile
-	selection.XLSheet = sampleXLFile.Sheets[1]
+	// selection := new(models.DisplaySelection).Stage()
+	// selection.Name = "File and Sheet to display"
+	// selection.XLFile = sampleXLFile
+	// selection.XLSheet = sampleXLFile.Sheets[1]
 
 	models.Stage.Commit()
 
