@@ -31,7 +31,7 @@ export class DisplaysheetComponent implements OnInit {
 
   // commitNb stores the number of commit on the backend
   commitFromBackNb: number = 0
-  
+
   // commitNb stores the number of commit on the frontend
   commitFromFrontNb: number = 0
 
@@ -73,6 +73,10 @@ export class DisplaysheetComponent implements OnInit {
   displaySelectedSheet() {
     this.gongxlsxFrontRepoService.pull().subscribe(
       gongxlsxsFrontRepo => {
+
+        // reset the data to display
+        this.matTableDataSource = new (MatTableDataSource)
+
         this.gongxlsxFrontRepo = gongxlsxsFrontRepo
 
         if (this.gongxlsxFrontRepo.XLFiles.size == 0) {
@@ -97,7 +101,7 @@ export class DisplaysheetComponent implements OnInit {
         // default display choice
         let gongXLSheet = gongXLFile.Sheets![0]
 
-        // if the selected sheet is among the sheets of the xl file, select it to display
+        // if the selected sheet is among the sheets of the xl file, select it for display
         for (let sheetId = 0; sheetId < gongXLFile.Sheets!.length; sheetId++) {
           let gongXLSheet_ = gongXLFile.Sheets![sheetId]
           if (displayselection.XLSheet != null) {
@@ -147,7 +151,7 @@ export class DisplaysheetComponent implements OnInit {
 
         this.postProcessing()
       }
-      
+
     )
   }
 

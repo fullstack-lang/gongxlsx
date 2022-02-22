@@ -36,7 +36,8 @@
             "mode": "auto",
             "program": "${workspaceFolder}/go/cmd/gongxlsx",
             "args": [
-                "samplefile.xlsx"
+                "samplefile.xlsx",
+                "samplefile2.xlsx"
             ]
         },
         {

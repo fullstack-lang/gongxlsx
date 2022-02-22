@@ -70,6 +70,11 @@ func main() {
 	sampleXLFile := new(models.XLFile).Stage()
 	sampleXLFile.Open(flag.Arg(0))
 
+	if len(nbArgs) > 1 {
+		sampleXLFile2 := new(models.XLFile).Stage()
+		sampleXLFile2.Open(flag.Arg(1))
+	}
+
 	if *compareFlag == "sampleFile" {
 		log.Println("no file to compare")
 	} else {
