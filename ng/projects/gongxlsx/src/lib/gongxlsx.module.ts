@@ -38,6 +38,11 @@ import { SplitterComponent } from './splitter/splitter.component'
 import { SidebarComponent } from './sidebar/sidebar.component';
 
 // insertion point for imports 
+import { DisplaySelectionsTableComponent } from './displayselections-table/displayselections-table.component'
+import { DisplaySelectionSortingComponent } from './displayselection-sorting/displayselection-sorting.component'
+import { DisplaySelectionDetailComponent } from './displayselection-detail/displayselection-detail.component'
+import { DisplaySelectionPresentationComponent } from './displayselection-presentation/displayselection-presentation.component'
+
 import { XLCellsTableComponent } from './xlcells-table/xlcells-table.component'
 import { XLCellSortingComponent } from './xlcell-sorting/xlcell-sorting.component'
 import { XLCellDetailComponent } from './xlcell-detail/xlcell-detail.component'
@@ -62,6 +67,11 @@ import { XLSheetPresentationComponent } from './xlsheet-presentation/xlsheet-pre
 @NgModule({
 	declarations: [
 		// insertion point for declarations 
+		DisplaySelectionsTableComponent,
+		DisplaySelectionSortingComponent,
+		DisplaySelectionDetailComponent,
+		DisplaySelectionPresentationComponent,
+
 		XLCellsTableComponent,
 		XLCellSortingComponent,
 		XLCellDetailComponent,
@@ -121,6 +131,11 @@ import { XLSheetPresentationComponent } from './xlsheet-presentation/xlsheet-pre
 	],
 	exports: [
 		// insertion point for declarations 
+		DisplaySelectionsTableComponent,
+		DisplaySelectionSortingComponent,
+		DisplaySelectionDetailComponent,
+		DisplaySelectionPresentationComponent,
+
 		XLCellsTableComponent,
 		XLCellSortingComponent,
 		XLCellDetailComponent,

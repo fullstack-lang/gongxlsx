@@ -20,7 +20,8 @@
 			"args": [
 				"run",
 				"main.go",
-				"samplefile.xlsx"
+				"samplefile.xlsx",
+				"samplefile2.xlsx"
 			],
 			"group": "build"
 		},

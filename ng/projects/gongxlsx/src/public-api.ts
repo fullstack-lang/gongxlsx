@@ -14,6 +14,13 @@ export * from './lib/commitnb.service'
 export * from './lib/push_from_front_nb.service'
 
 
+export * from './lib/displayselection-detail/displayselection-detail.component'
+export * from './lib/displayselection-presentation/displayselection-presentation.component'
+export * from './lib/displayselection-sorting/displayselection-sorting.component'
+export * from './lib/displayselections-table/displayselections-table.component'
+export * from './lib/displayselection-db'
+export * from './lib/displayselection.service'
+
 export * from './lib/xlcell-detail/xlcell-detail.component'
 export * from './lib/xlcell-presentation/xlcell-presentation.component'
 export * from './lib/xlcell-sorting/xlcell-sorting.component'

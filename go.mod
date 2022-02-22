@@ -3,7 +3,6 @@ module github.com/fullstack-lang/gongxlsx
 go 1.17
 
 require (
-	github.com/fullstack-lang/gong v0.0.0-20220213112320-b55a99af448b
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.7.4

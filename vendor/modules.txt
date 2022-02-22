@@ -1,9 +1,6 @@
 # github.com/frankban/quicktest v1.13.1
 ## explicit; go 1.13
 github.com/frankban/quicktest
-# github.com/fullstack-lang/gong v0.0.0-20220213112320-b55a99af448b
-## explicit; go 1.17
-github.com/fullstack-lang/gong/test/go/models
 # github.com/gin-contrib/cors v1.3.1
 ## explicit; go 1.13
 github.com/gin-contrib/cors

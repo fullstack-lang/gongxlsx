@@ -19,6 +19,9 @@ var __member __void
 // StageStruct enables storage of staged instances
 // swagger:ignore
 type StageStruct struct { // insertion point for definition of arrays registering instances
+	DisplaySelections           map[*DisplaySelection]struct{}
+	DisplaySelections_mapString map[string]*DisplaySelection
+
 	XLCells           map[*XLCell]struct{}
 	XLCells_mapString map[string]*XLCell
 
@@ -55,6 +58,8 @@ type BackRepoInterface interface {
 	BackupXL(stage *StageStruct, dirPath string)
 	RestoreXL(stage *StageStruct, dirPath string)
 	// insertion point for Commit and Checkout signatures
+	CommitDisplaySelection(displayselection *DisplaySelection)
+	CheckoutDisplaySelection(displayselection *DisplaySelection)
 	CommitXLCell(xlcell *XLCell)
 	CheckoutXLCell(xlcell *XLCell)
 	CommitXLFile(xlfile *XLFile)
@@ -69,6 +74,9 @@ type BackRepoInterface interface {
 
 // swagger:ignore instructs the gong compiler (gongc) to avoid this particular struct
 var Stage StageStruct = StageStruct{ // insertion point for array initiatialisation
+	DisplaySelections:           make(map[*DisplaySelection]struct{}),
+	DisplaySelections_mapString: make(map[string]*DisplaySelection),
+
 	XLCells:           make(map[*XLCell]struct{}),
 	XLCells_mapString: make(map[string]*XLCell),
 
@@ -125,6 +133,108 @@ func (stage *StageStruct) RestoreXL(dirPath string) {
 }
 
 // insertion point for cumulative sub template with model space calls
+func (stage *StageStruct) getDisplaySelectionOrderedStructWithNameField() []*DisplaySelection {
+	// have alphabetical order generation
+	displayselectionOrdered := []*DisplaySelection{}
+	for displayselection := range stage.DisplaySelections {
+		displayselectionOrdered = append(displayselectionOrdered, displayselection)
+	}
+	sort.Slice(displayselectionOrdered[:], func(i, j int) bool {
+		return displayselectionOrdered[i].Name < displayselectionOrdered[j].Name
+	})
+	return displayselectionOrdered
+}
+
+// Stage puts displayselection to the model stage
+func (displayselection *DisplaySelection) Stage() *DisplaySelection {
+	Stage.DisplaySelections[displayselection] = __member
+	Stage.DisplaySelections_mapString[displayselection.Name] = displayselection
+
+	return displayselection
+}
+
+// Unstage removes displayselection off the model stage
+func (displayselection *DisplaySelection) Unstage() *DisplaySelection {
+	delete(Stage.DisplaySelections, displayselection)
+	delete(Stage.DisplaySelections_mapString, displayselection.Name)
+	return displayselection
+}
+
+// commit displayselection to the back repo (if it is already staged)
+func (displayselection *DisplaySelection) Commit() *DisplaySelection {
+	if _, ok := Stage.DisplaySelections[displayselection]; ok {
+		if Stage.BackRepo != nil {
+			Stage.BackRepo.CommitDisplaySelection(displayselection)
+		}
+	}
+	return displayselection
+}
+
+// Checkout displayselection to the back repo (if it is already staged)
+func (displayselection *DisplaySelection) Checkout() *DisplaySelection {
+	if _, ok := Stage.DisplaySelections[displayselection]; ok {
+		if Stage.BackRepo != nil {
+			Stage.BackRepo.CheckoutDisplaySelection(displayselection)
+		}
+	}
+	return displayselection
+}
+
+//
+// Legacy, to be deleted
+//
+
+// StageCopy appends a copy of displayselection to the model stage
+func (displayselection *DisplaySelection) StageCopy() *DisplaySelection {
+	_displayselection := new(DisplaySelection)
+	*_displayselection = *displayselection
+	_displayselection.Stage()
+	return _displayselection
+}
+
+// StageAndCommit appends displayselection to the model stage and commit to the orm repo
+func (displayselection *DisplaySelection) StageAndCommit() *DisplaySelection {
+	displayselection.Stage()
+	if Stage.AllModelsStructCreateCallback != nil {
+		Stage.AllModelsStructCreateCallback.CreateORMDisplaySelection(displayselection)
+	}
+	return displayselection
+}
+
+// DeleteStageAndCommit appends displayselection to the model stage and commit to the orm repo
+func (displayselection *DisplaySelection) DeleteStageAndCommit() *DisplaySelection {
+	displayselection.Unstage()
+	DeleteORMDisplaySelection(displayselection)
+	return displayselection
+}
+
+// StageCopyAndCommit appends a copy of displayselection to the model stage and commit to the orm repo
+func (displayselection *DisplaySelection) StageCopyAndCommit() *DisplaySelection {
+	_displayselection := new(DisplaySelection)
+	*_displayselection = *displayselection
+	_displayselection.Stage()
+	if Stage.AllModelsStructCreateCallback != nil {
+		Stage.AllModelsStructCreateCallback.CreateORMDisplaySelection(displayselection)
+	}
+	return _displayselection
+}
+
+// CreateORMDisplaySelection enables dynamic staging of a DisplaySelection instance
+func CreateORMDisplaySelection(displayselection *DisplaySelection) {
+	displayselection.Stage()
+	if Stage.AllModelsStructCreateCallback != nil {
+		Stage.AllModelsStructCreateCallback.CreateORMDisplaySelection(displayselection)
+	}
+}
+
+// DeleteORMDisplaySelection enables dynamic staging of a DisplaySelection instance
+func DeleteORMDisplaySelection(displayselection *DisplaySelection) {
+	displayselection.Unstage()
+	if Stage.AllModelsStructDeleteCallback != nil {
+		Stage.AllModelsStructDeleteCallback.DeleteORMDisplaySelection(displayselection)
+	}
+}
+
 func (stage *StageStruct) getXLCellOrderedStructWithNameField() []*XLCell {
 	// have alphabetical order generation
 	xlcellOrdered := []*XLCell{}
@@ -535,6 +645,7 @@ func DeleteORMXLSheet(xlsheet *XLSheet) {
 
 // swagger:ignore
 type AllModelsStructCreateInterface interface { // insertion point for Callbacks on creation
+	CreateORMDisplaySelection(DisplaySelection *DisplaySelection)
 	CreateORMXLCell(XLCell *XLCell)
 	CreateORMXLFile(XLFile *XLFile)
 	CreateORMXLRow(XLRow *XLRow)
@@ -542,6 +653,7 @@ type AllModelsStructCreateInterface interface { // insertion point for Callbacks
 }
 
 type AllModelsStructDeleteInterface interface { // insertion point for Callbacks on deletion
+	DeleteORMDisplaySelection(DisplaySelection *DisplaySelection)
 	DeleteORMXLCell(XLCell *XLCell)
 	DeleteORMXLFile(XLFile *XLFile)
 	DeleteORMXLRow(XLRow *XLRow)
@@ -549,6 +661,9 @@ type AllModelsStructDeleteInterface interface { // insertion point for Callbacks
 }
 
 func (stage *StageStruct) Reset() { // insertion point for array reset
+	stage.DisplaySelections = make(map[*DisplaySelection]struct{})
+	stage.DisplaySelections_mapString = make(map[string]*DisplaySelection)
+
 	stage.XLCells = make(map[*XLCell]struct{})
 	stage.XLCells_mapString = make(map[string]*XLCell)
 
@@ -564,6 +679,9 @@ func (stage *StageStruct) Reset() { // insertion point for array reset
 }
 
 func (stage *StageStruct) Nil() { // insertion point for array nil
+	stage.DisplaySelections = nil
+	stage.DisplaySelections_mapString = nil
+
 	stage.XLCells = nil
 	stage.XLCells_mapString = nil
 
@@ -649,6 +767,38 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 	setValueField := ""
 
 	// insertion initialization of objects to stage
+	map_DisplaySelection_Identifiers := make(map[*DisplaySelection]string)
+	_ = map_DisplaySelection_Identifiers
+
+	displayselectionOrdered := []*DisplaySelection{}
+	for displayselection := range stage.DisplaySelections {
+		displayselectionOrdered = append(displayselectionOrdered, displayselection)
+	}
+	sort.Slice(displayselectionOrdered[:], func(i, j int) bool {
+		return displayselectionOrdered[i].Name < displayselectionOrdered[j].Name
+	})
+	identifiersDecl += fmt.Sprintf("\n\n	// Declarations of staged instances of DisplaySelection")
+	for idx, displayselection := range displayselectionOrdered {
+
+		id = generatesIdentifier("DisplaySelection", idx, displayselection.Name)
+		map_DisplaySelection_Identifiers[displayselection] = id
+
+		decl = IdentifiersDecls
+		decl = strings.ReplaceAll(decl, "{{Identifier}}", id)
+		decl = strings.ReplaceAll(decl, "{{GeneratedStructName}}", "DisplaySelection")
+		decl = strings.ReplaceAll(decl, "{{GeneratedFieldNameValue}}", displayselection.Name)
+		identifiersDecl += decl
+
+		initializerStatements += fmt.Sprintf("\n\n	// DisplaySelection %s values setup", displayselection.Name)
+		// Initialisation of values
+		setValueField = StringInitStatement
+		setValueField = strings.ReplaceAll(setValueField, "{{Identifier}}", id)
+		setValueField = strings.ReplaceAll(setValueField, "{{GeneratedFieldName}}", "Name")
+		setValueField = strings.ReplaceAll(setValueField, "{{GeneratedFieldNameValue}}", string(displayselection.Name))
+		initializerStatements += setValueField
+
+	}
+
 	map_XLCell_Identifiers := make(map[*XLCell]string)
 	_ = map_XLCell_Identifiers
 
@@ -821,6 +971,32 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 
 
 	// insertion initialization of objects to stage
+	for idx, displayselection := range displayselectionOrdered {
+		var setPointerField string
+		_ = setPointerField
+
+		id = generatesIdentifier("DisplaySelection", idx, displayselection.Name)
+		map_DisplaySelection_Identifiers[displayselection] = id
+
+		// Initialisation of values
+		if displayselection.XLFile != nil {
+			setPointerField = PointerFieldInitStatement
+			setPointerField = strings.ReplaceAll(setPointerField, "{{Identifier}}", id)
+			setPointerField = strings.ReplaceAll(setPointerField, "{{GeneratedFieldName}}", "XLFile")
+			setPointerField = strings.ReplaceAll(setPointerField, "{{GeneratedFieldNameValue}}", map_XLFile_Identifiers[displayselection.XLFile])
+			pointersInitializesStatements += setPointerField
+		}
+
+		if displayselection.XLSheet != nil {
+			setPointerField = PointerFieldInitStatement
+			setPointerField = strings.ReplaceAll(setPointerField, "{{Identifier}}", id)
+			setPointerField = strings.ReplaceAll(setPointerField, "{{GeneratedFieldName}}", "XLSheet")
+			setPointerField = strings.ReplaceAll(setPointerField, "{{GeneratedFieldNameValue}}", map_XLSheet_Identifiers[displayselection.XLSheet])
+			pointersInitializesStatements += setPointerField
+		}
+
+	}
+
 	for idx, xlcell := range xlcellOrdered {
 		var setPointerField string
 		_ = setPointerField

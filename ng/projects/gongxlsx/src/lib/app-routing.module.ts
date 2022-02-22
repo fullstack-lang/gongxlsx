@@ -2,6 +2,10 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 // insertion point for imports
+import { DisplaySelectionsTableComponent } from './displayselections-table/displayselections-table.component'
+import { DisplaySelectionDetailComponent } from './displayselection-detail/displayselection-detail.component'
+import { DisplaySelectionPresentationComponent } from './displayselection-presentation/displayselection-presentation.component'
+
 import { XLCellsTableComponent } from './xlcells-table/xlcells-table.component'
 import { XLCellDetailComponent } from './xlcell-detail/xlcell-detail.component'
 import { XLCellPresentationComponent } from './xlcell-presentation/xlcell-presentation.component'
@@ -20,6 +24,13 @@ import { XLSheetPresentationComponent } from './xlsheet-presentation/xlsheet-pre
 
 
 const routes: Routes = [ // insertion point for routes declarations
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselections', component: DisplaySelectionsTableComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_table' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselection-adder', component: DisplaySelectionDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselection-adder/:id/:originStruct/:originStructFieldName', component: DisplaySelectionDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselection-detail/:id', component: DisplaySelectionDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselection-presentation/:id', component: DisplaySelectionPresentationComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_presentation' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselection-presentation-special/:id', component: DisplaySelectionPresentationComponent, outlet: 'github_com_fullstack_lang_gongxlsx_godisplayselectionpres' },
+
 	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlcells', component: XLCellsTableComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_table' },
 	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlcell-adder', component: XLCellDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
 	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlcell-adder/:id/:originStruct/:originStructFieldName', component: XLCellDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },

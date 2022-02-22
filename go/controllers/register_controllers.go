@@ -43,6 +43,13 @@ type ValidationError struct {
 func RegisterControllers(r *gin.Engine) {
 	v1 := r.Group("/api/github.com/fullstack-lang/gongxlsx/go")
 	{ // insertion point for registrations
+		v1.GET("/v1/displayselections", GetDisplaySelections)
+		v1.GET("/v1/displayselections/:id", GetDisplaySelection)
+		v1.POST("/v1/displayselections", PostDisplaySelection)
+		v1.PATCH("/v1/displayselections/:id", UpdateDisplaySelection)
+		v1.PUT("/v1/displayselections/:id", UpdateDisplaySelection)
+		v1.DELETE("/v1/displayselections/:id", DeleteDisplaySelection)
+
 		v1.GET("/v1/xlcells", GetXLCells)
 		v1.GET("/v1/xlcells/:id", GetXLCell)
 		v1.POST("/v1/xlcells", PostXLCell)

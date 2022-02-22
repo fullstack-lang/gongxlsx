@@ -4,6 +4,9 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
 
 // insertion point sub template for services imports 
+import { DisplaySelectionDB } from './displayselection-db'
+import { DisplaySelectionService } from './displayselection.service'
+
 import { XLCellDB } from './xlcell-db'
 import { XLCellService } from './xlcell.service'
 
@@ -19,6 +22,9 @@ import { XLSheetService } from './xlsheet.service'
 
 // FrontRepo stores all instances in a front repository (design pattern repository)
 export class FrontRepo { // insertion point sub template 
+  DisplaySelections_array = new Array<DisplaySelectionDB>(); // array of repo instances
+  DisplaySelections = new Map<number, DisplaySelectionDB>(); // map of repo instances
+  DisplaySelections_batch = new Map<number, DisplaySelectionDB>(); // same but only in last GET (for finding repo instances to delete)
   XLCells_array = new Array<XLCellDB>(); // array of repo instances
   XLCells = new Map<number, XLCellDB>(); // map of repo instances
   XLCells_batch = new Map<number, XLCellDB>(); // same but only in last GET (for finding repo instances to delete)
@@ -89,6 +95,7 @@ export class FrontRepoService {
 
   constructor(
     private http: HttpClient, // insertion point sub template 
+    private displayselectionService: DisplaySelectionService,
     private xlcellService: XLCellService,
     private xlfileService: XLFileService,
     private xlrowService: XLRowService,
@@ -123,11 +130,13 @@ export class FrontRepoService {
 
   // typing of observable can be messy in typescript. Therefore, one force the type
   observableFrontRepo: [ // insertion point sub template 
+    Observable<DisplaySelectionDB[]>,
     Observable<XLCellDB[]>,
     Observable<XLFileDB[]>,
     Observable<XLRowDB[]>,
     Observable<XLSheetDB[]>,
   ] = [ // insertion point sub template 
+      this.displayselectionService.getDisplaySelections(),
       this.xlcellService.getXLCells(),
       this.xlfileService.getXLFiles(),
       this.xlrowService.getXLRows(),
@@ -147,6 +156,7 @@ export class FrontRepoService {
           this.observableFrontRepo
         ).subscribe(
           ([ // insertion point sub template for declarations 
+            displayselections_,
             xlcells_,
             xlfiles_,
             xlrows_,
@@ -154,6 +164,8 @@ export class FrontRepoService {
           ]) => {
             // Typing can be messy with many items. Therefore, type casting is necessary here
             // insertion point sub template for type casting 
+            var displayselections: DisplaySelectionDB[]
+            displayselections = displayselections_ as DisplaySelectionDB[]
             var xlcells: XLCellDB[]
             xlcells = xlcells_ as XLCellDB[]
             var xlfiles: XLFileDB[]
@@ -166,6 +178,39 @@ export class FrontRepoService {
             // 
             // First Step: init map of instances
             // insertion point sub template for init 
+            // init the array
+            FrontRepoSingloton.DisplaySelections_array = displayselections
+
+            // clear the map that counts DisplaySelection in the GET
+            FrontRepoSingloton.DisplaySelections_batch.clear()
+
+            displayselections.forEach(
+              displayselection => {
+                FrontRepoSingloton.DisplaySelections.set(displayselection.ID, displayselection)
+                FrontRepoSingloton.DisplaySelections_batch.set(displayselection.ID, displayselection)
+              }
+            )
+
+            // clear displayselections that are absent from the batch
+            FrontRepoSingloton.DisplaySelections.forEach(
+              displayselection => {
+                if (FrontRepoSingloton.DisplaySelections_batch.get(displayselection.ID) == undefined) {
+                  FrontRepoSingloton.DisplaySelections.delete(displayselection.ID)
+                }
+              }
+            )
+
+            // sort DisplaySelections_array array
+            FrontRepoSingloton.DisplaySelections_array.sort((t1, t2) => {
+              if (t1.Name > t2.Name) {
+                return 1;
+              }
+              if (t1.Name < t2.Name) {
+                return -1;
+              }
+              return 0;
+            });
+
             // init the array
             FrontRepoSingloton.XLCells_array = xlcells
 
@@ -302,6 +347,27 @@ export class FrontRepoService {
             // 
             // Second Step: redeem pointers between instances (thanks to maps in the First Step)
             // insertion point sub template for redeem 
+            displayselections.forEach(
+              displayselection => {
+                // insertion point sub sub template for ONE-/ZERO-ONE associations pointers redeeming
+                // insertion point for pointer field XLFile redeeming
+                {
+                  let _xlfile = FrontRepoSingloton.XLFiles.get(displayselection.XLFileID.Int64)
+                  if (_xlfile) {
+                    displayselection.XLFile = _xlfile
+                  }
+                }
+                // insertion point for pointer field XLSheet redeeming
+                {
+                  let _xlsheet = FrontRepoSingloton.XLSheets.get(displayselection.XLSheetID.Int64)
+                  if (_xlsheet) {
+                    displayselection.XLSheet = _xlsheet
+                  }
+                }
+
+                // insertion point for redeeming ONE-MANY associations
+              }
+            )
             xlcells.forEach(
               xlcell => {
                 // insertion point sub sub template for ONE-/ZERO-ONE associations pointers redeeming
@@ -392,6 +458,71 @@ export class FrontRepoService {
   }
 
   // insertion point for pull per struct 
+
+  // DisplaySelectionPull performs a GET on DisplaySelection of the stack and redeem association pointers 
+  DisplaySelectionPull(): Observable<FrontRepo> {
+    return new Observable<FrontRepo>(
+      (observer) => {
+        combineLatest([
+          this.displayselectionService.getDisplaySelections()
+        ]).subscribe(
+          ([ // insertion point sub template 
+            displayselections,
+          ]) => {
+            // init the array
+            FrontRepoSingloton.DisplaySelections_array = displayselections
+
+            // clear the map that counts DisplaySelection in the GET
+            FrontRepoSingloton.DisplaySelections_batch.clear()
+
+            // 
+            // First Step: init map of instances
+            // insertion point sub template 
+            displayselections.forEach(
+              displayselection => {
+                FrontRepoSingloton.DisplaySelections.set(displayselection.ID, displayselection)
+                FrontRepoSingloton.DisplaySelections_batch.set(displayselection.ID, displayselection)
+
+                // insertion point for redeeming ONE/ZERO-ONE associations
+                // insertion point for pointer field XLFile redeeming
+                {
+                  let _xlfile = FrontRepoSingloton.XLFiles.get(displayselection.XLFileID.Int64)
+                  if (_xlfile) {
+                    displayselection.XLFile = _xlfile
+                  }
+                }
+                // insertion point for pointer field XLSheet redeeming
+                {
+                  let _xlsheet = FrontRepoSingloton.XLSheets.get(displayselection.XLSheetID.Int64)
+                  if (_xlsheet) {
+                    displayselection.XLSheet = _xlsheet
+                  }
+                }
+
+                // insertion point for redeeming ONE-MANY associations
+              }
+            )
+
+            // clear displayselections that are absent from the GET
+            FrontRepoSingloton.DisplaySelections.forEach(
+              displayselection => {
+                if (FrontRepoSingloton.DisplaySelections_batch.get(displayselection.ID) == undefined) {
+                  FrontRepoSingloton.DisplaySelections.delete(displayselection.ID)
+                }
+              }
+            )
+
+            // 
+            // Second Step: redeem pointers between instances (thanks to maps in the First Step)
+            // insertion point sub template 
+
+            // hand over control flow to observer
+            observer.next(FrontRepoSingloton)
+          }
+        )
+      }
+    )
+  }
 
   // XLCellPull performs a GET on XLCell of the stack and redeem association pointers 
   XLCellPull(): Observable<FrontRepo> {
@@ -651,15 +782,18 @@ export class FrontRepoService {
 }
 
 // insertion point for get unique ID per struct 
-export function getXLCellUniqueID(id: number): number {
+export function getDisplaySelectionUniqueID(id: number): number {
   return 31 * id
 }
-export function getXLFileUniqueID(id: number): number {
+export function getXLCellUniqueID(id: number): number {
   return 37 * id
 }
-export function getXLRowUniqueID(id: number): number {
+export function getXLFileUniqueID(id: number): number {
   return 41 * id
 }
-export function getXLSheetUniqueID(id: number): number {
+export function getXLRowUniqueID(id: number): number {
   return 43 * id
+}
+export function getXLSheetUniqueID(id: number): number {
+  return 47 * id
 }
