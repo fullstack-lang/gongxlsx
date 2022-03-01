@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -41,9 +42,12 @@ type StageStruct struct { // insertion point for definition of arrays registerin
 	BackRepo BackRepoInterface
 
 	// if set will be called before each commit to the back repo
-	OnInitCommitCallback OnInitCommitInterface
+	OnInitCommitCallback          OnInitCommitInterface
 	OnInitCommitFromFrontCallback OnInitCommitInterface
 	OnInitCommitFromBackCallback  OnInitCommitInterface
+
+	// store the number of instance per gongstruct
+	Map_GongStructName_InstancesNb map[string]int
 }
 
 type OnInitCommitInterface interface {
@@ -90,12 +94,21 @@ var Stage StageStruct = StageStruct{ // insertion point for array initiatialisat
 	XLSheets_mapString: make(map[string]*XLSheet),
 
 	// end of insertion point
+	Map_GongStructName_InstancesNb: make(map[string]int),
 }
 
 func (stage *StageStruct) Commit() {
 	if stage.BackRepo != nil {
 		stage.BackRepo.Commit(stage)
 	}
+
+	// insertion point for computing the map of number of instances per gongstruct
+	stage.Map_GongStructName_InstancesNb["DisplaySelection"] = len(stage.DisplaySelections)
+	stage.Map_GongStructName_InstancesNb["XLCell"] = len(stage.XLCells)
+	stage.Map_GongStructName_InstancesNb["XLFile"] = len(stage.XLFiles)
+	stage.Map_GongStructName_InstancesNb["XLRow"] = len(stage.XLRows)
+	stage.Map_GongStructName_InstancesNb["XLSheet"] = len(stage.XLSheets)
+
 }
 
 func (stage *StageStruct) Checkout() {
@@ -1081,25 +1094,14 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 func generatesIdentifier(gongStructName string, idx int, instanceName string) (identifier string) {
 
 	identifier = instanceName
-	identifier = strings.ReplaceAll(identifier, " ", "_")
-	identifier = strings.ReplaceAll(identifier, "%", "_")
-	identifier = strings.ReplaceAll(identifier, ".", "_")
-	identifier = strings.ReplaceAll(identifier, "&", "_")
-	identifier = strings.ReplaceAll(identifier, "!", "_")
-	identifier = strings.ReplaceAll(identifier, "@", "_")
-	identifier = strings.ReplaceAll(identifier, "&", "_")
-	identifier = strings.ReplaceAll(identifier, "'", "_")
-	identifier = strings.ReplaceAll(identifier, "(", "_")
-	identifier = strings.ReplaceAll(identifier, ")", "_")
-	identifier = strings.ReplaceAll(identifier, "-", "_")
-	identifier = strings.ReplaceAll(identifier, "à", "_")
-	identifier = strings.ReplaceAll(identifier, "ç", "_")
-	identifier = strings.ReplaceAll(identifier, "è", "_")
-	identifier = strings.ReplaceAll(identifier, "é", "_")
-	identifier = strings.ReplaceAll(identifier, "§", "_")
-	identifier = strings.ReplaceAll(identifier, "\"", "_")
+	// Make a Regex to say we only want letters and numbers
+	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+	processedString := reg.ReplaceAllString(instanceName, "_")
 
-	identifier = fmt.Sprintf("__%s__%06d_%s", gongStructName, idx, identifier)
+	identifier = fmt.Sprintf("__%s__%06d_%s", gongStructName, idx, processedString)
 
 	return
 }
