@@ -17,6 +17,8 @@ import { Router, RouterState } from '@angular/router';
 import { XLCellDB } from '../xlcell-db'
 import { XLCellService } from '../xlcell.service'
 
+// insertion point for additional imports
+
 // TableComponent is initilizaed from different routes
 // TableComponentMode detail different cases 
 enum TableComponentMode {
@@ -187,8 +189,9 @@ export class XLCellsTableComponent implements OnInit {
 
         this.xlcells = this.frontRepo.XLCells_array;
 
-        // insertion point for variables Recoveries
-
+        // insertion point for time duration Recoveries
+        // insertion point for enum int Recoveries
+        
         // in case the component is called as a selection component
         if (this.mode == TableComponentMode.ONE_MANY_ASSOCIATION_MODE) {
           for (let xlcell of this.xlcells) {

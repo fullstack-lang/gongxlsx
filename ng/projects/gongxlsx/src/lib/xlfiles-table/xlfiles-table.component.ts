@@ -17,6 +17,8 @@ import { Router, RouterState } from '@angular/router';
 import { XLFileDB } from '../xlfile-db'
 import { XLFileService } from '../xlfile.service'
 
+// insertion point for additional imports
+
 // TableComponent is initilizaed from different routes
 // TableComponentMode detail different cases 
 enum TableComponentMode {
@@ -163,8 +165,9 @@ export class XLFilesTableComponent implements OnInit {
 
         this.xlfiles = this.frontRepo.XLFiles_array;
 
-        // insertion point for variables Recoveries
-
+        // insertion point for time duration Recoveries
+        // insertion point for enum int Recoveries
+        
         // in case the component is called as a selection component
         if (this.mode == TableComponentMode.ONE_MANY_ASSOCIATION_MODE) {
           for (let xlfile of this.xlfiles) {
