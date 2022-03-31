@@ -260,7 +260,7 @@ export class DisplaySelectionDetailComponent implements OnInit {
 	}
 
 	fillUpNameIfEmpty(event: { value: { Name: string; }; }) {
-		if (this.displayselection.Name == undefined) {
+		if (this.displayselection.Name == "") {
 			this.displayselection.Name = event.value.Name
 		}
 	}

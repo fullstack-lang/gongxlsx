@@ -17,6 +17,14 @@ type __void struct{}
 // needed for creating set of instances in the stage
 var __member __void
 
+// GongStructInterface is the interface met by GongStructs
+// It allows runtime reflexion of instances (without the hassle of the "reflect" package)
+type GongStructInterface interface {
+	GetName() (res string)
+	GetFields() (res []string)
+	GetFieldStringValue(fieldName string) (res string)
+}
+
 // StageStruct enables storage of staged instances
 // swagger:ignore
 type StageStruct struct { // insertion point for definition of arrays registering instances
@@ -248,6 +256,34 @@ func DeleteORMDisplaySelection(displayselection *DisplaySelection) {
 	}
 }
 
+// for satisfaction of GongStruct interface
+func (displayselection *DisplaySelection) GetName() (res string) {
+	return displayselection.Name
+}
+
+func (displayselection *DisplaySelection) GetFields() (res []string) {
+	// list of fields 
+	res = []string{"Name", "XLFile", "XLSheet",  }
+	return
+}
+
+func (displayselection *DisplaySelection) GetFieldStringValue(fieldName string) (res string) {
+	switch fieldName {
+	// string value of fields
+	case "Name":
+		res = displayselection.Name
+	case "XLFile":
+		if displayselection.XLFile != nil {
+			res = displayselection.XLFile.Name
+		}
+	case "XLSheet":
+		if displayselection.XLSheet != nil {
+			res = displayselection.XLSheet.Name
+		}
+	}
+	return
+}
+
 func (stage *StageStruct) getXLCellOrderedStructWithNameField() []*XLCell {
 	// have alphabetical order generation
 	xlcellOrdered := []*XLCell{}
@@ -348,6 +384,30 @@ func DeleteORMXLCell(xlcell *XLCell) {
 	if Stage.AllModelsStructDeleteCallback != nil {
 		Stage.AllModelsStructDeleteCallback.DeleteORMXLCell(xlcell)
 	}
+}
+
+// for satisfaction of GongStruct interface
+func (xlcell *XLCell) GetName() (res string) {
+	return xlcell.Name
+}
+
+func (xlcell *XLCell) GetFields() (res []string) {
+	// list of fields 
+	res = []string{"Name", "X", "Y",  }
+	return
+}
+
+func (xlcell *XLCell) GetFieldStringValue(fieldName string) (res string) {
+	switch fieldName {
+	// string value of fields
+	case "Name":
+		res = xlcell.Name
+	case "X":
+		res = fmt.Sprintf("%d", xlcell.X)
+	case "Y":
+		res = fmt.Sprintf("%d", xlcell.Y)
+	}
+	return
 }
 
 func (stage *StageStruct) getXLFileOrderedStructWithNameField() []*XLFile {
@@ -452,6 +512,35 @@ func DeleteORMXLFile(xlfile *XLFile) {
 	}
 }
 
+// for satisfaction of GongStruct interface
+func (xlfile *XLFile) GetName() (res string) {
+	return xlfile.Name
+}
+
+func (xlfile *XLFile) GetFields() (res []string) {
+	// list of fields 
+	res = []string{"Name", "NbSheets", "Sheets",  }
+	return
+}
+
+func (xlfile *XLFile) GetFieldStringValue(fieldName string) (res string) {
+	switch fieldName {
+	// string value of fields
+	case "Name":
+		res = xlfile.Name
+	case "NbSheets":
+		res = fmt.Sprintf("%d", xlfile.NbSheets)
+	case "Sheets":
+		for idx, __instance__ := range xlfile.Sheets {
+			if idx > 0 {
+				res += "\n"
+			}
+			res += __instance__.Name
+		}
+	}
+	return
+}
+
 func (stage *StageStruct) getXLRowOrderedStructWithNameField() []*XLRow {
 	// have alphabetical order generation
 	xlrowOrdered := []*XLRow{}
@@ -552,6 +641,35 @@ func DeleteORMXLRow(xlrow *XLRow) {
 	if Stage.AllModelsStructDeleteCallback != nil {
 		Stage.AllModelsStructDeleteCallback.DeleteORMXLRow(xlrow)
 	}
+}
+
+// for satisfaction of GongStruct interface
+func (xlrow *XLRow) GetName() (res string) {
+	return xlrow.Name
+}
+
+func (xlrow *XLRow) GetFields() (res []string) {
+	// list of fields 
+	res = []string{"Name", "RowIndex", "Cells",  }
+	return
+}
+
+func (xlrow *XLRow) GetFieldStringValue(fieldName string) (res string) {
+	switch fieldName {
+	// string value of fields
+	case "Name":
+		res = xlrow.Name
+	case "RowIndex":
+		res = fmt.Sprintf("%d", xlrow.RowIndex)
+	case "Cells":
+		for idx, __instance__ := range xlrow.Cells {
+			if idx > 0 {
+				res += "\n"
+			}
+			res += __instance__.Name
+		}
+	}
+	return
 }
 
 func (stage *StageStruct) getXLSheetOrderedStructWithNameField() []*XLSheet {
@@ -656,6 +774,46 @@ func DeleteORMXLSheet(xlsheet *XLSheet) {
 	}
 }
 
+// for satisfaction of GongStruct interface
+func (xlsheet *XLSheet) GetName() (res string) {
+	return xlsheet.Name
+}
+
+func (xlsheet *XLSheet) GetFields() (res []string) {
+	// list of fields 
+	res = []string{"Name", "MaxRow", "MaxCol", "NbRows", "Rows", "SheetCells",  }
+	return
+}
+
+func (xlsheet *XLSheet) GetFieldStringValue(fieldName string) (res string) {
+	switch fieldName {
+	// string value of fields
+	case "Name":
+		res = xlsheet.Name
+	case "MaxRow":
+		res = fmt.Sprintf("%d", xlsheet.MaxRow)
+	case "MaxCol":
+		res = fmt.Sprintf("%d", xlsheet.MaxCol)
+	case "NbRows":
+		res = fmt.Sprintf("%d", xlsheet.NbRows)
+	case "Rows":
+		for idx, __instance__ := range xlsheet.Rows {
+			if idx > 0 {
+				res += "\n"
+			}
+			res += __instance__.Name
+		}
+	case "SheetCells":
+		for idx, __instance__ := range xlsheet.SheetCells {
+			if idx > 0 {
+				res += "\n"
+			}
+			res += __instance__.Name
+		}
+	}
+	return
+}
+
 // swagger:ignore
 type AllModelsStructCreateInterface interface { // insertion point for Callbacks on creation
 	CreateORMDisplaySelection(DisplaySelection *DisplaySelection)
@@ -740,6 +898,9 @@ const IdentifiersDecls = `
 
 const StringInitStatement = `
 	{{Identifier}}.{{GeneratedFieldName}} = ` + "`" + `{{GeneratedFieldNameValue}}` + "`"
+
+const StringEnumInitStatement = `
+	{{Identifier}}.{{GeneratedFieldName}} = {{GeneratedFieldNameValue}}`
 
 const NumberInitStatement = `
 	{{Identifier}}.{{GeneratedFieldName}} = {{GeneratedFieldNameValue}}`

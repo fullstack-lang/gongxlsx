@@ -262,7 +262,7 @@ export class XLSheetDetailComponent implements OnInit {
 	}
 
 	fillUpNameIfEmpty(event: { value: { Name: string; }; }) {
-		if (this.xlsheet.Name == undefined) {
+		if (this.xlsheet.Name == "") {
 			this.xlsheet.Name = event.value.Name
 		}
 	}

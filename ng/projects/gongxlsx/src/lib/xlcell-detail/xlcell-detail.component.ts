@@ -284,7 +284,7 @@ export class XLCellDetailComponent implements OnInit {
 	}
 
 	fillUpNameIfEmpty(event: { value: { Name: string; }; }) {
-		if (this.xlcell.Name == undefined) {
+		if (this.xlcell.Name == "") {
 			this.xlcell.Name = event.value.Name
 		}
 	}

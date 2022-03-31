@@ -240,7 +240,7 @@ export class XLFileDetailComponent implements OnInit {
 	}
 
 	fillUpNameIfEmpty(event: { value: { Name: string; }; }) {
-		if (this.xlfile.Name == undefined) {
+		if (this.xlfile.Name == "") {
 			this.xlfile.Name = event.value.Name
 		}
 	}

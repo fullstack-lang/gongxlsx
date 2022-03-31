@@ -262,7 +262,7 @@ export class XLRowDetailComponent implements OnInit {
 	}
 
 	fillUpNameIfEmpty(event: { value: { Name: string; }; }) {
-		if (this.xlrow.Name == undefined) {
+		if (this.xlrow.Name == "") {
 			this.xlrow.Name = event.value.Name
 		}
 	}
