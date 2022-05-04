@@ -78,10 +78,18 @@ export class XLCellsTableComponent implements OnInit {
           return xlcellDB.Y;
 
         case 'XLRow_Cells':
-          return this.frontRepo.XLRows.get(xlcellDB.XLRow_CellsDBID.Int64)!.Name;
+          if (this.frontRepo.XLRows.get(xlcellDB.XLRow_CellsDBID.Int64) != undefined) {
+            return this.frontRepo.XLRows.get(xlcellDB.XLRow_CellsDBID.Int64)!.Name
+          } else {
+            return ""
+          }
 
         case 'XLSheet_SheetCells':
-          return this.frontRepo.XLSheets.get(xlcellDB.XLSheet_SheetCellsDBID.Int64)!.Name;
+          if (this.frontRepo.XLSheets.get(xlcellDB.XLSheet_SheetCellsDBID.Int64) != undefined) {
+            return this.frontRepo.XLSheets.get(xlcellDB.XLSheet_SheetCellsDBID.Int64)!.Name
+          } else {
+            return ""
+          }
 
         default:
           console.assert(false, "Unknown field")

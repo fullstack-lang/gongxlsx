@@ -81,7 +81,11 @@ export class XLSheetsTableComponent implements OnInit {
           return xlsheetDB.NbRows;
 
         case 'XLFile_Sheets':
-          return this.frontRepo.XLFiles.get(xlsheetDB.XLFile_SheetsDBID.Int64)!.Name;
+          if (this.frontRepo.XLFiles.get(xlsheetDB.XLFile_SheetsDBID.Int64) != undefined) {
+            return this.frontRepo.XLFiles.get(xlsheetDB.XLFile_SheetsDBID.Int64)!.Name
+          } else {
+            return ""
+          }
 
         default:
           console.assert(false, "Unknown field")
