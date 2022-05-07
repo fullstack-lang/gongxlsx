@@ -262,8 +262,8 @@ func (displayselection *DisplaySelection) GetName() (res string) {
 }
 
 func (displayselection *DisplaySelection) GetFields() (res []string) {
-	// list of fields 
-	res = []string{"Name", "XLFile", "XLSheet",  }
+	// list of fields
+	res = []string{"Name", "XLFile", "XLSheet"}
 	return
 }
 
@@ -392,8 +392,8 @@ func (xlcell *XLCell) GetName() (res string) {
 }
 
 func (xlcell *XLCell) GetFields() (res []string) {
-	// list of fields 
-	res = []string{"Name", "X", "Y",  }
+	// list of fields
+	res = []string{"Name", "X", "Y"}
 	return
 }
 
@@ -518,8 +518,8 @@ func (xlfile *XLFile) GetName() (res string) {
 }
 
 func (xlfile *XLFile) GetFields() (res []string) {
-	// list of fields 
-	res = []string{"Name", "NbSheets", "Sheets",  }
+	// list of fields
+	res = []string{"Name", "NbSheets", "Sheets"}
 	return
 }
 
@@ -649,8 +649,8 @@ func (xlrow *XLRow) GetName() (res string) {
 }
 
 func (xlrow *XLRow) GetFields() (res []string) {
-	// list of fields 
-	res = []string{"Name", "RowIndex", "Cells",  }
+	// list of fields
+	res = []string{"Name", "RowIndex", "Cells"}
 	return
 }
 
@@ -780,8 +780,8 @@ func (xlsheet *XLSheet) GetName() (res string) {
 }
 
 func (xlsheet *XLSheet) GetFields() (res []string) {
-	// list of fields 
-	res = []string{"Name", "MaxRow", "MaxCol", "NbRows", "Rows", "SheetCells",  }
+	// list of fields
+	res = []string{"Name", "MaxRow", "MaxCol", "NbRows", "Rows", "SheetCells"}
 	return
 }
 
@@ -1264,5 +1264,102 @@ func generatesIdentifier(gongStructName string, idx int, instanceName string) (i
 
 	return
 }
+
+// insertion point of functions that provide maps for reverse associations
+// generate function for reverse association maps of DisplaySelection
+func (stageStruct *StageStruct) CreateReverseMap_DisplaySelection_XLFile() (res map[*XLFile][]*DisplaySelection) {
+	res = make(map[*XLFile][]*DisplaySelection)
+
+	for displayselection := range stageStruct.DisplaySelections {
+		if displayselection.XLFile != nil {
+			xlfile_ := displayselection.XLFile
+			var displayselections []*DisplaySelection
+			_, ok := res[xlfile_]
+			if ok {
+				displayselections = res[xlfile_]
+			} else {
+				displayselections = make([]*DisplaySelection, 0)
+			}
+			displayselections = append(displayselections, displayselection)
+			res[xlfile_] = displayselections
+		}
+	}
+
+	return
+}
+
+func (stageStruct *StageStruct) CreateReverseMap_DisplaySelection_XLSheet() (res map[*XLSheet][]*DisplaySelection) {
+	res = make(map[*XLSheet][]*DisplaySelection)
+
+	for displayselection := range stageStruct.DisplaySelections {
+		if displayselection.XLSheet != nil {
+			xlsheet_ := displayselection.XLSheet
+			var displayselections []*DisplaySelection
+			_, ok := res[xlsheet_]
+			if ok {
+				displayselections = res[xlsheet_]
+			} else {
+				displayselections = make([]*DisplaySelection, 0)
+			}
+			displayselections = append(displayselections, displayselection)
+			res[xlsheet_] = displayselections
+		}
+	}
+
+	return
+}
+
+// generate function for reverse association maps of XLCell
+// generate function for reverse association maps of XLFile
+func (stageStruct *StageStruct) CreateReverseMap_XLFile_Sheets() (res map[*XLSheet]*XLFile) {
+	res = make(map[*XLSheet]*XLFile)
+
+	for xlfile := range stageStruct.XLFiles {
+		for _, xlsheet_ := range xlfile.Sheets {
+			res[xlsheet_] = xlfile
+		}
+	}
+
+	return
+}
+
+// generate function for reverse association maps of XLRow
+func (stageStruct *StageStruct) CreateReverseMap_XLRow_Cells() (res map[*XLCell]*XLRow) {
+	res = make(map[*XLCell]*XLRow)
+
+	for xlrow := range stageStruct.XLRows {
+		for _, xlcell_ := range xlrow.Cells {
+			res[xlcell_] = xlrow
+		}
+	}
+
+	return
+}
+
+// generate function for reverse association maps of XLSheet
+func (stageStruct *StageStruct) CreateReverseMap_XLSheet_Rows() (res map[*XLRow]*XLSheet) {
+	res = make(map[*XLRow]*XLSheet)
+
+	for xlsheet := range stageStruct.XLSheets {
+		for _, xlrow_ := range xlsheet.Rows {
+			res[xlrow_] = xlsheet
+		}
+	}
+
+	return
+}
+
+func (stageStruct *StageStruct) CreateReverseMap_XLSheet_SheetCells() (res map[*XLCell]*XLSheet) {
+	res = make(map[*XLCell]*XLSheet)
+
+	for xlsheet := range stageStruct.XLSheets {
+		for _, xlcell_ := range xlsheet.SheetCells {
+			res[xlcell_] = xlsheet
+		}
+	}
+
+	return
+}
+
 
 // insertion point of enum utility functions
