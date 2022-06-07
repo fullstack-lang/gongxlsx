@@ -12,7 +12,7 @@ import (
 )
 
 // swagger:ignore
-type __void struct{}
+type __void any
 
 // needed for creating set of instances in the stage
 var __member __void
@@ -28,19 +28,19 @@ type GongStructInterface interface {
 // StageStruct enables storage of staged instances
 // swagger:ignore
 type StageStruct struct { // insertion point for definition of arrays registering instances
-	DisplaySelections           map[*DisplaySelection]struct{}
+	DisplaySelections           map[*DisplaySelection]any
 	DisplaySelections_mapString map[string]*DisplaySelection
 
-	XLCells           map[*XLCell]struct{}
+	XLCells           map[*XLCell]any
 	XLCells_mapString map[string]*XLCell
 
-	XLFiles           map[*XLFile]struct{}
+	XLFiles           map[*XLFile]any
 	XLFiles_mapString map[string]*XLFile
 
-	XLRows           map[*XLRow]struct{}
+	XLRows           map[*XLRow]any
 	XLRows_mapString map[string]*XLRow
 
-	XLSheets           map[*XLSheet]struct{}
+	XLSheets           map[*XLSheet]any
 	XLSheets_mapString map[string]*XLSheet
 
 	AllModelsStructCreateCallback AllModelsStructCreateInterface
@@ -86,19 +86,19 @@ type BackRepoInterface interface {
 
 // swagger:ignore instructs the gong compiler (gongc) to avoid this particular struct
 var Stage StageStruct = StageStruct{ // insertion point for array initiatialisation
-	DisplaySelections:           make(map[*DisplaySelection]struct{}),
+	DisplaySelections:           make(map[*DisplaySelection]any),
 	DisplaySelections_mapString: make(map[string]*DisplaySelection),
 
-	XLCells:           make(map[*XLCell]struct{}),
+	XLCells:           make(map[*XLCell]any),
 	XLCells_mapString: make(map[string]*XLCell),
 
-	XLFiles:           make(map[*XLFile]struct{}),
+	XLFiles:           make(map[*XLFile]any),
 	XLFiles_mapString: make(map[string]*XLFile),
 
-	XLRows:           make(map[*XLRow]struct{}),
+	XLRows:           make(map[*XLRow]any),
 	XLRows_mapString: make(map[string]*XLRow),
 
-	XLSheets:           make(map[*XLSheet]struct{}),
+	XLSheets:           make(map[*XLSheet]any),
 	XLSheets_mapString: make(map[string]*XLSheet),
 
 	// end of insertion point
@@ -832,19 +832,19 @@ type AllModelsStructDeleteInterface interface { // insertion point for Callbacks
 }
 
 func (stage *StageStruct) Reset() { // insertion point for array reset
-	stage.DisplaySelections = make(map[*DisplaySelection]struct{})
+	stage.DisplaySelections = make(map[*DisplaySelection]any)
 	stage.DisplaySelections_mapString = make(map[string]*DisplaySelection)
 
-	stage.XLCells = make(map[*XLCell]struct{})
+	stage.XLCells = make(map[*XLCell]any)
 	stage.XLCells_mapString = make(map[string]*XLCell)
 
-	stage.XLFiles = make(map[*XLFile]struct{})
+	stage.XLFiles = make(map[*XLFile]any)
 	stage.XLFiles_mapString = make(map[string]*XLFile)
 
-	stage.XLRows = make(map[*XLRow]struct{})
+	stage.XLRows = make(map[*XLRow]any)
 	stage.XLRows_mapString = make(map[string]*XLRow)
 
-	stage.XLSheets = make(map[*XLSheet]struct{})
+	stage.XLSheets = make(map[*XLSheet]any)
 	stage.XLSheets_mapString = make(map[string]*XLSheet)
 
 }
@@ -1266,6 +1266,7 @@ func generatesIdentifier(gongStructName string, idx int, instanceName string) (i
 }
 
 // insertion point of functions that provide maps for reverse associations
+
 // generate function for reverse association maps of DisplaySelection
 func (stageStruct *StageStruct) CreateReverseMap_DisplaySelection_XLFile() (res map[*XLFile][]*DisplaySelection) {
 	res = make(map[*XLFile][]*DisplaySelection)
@@ -1287,7 +1288,6 @@ func (stageStruct *StageStruct) CreateReverseMap_DisplaySelection_XLFile() (res 
 
 	return
 }
-
 func (stageStruct *StageStruct) CreateReverseMap_DisplaySelection_XLSheet() (res map[*XLSheet][]*DisplaySelection) {
 	res = make(map[*XLSheet][]*DisplaySelection)
 
@@ -1310,6 +1310,7 @@ func (stageStruct *StageStruct) CreateReverseMap_DisplaySelection_XLSheet() (res
 }
 
 // generate function for reverse association maps of XLCell
+
 // generate function for reverse association maps of XLFile
 func (stageStruct *StageStruct) CreateReverseMap_XLFile_Sheets() (res map[*XLSheet]*XLFile) {
 	res = make(map[*XLSheet]*XLFile)
@@ -1323,6 +1324,7 @@ func (stageStruct *StageStruct) CreateReverseMap_XLFile_Sheets() (res map[*XLShe
 	return
 }
 
+
 // generate function for reverse association maps of XLRow
 func (stageStruct *StageStruct) CreateReverseMap_XLRow_Cells() (res map[*XLCell]*XLRow) {
 	res = make(map[*XLCell]*XLRow)
@@ -1335,6 +1337,7 @@ func (stageStruct *StageStruct) CreateReverseMap_XLRow_Cells() (res map[*XLCell]
 
 	return
 }
+
 
 // generate function for reverse association maps of XLSheet
 func (stageStruct *StageStruct) CreateReverseMap_XLSheet_Rows() (res map[*XLRow]*XLSheet) {
@@ -1361,5 +1364,71 @@ func (stageStruct *StageStruct) CreateReverseMap_XLSheet_SheetCells() (res map[*
 	return
 }
 
+
+type GongstructSet interface {
+	map[any]any |
+		// insertion point for generic types
+		map[*DisplaySelection]any |
+		map[*XLCell]any |
+		map[*XLFile]any |
+		map[*XLRow]any |
+		map[*XLSheet]any |
+		map[*any]any // because go does not support an extra "|" at the end of type specifications
+}
+
+type GongstructMapString interface {
+	map[any]any |
+		// insertion point for generic types
+		map[string]*DisplaySelection |
+		map[string]*XLCell |
+		map[string]*XLFile |
+		map[string]*XLRow |
+		map[string]*XLSheet |
+		map[*any]any // because go does not support an extra "|" at the end of type specifications
+}
+
+// GongGetSet returns the set staged GongstructType instances
+// it is usefull because it allows refactoring of gong struct identifier
+func GongGetSet[Type GongstructSet]() *Type {
+	var ret Type
+
+	switch any(ret).(type) {
+	// insertion point for generic get functions
+	case map[*DisplaySelection]any:
+		return any(&Stage.DisplaySelections).(*Type)
+	case map[*XLCell]any:
+		return any(&Stage.XLCells).(*Type)
+	case map[*XLFile]any:
+		return any(&Stage.XLFiles).(*Type)
+	case map[*XLRow]any:
+		return any(&Stage.XLRows).(*Type)
+	case map[*XLSheet]any:
+		return any(&Stage.XLSheets).(*Type)
+	default:
+		return nil
+	}
+}
+
+// GongGetMap returns the map of staged GongstructType instances
+// it is usefull because it allows refactoring of gong struct identifier
+func GongGetMap[Type GongstructMapString]() *Type {
+	var ret Type
+
+	switch any(ret).(type) {
+	// insertion point for generic get functions
+	case map[string]*DisplaySelection:
+		return any(&Stage.DisplaySelections_mapString).(*Type)
+	case map[string]*XLCell:
+		return any(&Stage.XLCells_mapString).(*Type)
+	case map[string]*XLFile:
+		return any(&Stage.XLFiles_mapString).(*Type)
+	case map[string]*XLRow:
+		return any(&Stage.XLRows_mapString).(*Type)
+	case map[string]*XLSheet:
+		return any(&Stage.XLSheets_mapString).(*Type)
+	default:
+		return nil
+	}
+}
 
 // insertion point of enum utility functions

@@ -287,7 +287,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseOne
 
 	// list of instances to be removed
 	// start from the initial map on the stage and remove instances that have been checked out
-	displayselectionInstancesToBeRemovedFromTheStage := make(map[*models.DisplaySelection]struct{})
+	displayselectionInstancesToBeRemovedFromTheStage := make(map[*models.DisplaySelection]any)
 	for key, value := range models.Stage.DisplaySelections {
 		displayselectionInstancesToBeRemovedFromTheStage[key] = value
 	}

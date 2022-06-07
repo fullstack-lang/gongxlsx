@@ -286,7 +286,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOne() (Error error) {
 
 	// list of instances to be removed
 	// start from the initial map on the stage and remove instances that have been checked out
-	xlfileInstancesToBeRemovedFromTheStage := make(map[*models.XLFile]struct{})
+	xlfileInstancesToBeRemovedFromTheStage := make(map[*models.XLFile]any)
 	for key, value := range models.Stage.XLFiles {
 		xlfileInstancesToBeRemovedFromTheStage[key] = value
 	}
