@@ -1365,6 +1365,15 @@ func (stageStruct *StageStruct) CreateReverseMap_XLSheet_SheetCells() (res map[*
 }
 
 
+// Gongstruct is the type paramter for generated generic function that allows 
+// - access to staged instances
+// - navigation between staged instances by going backward association links between gongstruct
+// - full refactoring of Gongstruct identifiers / fields
+type Gongstruct interface {
+	// insertion point for generic types
+	DisplaySelection | XLCell | XLFile | XLRow | XLSheet
+}
+
 type GongstructSet interface {
 	map[any]any |
 		// insertion point for generic types
@@ -1430,5 +1439,243 @@ func GongGetMap[Type GongstructMapString]() *Type {
 		return nil
 	}
 }
+
+// GetGongstructInstancesSet returns the set staged GongstructType instances
+// it is usefull because it allows refactoring of gongstruct identifier
+func GetGongstructInstancesSet[Type Gongstruct]() *map[*Type]any {
+	var ret Type
+
+	switch any(ret).(type) {
+	// insertion point for generic get functions
+	case DisplaySelection:
+		return any(&Stage.DisplaySelections).(*map[*Type]any)
+	case XLCell:
+		return any(&Stage.XLCells).(*map[*Type]any)
+	case XLFile:
+		return any(&Stage.XLFiles).(*map[*Type]any)
+	case XLRow:
+		return any(&Stage.XLRows).(*map[*Type]any)
+	case XLSheet:
+		return any(&Stage.XLSheets).(*map[*Type]any)
+	default:
+		return nil
+	}
+}
+
+// GetGongstructInstancesMap returns the map of staged GongstructType instances
+// it is usefull because it allows refactoring of gong struct identifier
+func GetGongstructInstancesMap[Type Gongstruct]() *map[string]*Type {
+	var ret Type
+
+	switch any(ret).(type) {
+	// insertion point for generic get functions
+	case DisplaySelection:
+		return any(&Stage.DisplaySelections_mapString).(*map[string]*Type)
+	case XLCell:
+		return any(&Stage.XLCells_mapString).(*map[string]*Type)
+	case XLFile:
+		return any(&Stage.XLFiles_mapString).(*map[string]*Type)
+	case XLRow:
+		return any(&Stage.XLRows_mapString).(*map[string]*Type)
+	case XLSheet:
+		return any(&Stage.XLSheets_mapString).(*map[string]*Type)
+	default:
+		return nil
+	}
+}
+
+// GetAssociationName is a generic function that returns an instance of Type
+// where each association is filled with an instance whose name is the name of the association
+//
+// This function can be handy for generating navigation function that are refactorable
+func GetAssociationName[Type Gongstruct]() *Type {
+	var ret Type
+
+	switch any(ret).(type) {
+	// insertion point for instance with special fields
+	case DisplaySelection:
+		return any(&DisplaySelection{
+			// Initialisation of associations
+			// field is initialized with an instance of XLFile with the name of the field
+			XLFile: &XLFile{Name: "XLFile"},
+			// field is initialized with an instance of XLSheet with the name of the field
+			XLSheet: &XLSheet{Name: "XLSheet"},
+		}).(*Type)
+	case XLCell:
+		return any(&XLCell{
+			// Initialisation of associations
+		}).(*Type)
+	case XLFile:
+		return any(&XLFile{
+			// Initialisation of associations
+			// field is initialized with an instance of XLSheet with the name of the field
+			Sheets: []*XLSheet{{Name: "Sheets"}},
+		}).(*Type)
+	case XLRow:
+		return any(&XLRow{
+			// Initialisation of associations
+			// field is initialized with an instance of XLCell with the name of the field
+			Cells: []*XLCell{{Name: "Cells"}},
+		}).(*Type)
+	case XLSheet:
+		return any(&XLSheet{
+			// Initialisation of associations
+			// field is initialized with an instance of XLRow with the name of the field
+			Rows: []*XLRow{{Name: "Rows"}},
+			// field is initialized with an instance of XLCell with the name of the field
+			SheetCells: []*XLCell{{Name: "SheetCells"}},
+		}).(*Type)
+	default:
+		return nil
+	}
+}
+
+// GetPointerReverseMap allows backtrack navigation of any Start.Fieldname
+// associations (0..1) that is a pointer from one staged Gongstruct (type Start)
+// instances to another (type End)
+//
+// The function provides a map with keys as instances of End and values to arrays of *Start
+// the map is construed by iterating over all Start instances and populationg keys with End instances
+// and values with slice of Start instances
+func GetPointerReverseMap[Start, End Gongstruct](fieldname string) map[*End][]*Start {
+	var ret Start
+
+	switch any(ret).(type) {
+	// insertion point of functions that provide maps for reverse associations
+	// reverse maps of direct associations of DisplaySelection
+	case DisplaySelection:
+		switch fieldname {
+		// insertion point for per direct association field
+		case "XLFile":
+			res := make(map[*XLFile][]*DisplaySelection)
+			for displayselection := range Stage.DisplaySelections {
+				if displayselection.XLFile != nil {
+					xlfile_ := displayselection.XLFile
+					var displayselections []*DisplaySelection
+					_, ok := res[xlfile_]
+					if ok {
+						displayselections = res[xlfile_]
+					} else {
+						displayselections = make([]*DisplaySelection, 0)
+					}
+					displayselections = append(displayselections, displayselection)
+					res[xlfile_] = displayselections
+				}
+			}
+			return any(res).(map[*End][]*Start)
+		case "XLSheet":
+			res := make(map[*XLSheet][]*DisplaySelection)
+			for displayselection := range Stage.DisplaySelections {
+				if displayselection.XLSheet != nil {
+					xlsheet_ := displayselection.XLSheet
+					var displayselections []*DisplaySelection
+					_, ok := res[xlsheet_]
+					if ok {
+						displayselections = res[xlsheet_]
+					} else {
+						displayselections = make([]*DisplaySelection, 0)
+					}
+					displayselections = append(displayselections, displayselection)
+					res[xlsheet_] = displayselections
+				}
+			}
+			return any(res).(map[*End][]*Start)
+		}
+	// reverse maps of direct associations of XLCell
+	case XLCell:
+		switch fieldname {
+		// insertion point for per direct association field
+		}
+	// reverse maps of direct associations of XLFile
+	case XLFile:
+		switch fieldname {
+		// insertion point for per direct association field
+		}
+	// reverse maps of direct associations of XLRow
+	case XLRow:
+		switch fieldname {
+		// insertion point for per direct association field
+		}
+	// reverse maps of direct associations of XLSheet
+	case XLSheet:
+		switch fieldname {
+		// insertion point for per direct association field
+		}
+	}
+	return nil
+}
+
+// GetSliceOfPointersReverseMap allows backtrack navigation of any Start.Fieldname
+// associations (0..N) between one staged Gongstruct instances and many others
+//
+// The function provides a map with keys as instances of End and values to *Start instances
+// the map is construed by iterating over all Start instances and populating keys with End instances
+// and values with the Start instances
+func GetSliceOfPointersReverseMap[Start, End Gongstruct](fieldname string) map[*End]*Start {
+	var ret Start
+
+	switch any(ret).(type) {
+	// insertion point of functions that provide maps for reverse associations
+	// reverse maps of direct associations of DisplaySelection
+	case DisplaySelection:
+		switch fieldname {
+		// insertion point for per direct association field
+		}
+	// reverse maps of direct associations of XLCell
+	case XLCell:
+		switch fieldname {
+		// insertion point for per direct association field
+		}
+	// reverse maps of direct associations of XLFile
+	case XLFile:
+		switch fieldname {
+		// insertion point for per direct association field
+		case "Sheets":
+			res := make(map[*XLSheet]*XLFile)
+			for xlfile := range Stage.XLFiles {
+				for _, xlsheet_ := range xlfile.Sheets {
+					res[xlsheet_] = xlfile
+				}
+			}
+			return any(res).(map[*End]*Start)
+		}
+	// reverse maps of direct associations of XLRow
+	case XLRow:
+		switch fieldname {
+		// insertion point for per direct association field
+		case "Cells":
+			res := make(map[*XLCell]*XLRow)
+			for xlrow := range Stage.XLRows {
+				for _, xlcell_ := range xlrow.Cells {
+					res[xlcell_] = xlrow
+				}
+			}
+			return any(res).(map[*End]*Start)
+		}
+	// reverse maps of direct associations of XLSheet
+	case XLSheet:
+		switch fieldname {
+		// insertion point for per direct association field
+		case "Rows":
+			res := make(map[*XLRow]*XLSheet)
+			for xlsheet := range Stage.XLSheets {
+				for _, xlrow_ := range xlsheet.Rows {
+					res[xlrow_] = xlsheet
+				}
+			}
+			return any(res).(map[*End]*Start)
+		case "SheetCells":
+			res := make(map[*XLCell]*XLSheet)
+			for xlsheet := range Stage.XLSheets {
+				for _, xlcell_ := range xlsheet.SheetCells {
+					res[xlcell_] = xlsheet
+				}
+			}
+			return any(res).(map[*End]*Start)
+		}
+	}
+	return nil
+}
+
 
 // insertion point of enum utility functions
