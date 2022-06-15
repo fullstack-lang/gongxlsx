@@ -261,29 +261,6 @@ func (displayselection *DisplaySelection) GetName() (res string) {
 	return displayselection.Name
 }
 
-func (displayselection *DisplaySelection) GetFields() (res []string) {
-	// list of fields
-	res = []string{"Name", "XLFile", "XLSheet"}
-	return
-}
-
-func (displayselection *DisplaySelection) GetFieldStringValue(fieldName string) (res string) {
-	switch fieldName {
-	// string value of fields
-	case "Name":
-		res = displayselection.Name
-	case "XLFile":
-		if displayselection.XLFile != nil {
-			res = displayselection.XLFile.Name
-		}
-	case "XLSheet":
-		if displayselection.XLSheet != nil {
-			res = displayselection.XLSheet.Name
-		}
-	}
-	return
-}
-
 func (stage *StageStruct) getXLCellOrderedStructWithNameField() []*XLCell {
 	// have alphabetical order generation
 	xlcellOrdered := []*XLCell{}
@@ -389,25 +366,6 @@ func DeleteORMXLCell(xlcell *XLCell) {
 // for satisfaction of GongStruct interface
 func (xlcell *XLCell) GetName() (res string) {
 	return xlcell.Name
-}
-
-func (xlcell *XLCell) GetFields() (res []string) {
-	// list of fields
-	res = []string{"Name", "X", "Y"}
-	return
-}
-
-func (xlcell *XLCell) GetFieldStringValue(fieldName string) (res string) {
-	switch fieldName {
-	// string value of fields
-	case "Name":
-		res = xlcell.Name
-	case "X":
-		res = fmt.Sprintf("%d", xlcell.X)
-	case "Y":
-		res = fmt.Sprintf("%d", xlcell.Y)
-	}
-	return
 }
 
 func (stage *StageStruct) getXLFileOrderedStructWithNameField() []*XLFile {
@@ -517,30 +475,6 @@ func (xlfile *XLFile) GetName() (res string) {
 	return xlfile.Name
 }
 
-func (xlfile *XLFile) GetFields() (res []string) {
-	// list of fields
-	res = []string{"Name", "NbSheets", "Sheets"}
-	return
-}
-
-func (xlfile *XLFile) GetFieldStringValue(fieldName string) (res string) {
-	switch fieldName {
-	// string value of fields
-	case "Name":
-		res = xlfile.Name
-	case "NbSheets":
-		res = fmt.Sprintf("%d", xlfile.NbSheets)
-	case "Sheets":
-		for idx, __instance__ := range xlfile.Sheets {
-			if idx > 0 {
-				res += "\n"
-			}
-			res += __instance__.Name
-		}
-	}
-	return
-}
-
 func (stage *StageStruct) getXLRowOrderedStructWithNameField() []*XLRow {
 	// have alphabetical order generation
 	xlrowOrdered := []*XLRow{}
@@ -648,30 +582,6 @@ func (xlrow *XLRow) GetName() (res string) {
 	return xlrow.Name
 }
 
-func (xlrow *XLRow) GetFields() (res []string) {
-	// list of fields
-	res = []string{"Name", "RowIndex", "Cells"}
-	return
-}
-
-func (xlrow *XLRow) GetFieldStringValue(fieldName string) (res string) {
-	switch fieldName {
-	// string value of fields
-	case "Name":
-		res = xlrow.Name
-	case "RowIndex":
-		res = fmt.Sprintf("%d", xlrow.RowIndex)
-	case "Cells":
-		for idx, __instance__ := range xlrow.Cells {
-			if idx > 0 {
-				res += "\n"
-			}
-			res += __instance__.Name
-		}
-	}
-	return
-}
-
 func (stage *StageStruct) getXLSheetOrderedStructWithNameField() []*XLSheet {
 	// have alphabetical order generation
 	xlsheetOrdered := []*XLSheet{}
@@ -777,41 +687,6 @@ func DeleteORMXLSheet(xlsheet *XLSheet) {
 // for satisfaction of GongStruct interface
 func (xlsheet *XLSheet) GetName() (res string) {
 	return xlsheet.Name
-}
-
-func (xlsheet *XLSheet) GetFields() (res []string) {
-	// list of fields
-	res = []string{"Name", "MaxRow", "MaxCol", "NbRows", "Rows", "SheetCells"}
-	return
-}
-
-func (xlsheet *XLSheet) GetFieldStringValue(fieldName string) (res string) {
-	switch fieldName {
-	// string value of fields
-	case "Name":
-		res = xlsheet.Name
-	case "MaxRow":
-		res = fmt.Sprintf("%d", xlsheet.MaxRow)
-	case "MaxCol":
-		res = fmt.Sprintf("%d", xlsheet.MaxCol)
-	case "NbRows":
-		res = fmt.Sprintf("%d", xlsheet.NbRows)
-	case "Rows":
-		for idx, __instance__ := range xlsheet.Rows {
-			if idx > 0 {
-				res += "\n"
-			}
-			res += __instance__.Name
-		}
-	case "SheetCells":
-		for idx, __instance__ := range xlsheet.SheetCells {
-			if idx > 0 {
-				res += "\n"
-			}
-			res += __instance__.Name
-		}
-	}
-	return
 }
 
 // swagger:ignore
@@ -951,7 +826,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 	sort.Slice(displayselectionOrdered[:], func(i, j int) bool {
 		return displayselectionOrdered[i].Name < displayselectionOrdered[j].Name
 	})
-	identifiersDecl += fmt.Sprintf("\n\n	// Declarations of staged instances of DisplaySelection")
+	identifiersDecl += "\n\n	// Declarations of staged instances of DisplaySelection"
 	for idx, displayselection := range displayselectionOrdered {
 
 		id = generatesIdentifier("DisplaySelection", idx, displayselection.Name)
@@ -983,7 +858,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 	sort.Slice(xlcellOrdered[:], func(i, j int) bool {
 		return xlcellOrdered[i].Name < xlcellOrdered[j].Name
 	})
-	identifiersDecl += fmt.Sprintf("\n\n	// Declarations of staged instances of XLCell")
+	identifiersDecl += "\n\n	// Declarations of staged instances of XLCell"
 	for idx, xlcell := range xlcellOrdered {
 
 		id = generatesIdentifier("XLCell", idx, xlcell.Name)
@@ -1027,7 +902,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 	sort.Slice(xlfileOrdered[:], func(i, j int) bool {
 		return xlfileOrdered[i].Name < xlfileOrdered[j].Name
 	})
-	identifiersDecl += fmt.Sprintf("\n\n	// Declarations of staged instances of XLFile")
+	identifiersDecl += "\n\n	// Declarations of staged instances of XLFile"
 	for idx, xlfile := range xlfileOrdered {
 
 		id = generatesIdentifier("XLFile", idx, xlfile.Name)
@@ -1065,7 +940,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 	sort.Slice(xlrowOrdered[:], func(i, j int) bool {
 		return xlrowOrdered[i].Name < xlrowOrdered[j].Name
 	})
-	identifiersDecl += fmt.Sprintf("\n\n	// Declarations of staged instances of XLRow")
+	identifiersDecl += "\n\n	// Declarations of staged instances of XLRow"
 	for idx, xlrow := range xlrowOrdered {
 
 		id = generatesIdentifier("XLRow", idx, xlrow.Name)
@@ -1103,7 +978,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 	sort.Slice(xlsheetOrdered[:], func(i, j int) bool {
 		return xlsheetOrdered[i].Name < xlsheetOrdered[j].Name
 	})
-	identifiersDecl += fmt.Sprintf("\n\n	// Declarations of staged instances of XLSheet")
+	identifiersDecl += "\n\n	// Declarations of staged instances of XLSheet"
 	for idx, xlsheet := range xlsheetOrdered {
 
 		id = generatesIdentifier("XLSheet", idx, xlsheet.Name)
@@ -1365,7 +1240,7 @@ func (stageStruct *StageStruct) CreateReverseMap_XLSheet_SheetCells() (res map[*
 }
 
 
-// Gongstruct is the type paramter for generated generic function that allows 
+// Gongstruct is the type paramter for generated generic function that allows
 // - access to staged instances
 // - navigation between staged instances by going backward association links between gongstruct
 // - full refactoring of Gongstruct identifiers / fields
@@ -1677,5 +1552,136 @@ func GetSliceOfPointersReverseMap[Start, End Gongstruct](fieldname string) map[*
 	return nil
 }
 
+// GetGongstructName returns the name of the Gongstruct
+// this can be usefull if one want program robust to refactoring
+func GetGongstructName[Type Gongstruct]() (res string) {
+
+	var ret Type
+
+	switch any(ret).(type) {
+	// insertion point for generic get gongstruct name
+	case DisplaySelection:
+		res = "DisplaySelection"
+	case XLCell:
+		res = "XLCell"
+	case XLFile:
+		res = "XLFile"
+	case XLRow:
+		res = "XLRow"
+	case XLSheet:
+		res = "XLSheet"
+	}
+	return res
+}
+
+// GetFields return the array of the fields
+func GetFields[Type Gongstruct]() (res []string) {
+
+	var ret Type
+
+	switch any(ret).(type) {
+	// insertion point for generic get gongstruct name
+	case DisplaySelection:
+		res = []string{"Name", "XLFile", "XLSheet"}
+	case XLCell:
+		res = []string{"Name", "X", "Y"}
+	case XLFile:
+		res = []string{"Name", "NbSheets", "Sheets"}
+	case XLRow:
+		res = []string{"Name", "RowIndex", "Cells"}
+	case XLSheet:
+		res = []string{"Name", "MaxRow", "MaxCol", "NbRows", "Rows", "SheetCells"}
+	}
+	return
+}
+
+func GetFieldStringValue[Type Gongstruct](instance Type, fieldName string) (res string) {
+	var ret Type
+
+	switch any(ret).(type) {
+	// insertion point for generic get gongstruct field value
+	case DisplaySelection:
+		switch fieldName {
+		// string value of fields
+		case "Name":
+			res = any(instance).(DisplaySelection).Name
+		case "XLFile":
+			if any(instance).(DisplaySelection).XLFile != nil {
+				res = any(instance).(DisplaySelection).XLFile.Name
+			}
+		case "XLSheet":
+			if any(instance).(DisplaySelection).XLSheet != nil {
+				res = any(instance).(DisplaySelection).XLSheet.Name
+			}
+		}
+	case XLCell:
+		switch fieldName {
+		// string value of fields
+		case "Name":
+			res = any(instance).(XLCell).Name
+		case "X":
+			res = fmt.Sprintf("%d", any(instance).(XLCell).X)
+		case "Y":
+			res = fmt.Sprintf("%d", any(instance).(XLCell).Y)
+		}
+	case XLFile:
+		switch fieldName {
+		// string value of fields
+		case "Name":
+			res = any(instance).(XLFile).Name
+		case "NbSheets":
+			res = fmt.Sprintf("%d", any(instance).(XLFile).NbSheets)
+		case "Sheets":
+			for idx, __instance__ := range any(instance).(XLFile).Sheets {
+				if idx > 0 {
+					res += "\n"
+				}
+				res += __instance__.Name
+			}
+		}
+	case XLRow:
+		switch fieldName {
+		// string value of fields
+		case "Name":
+			res = any(instance).(XLRow).Name
+		case "RowIndex":
+			res = fmt.Sprintf("%d", any(instance).(XLRow).RowIndex)
+		case "Cells":
+			for idx, __instance__ := range any(instance).(XLRow).Cells {
+				if idx > 0 {
+					res += "\n"
+				}
+				res += __instance__.Name
+			}
+		}
+	case XLSheet:
+		switch fieldName {
+		// string value of fields
+		case "Name":
+			res = any(instance).(XLSheet).Name
+		case "MaxRow":
+			res = fmt.Sprintf("%d", any(instance).(XLSheet).MaxRow)
+		case "MaxCol":
+			res = fmt.Sprintf("%d", any(instance).(XLSheet).MaxCol)
+		case "NbRows":
+			res = fmt.Sprintf("%d", any(instance).(XLSheet).NbRows)
+		case "Rows":
+			for idx, __instance__ := range any(instance).(XLSheet).Rows {
+				if idx > 0 {
+					res += "\n"
+				}
+				res += __instance__.Name
+			}
+		case "SheetCells":
+			for idx, __instance__ := range any(instance).(XLSheet).SheetCells {
+				if idx > 0 {
+					res += "\n"
+				}
+				res += __instance__.Name
+			}
+		}
+	}
+	return
+}
 
 // insertion point of enum utility functions
