@@ -58,10 +58,10 @@ type XLFileDB struct {
 
 	// insertion for basic fields declaration
 
-	// Declation for basic field xlfileDB.Name {{BasicKind}} (to be completed)
+	// Declation for basic field xlfileDB.Name
 	Name_Data sql.NullString
 
-	// Declation for basic field xlfileDB.NbSheets {{BasicKind}} (to be completed)
+	// Declation for basic field xlfileDB.NbSheets
 	NbSheets_Data sql.NullInt64
 	// encoding of pointers
 	XLFilePointersEnconding

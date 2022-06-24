@@ -64,16 +64,16 @@ type XLSheetDB struct {
 
 	// insertion for basic fields declaration
 
-	// Declation for basic field xlsheetDB.Name {{BasicKind}} (to be completed)
+	// Declation for basic field xlsheetDB.Name
 	Name_Data sql.NullString
 
-	// Declation for basic field xlsheetDB.MaxRow {{BasicKind}} (to be completed)
+	// Declation for basic field xlsheetDB.MaxRow
 	MaxRow_Data sql.NullInt64
 
-	// Declation for basic field xlsheetDB.MaxCol {{BasicKind}} (to be completed)
+	// Declation for basic field xlsheetDB.MaxCol
 	MaxCol_Data sql.NullInt64
 
-	// Declation for basic field xlsheetDB.NbRows {{BasicKind}} (to be completed)
+	// Declation for basic field xlsheetDB.NbRows
 	NbRows_Data sql.NullInt64
 	// encoding of pointers
 	XLSheetPointersEnconding

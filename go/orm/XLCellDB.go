@@ -70,13 +70,13 @@ type XLCellDB struct {
 
 	// insertion for basic fields declaration
 
-	// Declation for basic field xlcellDB.Name {{BasicKind}} (to be completed)
+	// Declation for basic field xlcellDB.Name
 	Name_Data sql.NullString
 
-	// Declation for basic field xlcellDB.X {{BasicKind}} (to be completed)
+	// Declation for basic field xlcellDB.X
 	X_Data sql.NullInt64
 
-	// Declation for basic field xlcellDB.Y {{BasicKind}} (to be completed)
+	// Declation for basic field xlcellDB.Y
 	Y_Data sql.NullInt64
 	// encoding of pointers
 	XLCellPointersEnconding

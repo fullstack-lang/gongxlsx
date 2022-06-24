@@ -64,10 +64,10 @@ type XLRowDB struct {
 
 	// insertion for basic fields declaration
 
-	// Declation for basic field xlrowDB.Name {{BasicKind}} (to be completed)
+	// Declation for basic field xlrowDB.Name
 	Name_Data sql.NullString
 
-	// Declation for basic field xlrowDB.RowIndex {{BasicKind}} (to be completed)
+	// Declation for basic field xlrowDB.RowIndex
 	RowIndex_Data sql.NullInt64
 	// encoding of pointers
 	XLRowPointersEnconding
