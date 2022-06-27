@@ -123,6 +123,14 @@ func (stage *StageStruct) Checkout() {
 	if stage.BackRepo != nil {
 		stage.BackRepo.Checkout(stage)
 	}
+
+	// insertion point for computing the map of number of instances per gongstruct
+	stage.Map_GongStructName_InstancesNb["DisplaySelection"] = len(stage.DisplaySelections)
+	stage.Map_GongStructName_InstancesNb["XLCell"] = len(stage.XLCells)
+	stage.Map_GongStructName_InstancesNb["XLFile"] = len(stage.XLFiles)
+	stage.Map_GongStructName_InstancesNb["XLRow"] = len(stage.XLRows)
+	stage.Map_GongStructName_InstancesNb["XLSheet"] = len(stage.XLSheets)
+
 }
 
 // backup generates backup files in the dirPath

@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/tealeg/xlsx/v3"
 )
 
@@ -26,9 +24,9 @@ func (xlfile *XLFile) Open(path string) {
 	}
 	// wb now contains a reference to the workbook
 	// show all the sheets in the workbook
-	fmt.Println("Sheets in this file:")
-	for i, sh := range xlfile.file.Sheets {
-		fmt.Println(i, sh.Name)
+	// fmt.Println("Sheets in this file:")
+	for _, sh := range xlfile.file.Sheets {
+		// fmt.Println(i, sh.Name)
 
 		xlsheet := new(XLSheet).Stage()
 		xlsheet.Name = sh.Name
@@ -76,9 +74,9 @@ func (xlfile *XLFile) Open(path string) {
 			}
 			rowIndex = rowIndex + 1
 		}
-		fmt.Println("Sheet ", xlsheet.Name, "Nb Rows", xlsheet.NbRows)
+		// fmt.Println("Sheet ", xlsheet.Name, "Nb Rows", xlsheet.NbRows)
 	}
-	fmt.Println("----")
+	// fmt.Println("----")
 
 	xlfile.NbSheets = len(xlfile.file.Sheets)
 }
