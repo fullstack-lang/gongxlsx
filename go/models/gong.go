@@ -162,18 +162,6 @@ func (stage *StageStruct) RestoreXL(dirPath string) {
 }
 
 // insertion point for cumulative sub template with model space calls
-func (stage *StageStruct) getDisplaySelectionOrderedStructWithNameField() []*DisplaySelection {
-	// have alphabetical order generation
-	displayselectionOrdered := []*DisplaySelection{}
-	for displayselection := range stage.DisplaySelections {
-		displayselectionOrdered = append(displayselectionOrdered, displayselection)
-	}
-	sort.Slice(displayselectionOrdered[:], func(i, j int) bool {
-		return displayselectionOrdered[i].Name < displayselectionOrdered[j].Name
-	})
-	return displayselectionOrdered
-}
-
 // Stage puts displayselection to the model stage
 func (displayselection *DisplaySelection) Stage() *DisplaySelection {
 	Stage.DisplaySelections[displayselection] = __member
@@ -267,18 +255,6 @@ func DeleteORMDisplaySelection(displayselection *DisplaySelection) {
 // for satisfaction of GongStruct interface
 func (displayselection *DisplaySelection) GetName() (res string) {
 	return displayselection.Name
-}
-
-func (stage *StageStruct) getXLCellOrderedStructWithNameField() []*XLCell {
-	// have alphabetical order generation
-	xlcellOrdered := []*XLCell{}
-	for xlcell := range stage.XLCells {
-		xlcellOrdered = append(xlcellOrdered, xlcell)
-	}
-	sort.Slice(xlcellOrdered[:], func(i, j int) bool {
-		return xlcellOrdered[i].Name < xlcellOrdered[j].Name
-	})
-	return xlcellOrdered
 }
 
 // Stage puts xlcell to the model stage
@@ -376,18 +352,6 @@ func (xlcell *XLCell) GetName() (res string) {
 	return xlcell.Name
 }
 
-func (stage *StageStruct) getXLFileOrderedStructWithNameField() []*XLFile {
-	// have alphabetical order generation
-	xlfileOrdered := []*XLFile{}
-	for xlfile := range stage.XLFiles {
-		xlfileOrdered = append(xlfileOrdered, xlfile)
-	}
-	sort.Slice(xlfileOrdered[:], func(i, j int) bool {
-		return xlfileOrdered[i].Name < xlfileOrdered[j].Name
-	})
-	return xlfileOrdered
-}
-
 // Stage puts xlfile to the model stage
 func (xlfile *XLFile) Stage() *XLFile {
 	Stage.XLFiles[xlfile] = __member
@@ -483,18 +447,6 @@ func (xlfile *XLFile) GetName() (res string) {
 	return xlfile.Name
 }
 
-func (stage *StageStruct) getXLRowOrderedStructWithNameField() []*XLRow {
-	// have alphabetical order generation
-	xlrowOrdered := []*XLRow{}
-	for xlrow := range stage.XLRows {
-		xlrowOrdered = append(xlrowOrdered, xlrow)
-	}
-	sort.Slice(xlrowOrdered[:], func(i, j int) bool {
-		return xlrowOrdered[i].Name < xlrowOrdered[j].Name
-	})
-	return xlrowOrdered
-}
-
 // Stage puts xlrow to the model stage
 func (xlrow *XLRow) Stage() *XLRow {
 	Stage.XLRows[xlrow] = __member
@@ -588,18 +540,6 @@ func DeleteORMXLRow(xlrow *XLRow) {
 // for satisfaction of GongStruct interface
 func (xlrow *XLRow) GetName() (res string) {
 	return xlrow.Name
-}
-
-func (stage *StageStruct) getXLSheetOrderedStructWithNameField() []*XLSheet {
-	// have alphabetical order generation
-	xlsheetOrdered := []*XLSheet{}
-	for xlsheet := range stage.XLSheets {
-		xlsheetOrdered = append(xlsheetOrdered, xlsheet)
-	}
-	sort.Slice(xlsheetOrdered[:], func(i, j int) bool {
-		return xlsheetOrdered[i].Name < xlsheetOrdered[j].Name
-	})
-	return xlsheetOrdered
 }
 
 // Stage puts xlsheet to the model stage
@@ -1248,13 +1188,23 @@ func (stageStruct *StageStruct) CreateReverseMap_XLSheet_SheetCells() (res map[*
 }
 
 
-// Gongstruct is the type paramter for generated generic function that allows
+// Gongstruct is the type parameter for generated generic function that allows
 // - access to staged instances
 // - navigation between staged instances by going backward association links between gongstruct
 // - full refactoring of Gongstruct identifiers / fields
 type Gongstruct interface {
 	// insertion point for generic types
 	DisplaySelection | XLCell | XLFile | XLRow | XLSheet
+}
+
+// Gongstruct is the type parameter for generated generic function that allows
+// - access to staged instances
+// - navigation between staged instances by going backward association links between gongstruct
+// - full refactoring of Gongstruct identifiers / fields
+type PointerToGongstruct interface {
+	// insertion point for generic types
+	*DisplaySelection | *XLCell | *XLFile | *XLRow | *XLSheet
+	GetName() string
 }
 
 type GongstructSet interface {
@@ -1693,3 +1643,4 @@ func GetFieldStringValue[Type Gongstruct](instance Type, fieldName string) (res 
 }
 
 // insertion point of enum utility functions
+// Last line of the template
