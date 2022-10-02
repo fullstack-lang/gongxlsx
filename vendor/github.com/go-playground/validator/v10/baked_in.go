@@ -151,6 +151,7 @@ var (
 		"uuid4_rfc4122":                 isUUID4RFC4122,
 		"uuid5_rfc4122":                 isUUID5RFC4122,
 		"ulid":                          isULID,
+<<<<<<< HEAD
 		"md4":                           isMD4,
 		"md5":                           isMD5,
 		"sha256":                        isSHA256,
@@ -161,6 +162,8 @@ var (
 		"tiger128":                      isTIGER128,
 		"tiger160":                      isTIGER160,
 		"tiger192":                      isTIGER192,
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		"ascii":                         isASCII,
 		"printascii":                    isPrintableASCII,
 		"multibyte":                     hasMultiByteCharacter,
@@ -213,7 +216,10 @@ var (
 		"bic":                           isIsoBicFormat,
 		"semver":                        isSemverFormat,
 		"dns_rfc1035_label":             isDnsRFC1035LabelFormat,
+<<<<<<< HEAD
 		"credit_card":                   isCreditCard,
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	}
 )
 
@@ -510,6 +516,7 @@ func isULID(fl FieldLevel) bool {
 	return uLIDRegex.MatchString(fl.Field().String())
 }
 
+<<<<<<< HEAD
 // isMD4 is the validation function for validating if the field's value is a valid MD4.
 func isMD4(fl FieldLevel) bool {
 	return md4Regex.MatchString(fl.Field().String())
@@ -560,6 +567,8 @@ func isTIGER192(fl FieldLevel) bool {
 	return tiger192Regex.MatchString(fl.Field().String())
 }
 
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 // isISBN is the validation function for validating if the field's value is a valid v10 or v13 ISBN.
 func isISBN(fl FieldLevel) bool {
 	return isISBN10(fl) || isISBN13(fl)
@@ -2481,6 +2490,7 @@ func isDnsRFC1035LabelFormat(fl FieldLevel) bool {
 	val := fl.Field().String()
 	return dnsRegexRFC1035Label.MatchString(val)
 }
+<<<<<<< HEAD
 
 // isCreditCard is the validation function for validating if the current field's value is a valid credit card number
 func isCreditCard(fl FieldLevel) bool {
@@ -2519,3 +2529,5 @@ func isCreditCard(fl FieldLevel) bool {
 	}
 	return (sum % 10) == 0
 }
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0

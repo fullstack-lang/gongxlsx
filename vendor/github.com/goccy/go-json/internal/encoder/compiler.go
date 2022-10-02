@@ -31,7 +31,11 @@ func init() {
 	if typeAddr == nil {
 		typeAddr = &runtime.TypeAddr{}
 	}
+<<<<<<< HEAD
 	cachedOpcodeSets = make([]*OpcodeSet, typeAddr.AddrRange>>typeAddr.AddrShift+1)
+=======
+	cachedOpcodeSets = make([]*OpcodeSet, typeAddr.AddrRange>>typeAddr.AddrShift)
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 }
 
 func loadOpcodeMap() map[uintptr]*OpcodeSet {
@@ -487,10 +491,14 @@ func (c *Compiler) listElemCode(typ *runtime.Type) (Code, error) {
 	case typ.Kind() == reflect.Map:
 		return c.ptrCode(runtime.PtrTo(typ))
 	default:
+<<<<<<< HEAD
 		// isPtr was originally used to indicate whether the type of top level is pointer.
 		// However, since the slice/array element is a specification that can get the pointer address, explicitly set isPtr to true.
 		// See here for related issues: https://github.com/goccy/go-json/issues/370
 		code, err := c.typeToCodeWithPtr(typ, true)
+=======
+		code, err := c.typeToCodeWithPtr(typ, false)
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		if err != nil {
 			return nil, err
 		}
@@ -856,9 +864,12 @@ func (c *Compiler) implementsMarshalText(typ *runtime.Type) bool {
 }
 
 func (c *Compiler) isNilableType(typ *runtime.Type) bool {
+<<<<<<< HEAD
 	if !runtime.IfaceIndir(typ) {
 		return true
 	}
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	switch typ.Kind() {
 	case reflect.Ptr:
 		return true
@@ -891,6 +902,7 @@ func (c *Compiler) codeToOpcode(ctx *compileContext, typ *runtime.Type, code Cod
 }
 
 func (c *Compiler) linkRecursiveCode(ctx *compileContext) {
+<<<<<<< HEAD
 	recursiveCodes := map[uintptr]*CompiledCode{}
 	for _, recursive := range *ctx.recursiveCodes {
 		typeptr := uintptr(unsafe.Pointer(recursive.Type))
@@ -914,10 +926,30 @@ func (c *Compiler) linkRecursiveCode(ctx *compileContext) {
 		lastCode.Idx = uint32((totalLength + 1) * uintptrSize)
 		lastCode.ElemIdx = lastCode.Idx + uintptrSize
 		lastCode.Length = lastCode.Idx + 2*uintptrSize
+=======
+	for _, recursive := range *ctx.recursiveCodes {
+		typeptr := uintptr(unsafe.Pointer(recursive.Type))
+		codes := ctx.structTypeToCodes[typeptr]
+		compiled := recursive.Jmp
+		compiled.Code = copyOpcode(codes.First())
+		code := compiled.Code
+		code.End.Next = newEndOp(&compileContext{}, recursive.Type)
+		code.Op = code.Op.PtrHeadToHead()
+
+		beforeLastCode := code.End
+		lastCode := beforeLastCode.Next
+
+		totalLength := code.TotalLength()
+		lastCode.Idx = uint32((totalLength + 1) * uintptrSize)
+		lastCode.ElemIdx = lastCode.Idx + uintptrSize
+		lastCode.Length = lastCode.Idx + 2*uintptrSize
+		code.End.Next.Op = OpRecursiveEnd
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 
 		// extend length to alloc slot for elemIdx + length
 		curTotalLength := uintptr(recursive.TotalLength()) + 3
 		nextTotalLength := uintptr(totalLength) + 3
+<<<<<<< HEAD
 
 		compiled := recursive.Jmp
 		compiled.Code = code
@@ -926,5 +958,10 @@ func (c *Compiler) linkRecursiveCode(ctx *compileContext) {
 		compiled.Linked = true
 
 		recursiveCodes[typeptr] = compiled
+=======
+		compiled.CurLen = curTotalLength
+		compiled.NextLen = nextTotalLength
+		compiled.Linked = true
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	}
 }

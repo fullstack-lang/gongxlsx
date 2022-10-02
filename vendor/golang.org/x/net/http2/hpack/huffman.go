@@ -140,6 +140,7 @@ func buildRootHuffmanNode() {
 		panic("unexpected size")
 	}
 	lazyRootHuffmanNode = newInternalNode()
+<<<<<<< HEAD
 	// allocate a leaf node for each of the 256 symbols
 	leaves := new([256]node)
 
@@ -163,12 +164,34 @@ func buildRootHuffmanNode() {
 		for i := start; i < start+end; i++ {
 			cur.children[i] = &leaves[sym]
 		}
+=======
+	for i, code := range huffmanCodes {
+		addDecoderNode(byte(i), code, huffmanCodeLen[i])
+	}
+}
+
+func addDecoderNode(sym byte, code uint32, codeLen uint8) {
+	cur := lazyRootHuffmanNode
+	for codeLen > 8 {
+		codeLen -= 8
+		i := uint8(code >> codeLen)
+		if cur.children[i] == nil {
+			cur.children[i] = newInternalNode()
+		}
+		cur = cur.children[i]
+	}
+	shift := 8 - codeLen
+	start, end := int(uint8(code<<shift)), int(1<<shift)
+	for i := start; i < start+end; i++ {
+		cur.children[i] = &node{sym: sym, codeLen: codeLen}
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	}
 }
 
 // AppendHuffmanString appends s, as encoded in Huffman codes, to dst
 // and returns the extended buffer.
 func AppendHuffmanString(dst []byte, s string) []byte {
+<<<<<<< HEAD
 	// This relies on the maximum huffman code length being 30 (See tables.go huffmanCodeLen array)
 	// So if a uint64 buffer has less than 32 valid bits can always accommodate another huffmanCode.
 	var (
@@ -213,6 +236,27 @@ func AppendHuffmanString(dst []byte, s string) []byte {
 	//	case 4:
 	y := uint32(x)
 	return append(dst, byte(y>>24), byte(y>>16), byte(y>>8), byte(y))
+=======
+	rembits := uint8(8)
+
+	for i := 0; i < len(s); i++ {
+		if rembits == 8 {
+			dst = append(dst, 0)
+		}
+		dst, rembits = appendByteToHuffmanCode(dst, rembits, s[i])
+	}
+
+	if rembits < 8 {
+		// special EOS symbol
+		code := uint32(0x3fffffff)
+		nbits := uint8(30)
+
+		t := uint8(code >> (nbits - rembits))
+		dst[len(dst)-1] |= t
+	}
+
+	return dst
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 }
 
 // HuffmanEncodeLength returns the number of bytes required to encode
@@ -224,3 +268,38 @@ func HuffmanEncodeLength(s string) uint64 {
 	}
 	return (n + 7) / 8
 }
+<<<<<<< HEAD
+=======
+
+// appendByteToHuffmanCode appends Huffman code for c to dst and
+// returns the extended buffer and the remaining bits in the last
+// element. The appending is not byte aligned and the remaining bits
+// in the last element of dst is given in rembits.
+func appendByteToHuffmanCode(dst []byte, rembits uint8, c byte) ([]byte, uint8) {
+	code := huffmanCodes[c]
+	nbits := huffmanCodeLen[c]
+
+	for {
+		if rembits > nbits {
+			t := uint8(code << (rembits - nbits))
+			dst[len(dst)-1] |= t
+			rembits -= nbits
+			break
+		}
+
+		t := uint8(code >> (nbits - rembits))
+		dst[len(dst)-1] |= t
+
+		nbits -= rembits
+		rembits = 8
+
+		if nbits == 0 {
+			break
+		}
+
+		dst = append(dst, 0)
+	}
+
+	return dst, rembits
+}
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # v0.9.11 - 2022/08/18
 
 ### Fix bugs
@@ -52,6 +53,8 @@
 
 * Add DebugWith option for encoder ( #356 )
 
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 # v0.9.6 - 2022/03/22
 
 ### Fix bugs

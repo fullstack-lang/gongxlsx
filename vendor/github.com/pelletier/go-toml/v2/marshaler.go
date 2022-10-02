@@ -54,7 +54,11 @@ func NewEncoder(w io.Writer) *Encoder {
 // This behavior can be controlled on an individual struct field basis with the
 // inline tag:
 //
+<<<<<<< HEAD
 //	MyField `toml:",inline"`
+=======
+//   MyField `inline:"true"`
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func (enc *Encoder) SetTablesInline(inline bool) *Encoder {
 	enc.tablesInline = inline
 	return enc
@@ -65,7 +69,11 @@ func (enc *Encoder) SetTablesInline(inline bool) *Encoder {
 //
 // This behavior can be controlled on an individual struct field basis with the multiline tag:
 //
+<<<<<<< HEAD
 //	MyField `multiline:"true"`
+=======
+//   MyField `multiline:"true"`
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func (enc *Encoder) SetArraysMultiline(multiline bool) *Encoder {
 	enc.arraysMultiline = multiline
 	return enc
@@ -89,7 +97,11 @@ func (enc *Encoder) SetIndentTables(indent bool) *Encoder {
 //
 // If v cannot be represented to TOML it returns an error.
 //
+<<<<<<< HEAD
 // # Encoding rules
+=======
+// Encoding rules
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 //
 // A top level slice containing only maps or structs is encoded as [[table
 // array]].
@@ -107,6 +119,7 @@ func (enc *Encoder) SetIndentTables(indent bool) *Encoder {
 // a newline character or a single quote. In that case they are emitted as
 // quoted strings.
 //
+<<<<<<< HEAD
 // Unsigned integers larger than math.MaxInt64 cannot be encoded. Doing so
 // results in an error. This rule exists because the TOML specification only
 // requires parsers to support at least the 64 bits integer range. Allowing
@@ -131,6 +144,12 @@ func (enc *Encoder) SetIndentTables(indent bool) *Encoder {
 //	[array.child2]
 //
 // # Struct tags
+=======
+// When encoding structs, fields are encoded in order of definition, with their
+// exact name.
+//
+// Struct tags
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 //
 // The encoding of each public struct field can be customized by the format
 // string in the "toml" key of the struct field's tag. This follows
@@ -323,11 +342,15 @@ func (enc *Encoder) encode(b []byte, ctx encoderCtx, v reflect.Value) ([]byte, e
 			b = append(b, "false"...)
 		}
 	case reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8, reflect.Uint:
+<<<<<<< HEAD
 		x := v.Uint()
 		if x > uint64(math.MaxInt64) {
 			return nil, fmt.Errorf("toml: not encoding uint (%d) greater than max int64 (%d)", x, int64(math.MaxInt64))
 		}
 		b = strconv.AppendUint(b, x, 10)
+=======
+		b = strconv.AppendUint(b, v.Uint(), 10)
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	case reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8, reflect.Int:
 		b = strconv.AppendInt(b, v.Int(), 10)
 	default:
@@ -346,6 +369,7 @@ func isNil(v reflect.Value) bool {
 	}
 }
 
+<<<<<<< HEAD
 func shouldOmitEmpty(options valueOptions, v reflect.Value) bool {
 	return options.omitempty && isEmptyValue(v)
 }
@@ -353,6 +377,15 @@ func shouldOmitEmpty(options valueOptions, v reflect.Value) bool {
 func (enc *Encoder) encodeKv(b []byte, ctx encoderCtx, options valueOptions, v reflect.Value) ([]byte, error) {
 	var err error
 
+=======
+func (enc *Encoder) encodeKv(b []byte, ctx encoderCtx, options valueOptions, v reflect.Value) ([]byte, error) {
+	var err error
+
+	if (ctx.options.omitempty || options.omitempty) && isEmptyValue(v) {
+		return b, nil
+	}
+
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	if !ctx.inline {
 		b = enc.encodeComment(ctx.indent, options.comment, b)
 	}
@@ -378,8 +411,11 @@ func (enc *Encoder) encodeKv(b []byte, ctx encoderCtx, options valueOptions, v r
 
 func isEmptyValue(v reflect.Value) bool {
 	switch v.Kind() {
+<<<<<<< HEAD
 	case reflect.Struct:
 		return isEmptyStruct(v)
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
 		return v.Len() == 0
 	case reflect.Bool:
@@ -396,6 +432,7 @@ func isEmptyValue(v reflect.Value) bool {
 	return false
 }
 
+<<<<<<< HEAD
 func isEmptyStruct(v reflect.Value) bool {
 	// TODO: merge with walkStruct and cache.
 	typ := v.Type()
@@ -424,6 +461,8 @@ func isEmptyStruct(v reflect.Value) bool {
 	return true
 }
 
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 const literalQuote = '\''
 
 func (enc *Encoder) encodeString(b []byte, v string, options valueOptions) []byte {
@@ -453,6 +492,10 @@ func (enc *Encoder) encodeLiteralString(b []byte, v string) []byte {
 	return b
 }
 
+<<<<<<< HEAD
+=======
+//nolint:cyclop
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func (enc *Encoder) encodeQuotedString(multiline bool, b []byte, v string) []byte {
 	stringQuote := `"`
 
@@ -799,6 +842,7 @@ func (enc *Encoder) encodeTable(b []byte, ctx encoderCtx, t table) ([]byte, erro
 	}
 	ctx.skipTableHeader = false
 
+<<<<<<< HEAD
 	hasNonEmptyKV := false
 	for _, kv := range t.kvs {
 		if shouldOmitEmpty(kv.Options, kv.Value) {
@@ -806,6 +850,9 @@ func (enc *Encoder) encodeTable(b []byte, ctx encoderCtx, t table) ([]byte, erro
 		}
 		hasNonEmptyKV = true
 
+=======
+	for _, kv := range t.kvs {
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		ctx.setKey(kv.Key)
 
 		b, err = enc.encodeKv(b, ctx, kv.Options, kv.Value)
@@ -816,6 +863,7 @@ func (enc *Encoder) encodeTable(b []byte, ctx encoderCtx, t table) ([]byte, erro
 		b = append(b, '\n')
 	}
 
+<<<<<<< HEAD
 	first := true
 	for _, table := range t.tables {
 		if shouldOmitEmpty(table.Options, table.Value) {
@@ -830,6 +878,9 @@ func (enc *Encoder) encodeTable(b []byte, ctx encoderCtx, t table) ([]byte, erro
 			b = append(b, "\n"...)
 		}
 
+=======
+	for _, table := range t.tables {
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		ctx.setKey(table.Key)
 
 		ctx.options = table.Options
@@ -838,6 +889,11 @@ func (enc *Encoder) encodeTable(b []byte, ctx encoderCtx, t table) ([]byte, erro
 		if err != nil {
 			return nil, err
 		}
+<<<<<<< HEAD
+=======
+
+		b = append(b, '\n')
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	}
 
 	return b, nil
@@ -850,10 +906,13 @@ func (enc *Encoder) encodeTableInline(b []byte, ctx encoderCtx, t table) ([]byte
 
 	first := true
 	for _, kv := range t.kvs {
+<<<<<<< HEAD
 		if shouldOmitEmpty(kv.Options, kv.Value) {
 			continue
 		}
 
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		if first {
 			first = false
 		} else {
@@ -869,7 +928,11 @@ func (enc *Encoder) encodeTableInline(b []byte, ctx encoderCtx, t table) ([]byte
 	}
 
 	if len(t.tables) > 0 {
+<<<<<<< HEAD
 		panic("inline table cannot contain nested tables, only key-values")
+=======
+		panic("inline table cannot contain nested tables, online key-values")
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	}
 
 	b = append(b, "}"...)
@@ -968,10 +1031,13 @@ func (enc *Encoder) encodeSliceAsArrayTable(b []byte, ctx encoderCtx, v reflect.
 	b = enc.encodeComment(ctx.indent, ctx.options.comment, b)
 
 	for i := 0; i < v.Len(); i++ {
+<<<<<<< HEAD
 		if i != 0 {
 			b = append(b, "\n"...)
 		}
 
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		b = append(b, scratch...)
 
 		var err error

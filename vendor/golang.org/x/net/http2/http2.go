@@ -13,6 +13,10 @@
 // See https://http2.github.io/ for more information on HTTP/2.
 //
 // See https://http2.golang.org/ for a test server running this code.
+<<<<<<< HEAD
+=======
+//
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 package http2 // import "golang.org/x/net/http2"
 
 import (
@@ -55,14 +59,22 @@ const (
 	ClientPreface = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
 
 	// SETTINGS_MAX_FRAME_SIZE default
+<<<<<<< HEAD
 	// https://httpwg.org/specs/rfc7540.html#rfc.section.6.5.2
+=======
+	// http://http2.github.io/http2-spec/#rfc.section.6.5.2
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	initialMaxFrameSize = 16384
 
 	// NextProtoTLS is the NPN/ALPN protocol negotiated during
 	// HTTP/2's TLS setup.
 	NextProtoTLS = "h2"
 
+<<<<<<< HEAD
 	// https://httpwg.org/specs/rfc7540.html#SettingValues
+=======
+	// http://http2.github.io/http2-spec/#SettingValues
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	initialHeaderTableSize = 4096
 
 	initialWindowSize = 65535 // 6.9.2 Initial Flow Control Window Size
@@ -111,7 +123,11 @@ func (st streamState) String() string {
 // Setting is a setting parameter: which setting it is, and its value.
 type Setting struct {
 	// ID is which setting is being set.
+<<<<<<< HEAD
 	// See https://httpwg.org/specs/rfc7540.html#SettingFormat
+=======
+	// See http://http2.github.io/http2-spec/#SettingValues
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	ID SettingID
 
 	// Val is the value.
@@ -143,7 +159,11 @@ func (s Setting) Valid() error {
 }
 
 // A SettingID is an HTTP/2 setting as defined in
+<<<<<<< HEAD
 // https://httpwg.org/specs/rfc7540.html#iana-settings
+=======
+// http://http2.github.io/http2-spec/#iana-settings
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 type SettingID uint16
 
 const (
@@ -175,11 +195,18 @@ func (s SettingID) String() string {
 // name (key). See httpguts.ValidHeaderName for the base rules.
 //
 // Further, http2 says:
+<<<<<<< HEAD
 //
 //	"Just as in HTTP/1.x, header field names are strings of ASCII
 //	characters that are compared in a case-insensitive
 //	fashion. However, header field names MUST be converted to
 //	lowercase prior to their encoding in HTTP/2. "
+=======
+//   "Just as in HTTP/1.x, header field names are strings of ASCII
+//   characters that are compared in a case-insensitive
+//   fashion. However, header field names MUST be converted to
+//   lowercase prior to their encoding in HTTP/2. "
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func validWireHeaderFieldName(v string) bool {
 	if len(v) == 0 {
 		return false
@@ -365,8 +392,13 @@ func (s *sorter) SortStrings(ss []string) {
 // validPseudoPath reports whether v is a valid :path pseudo-header
 // value. It must be either:
 //
+<<<<<<< HEAD
 //   - a non-empty string starting with '/'
 //   - the string '*', for OPTIONS requests.
+=======
+//     *) a non-empty string starting with '/'
+//     *) the string '*', for OPTIONS requests.
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 //
 // For now this is only used a quick check for deciding when to clean
 // up Opaque URLs before sending requests from the Transport.

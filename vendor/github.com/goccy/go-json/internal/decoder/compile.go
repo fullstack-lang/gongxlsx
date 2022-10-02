@@ -24,7 +24,11 @@ func init() {
 	if typeAddr == nil {
 		typeAddr = &runtime.TypeAddr{}
 	}
+<<<<<<< HEAD
 	cachedDecoder = make([]Decoder, typeAddr.AddrRange>>typeAddr.AddrShift+1)
+=======
+	cachedDecoder = make([]Decoder, typeAddr.AddrRange>>typeAddr.AddrShift)
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 }
 
 func loadDecoderMap() map[uintptr]Decoder {
@@ -393,6 +397,7 @@ func compileStruct(typ *runtime.Type, structName, fieldName string, structTypeTo
 						}
 						allFields = append(allFields, fieldSet)
 					}
+<<<<<<< HEAD
 				} else {
 					fieldSet := &structFieldSet{
 						dec:         pdec,
@@ -412,6 +417,9 @@ func compileStruct(typ *runtime.Type, structName, fieldName string, structTypeTo
 					keyLen:      int64(len(field.Name)),
 				}
 				allFields = append(allFields, fieldSet)
+=======
+				}
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 			}
 		} else {
 			if tag.IsString && isStringTagSupportedType(runtime.Type2RType(field.Type)) {

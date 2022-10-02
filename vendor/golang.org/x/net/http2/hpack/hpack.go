@@ -59,7 +59,11 @@ func (hf HeaderField) String() string {
 
 // Size returns the size of an entry per RFC 7541 section 4.1.
 func (hf HeaderField) Size() uint32 {
+<<<<<<< HEAD
 	// https://httpwg.org/specs/rfc7541.html#rfc.section.4.1
+=======
+	// http://http2.github.io/http2-spec/compression.html#rfc.section.4.1
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	// "The size of the dynamic table is the sum of the size of
 	// its entries. The size of an entry is the sum of its name's
 	// length in octets (as defined in Section 5.2), its value's
@@ -158,7 +162,11 @@ func (d *Decoder) SetAllowedMaxDynamicTableSize(v uint32) {
 }
 
 type dynamicTable struct {
+<<<<<<< HEAD
 	// https://httpwg.org/specs/rfc7541.html#rfc.section.2.3.2
+=======
+	// http://http2.github.io/http2-spec/compression.html#rfc.section.2.3.2
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	table          headerFieldTable
 	size           uint32 // in bytes
 	maxSize        uint32 // current maxSize
@@ -307,27 +315,47 @@ func (d *Decoder) parseHeaderFieldRepr() error {
 	case b&128 != 0:
 		// Indexed representation.
 		// High bit set?
+<<<<<<< HEAD
 		// https://httpwg.org/specs/rfc7541.html#rfc.section.6.1
+=======
+		// http://http2.github.io/http2-spec/compression.html#rfc.section.6.1
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		return d.parseFieldIndexed()
 	case b&192 == 64:
 		// 6.2.1 Literal Header Field with Incremental Indexing
 		// 0b10xxxxxx: top two bits are 10
+<<<<<<< HEAD
 		// https://httpwg.org/specs/rfc7541.html#rfc.section.6.2.1
+=======
+		// http://http2.github.io/http2-spec/compression.html#rfc.section.6.2.1
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		return d.parseFieldLiteral(6, indexedTrue)
 	case b&240 == 0:
 		// 6.2.2 Literal Header Field without Indexing
 		// 0b0000xxxx: top four bits are 0000
+<<<<<<< HEAD
 		// https://httpwg.org/specs/rfc7541.html#rfc.section.6.2.2
+=======
+		// http://http2.github.io/http2-spec/compression.html#rfc.section.6.2.2
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		return d.parseFieldLiteral(4, indexedFalse)
 	case b&240 == 16:
 		// 6.2.3 Literal Header Field never Indexed
 		// 0b0001xxxx: top four bits are 0001
+<<<<<<< HEAD
 		// https://httpwg.org/specs/rfc7541.html#rfc.section.6.2.3
+=======
+		// http://http2.github.io/http2-spec/compression.html#rfc.section.6.2.3
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		return d.parseFieldLiteral(4, indexedNever)
 	case b&224 == 32:
 		// 6.3 Dynamic Table Size Update
 		// Top three bits are '001'.
+<<<<<<< HEAD
 		// https://httpwg.org/specs/rfc7541.html#rfc.section.6.3
+=======
+		// http://http2.github.io/http2-spec/compression.html#rfc.section.6.3
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		return d.parseDynamicTableSizeUpdate()
 	}
 
@@ -420,7 +448,11 @@ var errVarintOverflow = DecodingError{errors.New("varint integer overflow")}
 
 // readVarInt reads an unsigned variable length integer off the
 // beginning of p. n is the parameter as described in
+<<<<<<< HEAD
 // https://httpwg.org/specs/rfc7541.html#rfc.section.5.1.
+=======
+// http://http2.github.io/http2-spec/compression.html#rfc.section.5.1.
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 //
 // n must always be between 1 and 8.
 //

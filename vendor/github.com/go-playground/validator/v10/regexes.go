@@ -30,6 +30,7 @@ const (
 	uUID5RFC4122RegexString          = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-5[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
 	uUIDRFC4122RegexString           = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
 	uLIDRegexString                  = "^[A-HJKMNP-TV-Z0-9]{26}$"
+<<<<<<< HEAD
 	md4RegexString                   = "^[0-9a-f]{32}$"
 	md5RegexString                   = "^[0-9a-f]{32}$"
 	sha256RegexString                = "^[0-9a-f]{64}$"
@@ -40,6 +41,8 @@ const (
 	tiger128RegexString              = "^[0-9a-f]{32}$"
 	tiger160RegexString              = "^[0-9a-f]{40}$"
 	tiger192RegexString              = "^[0-9a-f]{48}$"
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	aSCIIRegexString                 = "^[\x00-\x7F]*$"
 	printableASCIIRegexString        = "^[\x20-\x7E]*$"
 	multibyteRegexString             = "[^\x00-\x7F]"
@@ -94,6 +97,7 @@ var (
 	uUID5RFC4122Regex          = regexp.MustCompile(uUID5RFC4122RegexString)
 	uUIDRFC4122Regex           = regexp.MustCompile(uUIDRFC4122RegexString)
 	uLIDRegex                  = regexp.MustCompile(uLIDRegexString)
+<<<<<<< HEAD
 	md4Regex                   = regexp.MustCompile(md4RegexString)
 	md5Regex                   = regexp.MustCompile(md5RegexString)
 	sha256Regex                = regexp.MustCompile(sha256RegexString)
@@ -104,6 +108,8 @@ var (
 	tiger128Regex              = regexp.MustCompile(tiger128RegexString)
 	tiger160Regex              = regexp.MustCompile(tiger160RegexString)
 	tiger192Regex              = regexp.MustCompile(tiger192RegexString)
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	aSCIIRegex                 = regexp.MustCompile(aSCIIRegexString)
 	printableASCIIRegex        = regexp.MustCompile(printableASCIIRegexString)
 	multibyteRegex             = regexp.MustCompile(multibyteRegexString)

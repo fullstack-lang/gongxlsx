@@ -53,6 +53,7 @@ func (e ErrCode) String() string {
 	return fmt.Sprintf("unknown error code 0x%x", uint32(e))
 }
 
+<<<<<<< HEAD
 func (e ErrCode) stringToken() string {
 	if s, ok := errCodeName[e]; ok {
 		return s
@@ -60,6 +61,8 @@ func (e ErrCode) stringToken() string {
 	return fmt.Sprintf("ERR_UNKNOWN_%d", uint32(e))
 }
 
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 // ConnectionError is an error that results in the termination of the
 // entire connection.
 type ConnectionError ErrCode
@@ -74,11 +77,14 @@ type StreamError struct {
 	Cause    error // optional additional detail
 }
 
+<<<<<<< HEAD
 // errFromPeer is a sentinel error value for StreamError.Cause to
 // indicate that the StreamError was sent from the peer over the wire
 // and wasn't locally generated in the Transport.
 var errFromPeer = errors.New("received from peer")
 
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func streamError(id uint32, code ErrCode) StreamError {
 	return StreamError{StreamID: id, Code: code}
 }
@@ -136,7 +142,11 @@ func (e headerFieldNameError) Error() string {
 type headerFieldValueError string
 
 func (e headerFieldValueError) Error() string {
+<<<<<<< HEAD
 	return fmt.Sprintf("invalid header field value for %q", string(e))
+=======
+	return fmt.Sprintf("invalid header field value %q", string(e))
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 }
 
 var (

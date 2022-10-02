@@ -137,6 +137,7 @@ func trimOWS(x string) string {
 // contains token amongst its comma-separated tokens, ASCII
 // case-insensitively.
 func headerValueContainsToken(v string, token string) bool {
+<<<<<<< HEAD
 	for comma := strings.IndexByte(v, ','); comma != -1; comma = strings.IndexByte(v, ',') {
 		if tokenEqual(trimOWS(v[:comma]), token) {
 			return true
@@ -144,6 +145,13 @@ func headerValueContainsToken(v string, token string) bool {
 		v = v[comma+1:]
 	}
 	return tokenEqual(trimOWS(v), token)
+=======
+	v = trimOWS(v)
+	if comma := strings.IndexByte(v, ','); comma != -1 {
+		return tokenEqual(trimOWS(v[:comma]), token) || headerValueContainsToken(v[comma+1:], token)
+	}
+	return tokenEqual(v, token)
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 }
 
 // lowerASCII returns the ASCII lowercase version of b.
@@ -173,15 +181,24 @@ func tokenEqual(t1, t2 string) bool {
 
 // isLWS reports whether b is linear white space, according
 // to http://www.w3.org/Protocols/rfc2616/rfc2616-sec2.html#sec2.2
+<<<<<<< HEAD
 //
 //	LWS            = [CRLF] 1*( SP | HT )
+=======
+//      LWS            = [CRLF] 1*( SP | HT )
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func isLWS(b byte) bool { return b == ' ' || b == '\t' }
 
 // isCTL reports whether b is a control byte, according
 // to http://www.w3.org/Protocols/rfc2616/rfc2616-sec2.html#sec2.2
+<<<<<<< HEAD
 //
 //	CTL            = <any US-ASCII control character
 //	                 (octets 0 - 31) and DEL (127)>
+=======
+//      CTL            = <any US-ASCII control character
+//                       (octets 0 - 31) and DEL (127)>
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func isCTL(b byte) bool {
 	const del = 0x7f // a CTL
 	return b < ' ' || b == del
@@ -191,6 +208,7 @@ func isCTL(b byte) bool {
 // HTTP/2 imposes the additional restriction that uppercase ASCII
 // letters are not allowed.
 //
+<<<<<<< HEAD
 // RFC 7230 says:
 //
 //	header-field   = field-name ":" OWS field-value OWS
@@ -198,6 +216,14 @@ func isCTL(b byte) bool {
 //	token          = 1*tchar
 //	tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." /
 //	        "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
+=======
+//  RFC 7230 says:
+//   header-field   = field-name ":" OWS field-value OWS
+//   field-name     = token
+//   token          = 1*tchar
+//   tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." /
+//           "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func ValidHeaderFieldName(v string) bool {
 	if len(v) == 0 {
 		return false
@@ -270,6 +296,7 @@ var validHostByte = [256]bool{
 // ValidHeaderFieldValue reports whether v is a valid "field-value" according to
 // http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2 :
 //
+<<<<<<< HEAD
 //	message-header = field-name ":" [ field-value ]
 //	field-value    = *( field-content | LWS )
 //	field-content  = <the OCTETs making up the field-value
@@ -292,6 +319,29 @@ var validHostByte = [256]bool{
 //	field-vchar    = VCHAR / obs-text
 //	obs-text       = %x80-FF
 //	VCHAR          = "any visible [USASCII] character"
+=======
+//        message-header = field-name ":" [ field-value ]
+//        field-value    = *( field-content | LWS )
+//        field-content  = <the OCTETs making up the field-value
+//                         and consisting of either *TEXT or combinations
+//                         of token, separators, and quoted-string>
+//
+// http://www.w3.org/Protocols/rfc2616/rfc2616-sec2.html#sec2.2 :
+//
+//        TEXT           = <any OCTET except CTLs,
+//                          but including LWS>
+//        LWS            = [CRLF] 1*( SP | HT )
+//        CTL            = <any US-ASCII control character
+//                         (octets 0 - 31) and DEL (127)>
+//
+// RFC 7230 says:
+//  field-value    = *( field-content / obs-fold )
+//  obj-fold       =  N/A to http2, and deprecated
+//  field-content  = field-vchar [ 1*( SP / HTAB ) field-vchar ]
+//  field-vchar    = VCHAR / obs-text
+//  obs-text       = %x80-FF
+//  VCHAR          = "any visible [USASCII] character"
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 //
 // http2 further says: "Similarly, HTTP/2 allows header field values
 // that are not valid. While most of the values that can be encoded

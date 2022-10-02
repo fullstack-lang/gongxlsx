@@ -7,21 +7,28 @@
 package http2
 
 import (
+<<<<<<< HEAD
 	"context"
 	"crypto/tls"
 	"errors"
+=======
+	"crypto/tls"
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	"net/http"
 	"sync"
 )
 
 // ClientConnPool manages a pool of HTTP/2 client connections.
 type ClientConnPool interface {
+<<<<<<< HEAD
 	// GetClientConn returns a specific HTTP/2 connection (usually
 	// a TLS-TCP connection) to an HTTP/2 server. On success, the
 	// returned ClientConn accounts for the upcoming RoundTrip
 	// call, so the caller should not omit it. If the caller needs
 	// to, ClientConn.RoundTrip can be called with a bogus
 	// new(http.Request) to release the stream reservation.
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	GetClientConn(req *http.Request, addr string) (*ClientConn, error)
 	MarkDead(*ClientConn)
 }
@@ -48,7 +55,11 @@ type clientConnPool struct {
 	conns        map[string][]*ClientConn // key is host:port
 	dialing      map[string]*dialCall     // currently in-flight dials
 	keys         map[*ClientConn][]string
+<<<<<<< HEAD
 	addConnCalls map[string]*addConnCall // in-flight addConnIfNeeded calls
+=======
+	addConnCalls map[string]*addConnCall // in-flight addConnIfNeede calls
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 }
 
 func (p *clientConnPool) GetClientConn(req *http.Request, addr string) (*ClientConn, error) {
@@ -60,18 +71,48 @@ const (
 	noDialOnMiss = false
 )
 
+<<<<<<< HEAD
 func (p *clientConnPool) getClientConn(req *http.Request, addr string, dialOnMiss bool) (*ClientConn, error) {
 	// TODO(dneil): Dial a new connection when t.DisableKeepAlives is set?
+=======
+// shouldTraceGetConn reports whether getClientConn should call any
+// ClientTrace.GetConn hook associated with the http.Request.
+//
+// This complexity is needed to avoid double calls of the GetConn hook
+// during the back-and-forth between net/http and x/net/http2 (when the
+// net/http.Transport is upgraded to also speak http2), as well as support
+// the case where x/net/http2 is being used directly.
+func (p *clientConnPool) shouldTraceGetConn(st clientConnIdleState) bool {
+	// If our Transport wasn't made via ConfigureTransport, always
+	// trace the GetConn hook if provided, because that means the
+	// http2 package is being used directly and it's the one
+	// dialing, as opposed to net/http.
+	if _, ok := p.t.ConnPool.(noDialClientConnPool); !ok {
+		return true
+	}
+	// Otherwise, only use the GetConn hook if this connection has
+	// been used previously for other requests. For fresh
+	// connections, the net/http package does the dialing.
+	return !st.freshConn
+}
+
+func (p *clientConnPool) getClientConn(req *http.Request, addr string, dialOnMiss bool) (*ClientConn, error) {
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	if isConnectionCloseRequest(req) && dialOnMiss {
 		// It gets its own connection.
 		traceGetConn(req, addr)
 		const singleUse = true
+<<<<<<< HEAD
 		cc, err := p.t.dialClientConn(req.Context(), addr, singleUse)
+=======
+		cc, err := p.t.dialClientConn(addr, singleUse)
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		if err != nil {
 			return nil, err
 		}
 		return cc, nil
 	}
+<<<<<<< HEAD
 	for {
 		p.mu.Lock()
 		for _, cc := range p.conns[addr] {
@@ -106,39 +147,84 @@ func (p *clientConnPool) getClientConn(req *http.Request, addr string, dialOnMis
 			return cc, nil
 		}
 	}
+=======
+	p.mu.Lock()
+	for _, cc := range p.conns[addr] {
+		if st := cc.idleState(); st.canTakeNewRequest {
+			if p.shouldTraceGetConn(st) {
+				traceGetConn(req, addr)
+			}
+			p.mu.Unlock()
+			return cc, nil
+		}
+	}
+	if !dialOnMiss {
+		p.mu.Unlock()
+		return nil, ErrNoCachedConn
+	}
+	traceGetConn(req, addr)
+	call := p.getStartDialLocked(addr)
+	p.mu.Unlock()
+	<-call.done
+	return call.res, call.err
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 }
 
 // dialCall is an in-flight Transport dial call to a host.
 type dialCall struct {
+<<<<<<< HEAD
 	_ incomparable
 	p *clientConnPool
 	// the context associated with the request
 	// that created this dialCall
 	ctx  context.Context
+=======
+	_    incomparable
+	p    *clientConnPool
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	done chan struct{} // closed when done
 	res  *ClientConn   // valid after done is closed
 	err  error         // valid after done is closed
 }
 
 // requires p.mu is held.
+<<<<<<< HEAD
 func (p *clientConnPool) getStartDialLocked(ctx context.Context, addr string) *dialCall {
+=======
+func (p *clientConnPool) getStartDialLocked(addr string) *dialCall {
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	if call, ok := p.dialing[addr]; ok {
 		// A dial is already in-flight. Don't start another.
 		return call
 	}
+<<<<<<< HEAD
 	call := &dialCall{p: p, done: make(chan struct{}), ctx: ctx}
+=======
+	call := &dialCall{p: p, done: make(chan struct{})}
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	if p.dialing == nil {
 		p.dialing = make(map[string]*dialCall)
 	}
 	p.dialing[addr] = call
+<<<<<<< HEAD
 	go call.dial(call.ctx, addr)
+=======
+	go call.dial(addr)
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	return call
 }
 
 // run in its own goroutine.
+<<<<<<< HEAD
 func (c *dialCall) dial(ctx context.Context, addr string) {
 	const singleUse = false // shared conn
 	c.res, c.err = c.p.t.dialClientConn(ctx, addr, singleUse)
+=======
+func (c *dialCall) dial(addr string) {
+	const singleUse = false // shared conn
+	c.res, c.err = c.p.t.dialClientConn(addr, singleUse)
+	close(c.done)
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 
 	c.p.mu.Lock()
 	delete(c.p.dialing, addr)
@@ -146,8 +232,11 @@ func (c *dialCall) dial(ctx context.Context, addr string) {
 		c.p.addConnLocked(addr, c.res)
 	}
 	c.p.mu.Unlock()
+<<<<<<< HEAD
 
 	close(c.done)
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 }
 
 // addConnIfNeeded makes a NewClientConn out of c if a connection for key doesn't
@@ -202,7 +291,10 @@ func (c *addConnCall) run(t *Transport, key string, tc *tls.Conn) {
 	if err != nil {
 		c.err = err
 	} else {
+<<<<<<< HEAD
 		cc.getConnCalled = true // already called by the net/http package
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		p.addConnLocked(key, cc)
 	}
 	delete(p.addConnCalls, key)
@@ -284,6 +376,7 @@ type noDialClientConnPool struct{ *clientConnPool }
 func (p noDialClientConnPool) GetClientConn(req *http.Request, addr string) (*ClientConn, error) {
 	return p.getClientConn(req, addr, noDialOnMiss)
 }
+<<<<<<< HEAD
 
 // shouldRetryDial reports whether the current request should
 // retry dialing after the call finished unsuccessfully, for example
@@ -309,3 +402,5 @@ func shouldRetryDial(call *dialCall, req *http.Request) bool {
 	// and the context associated with the call was canceled or expired.
 	return call.ctx.Err() != nil
 }
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0

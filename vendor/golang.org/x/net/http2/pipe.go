@@ -30,6 +30,7 @@ type pipeBuffer interface {
 	io.Reader
 }
 
+<<<<<<< HEAD
 // setBuffer initializes the pipe buffer.
 // It has no effect if the pipe is already closed.
 func (p *pipe) setBuffer(b pipeBuffer) {
@@ -41,6 +42,8 @@ func (p *pipe) setBuffer(b pipeBuffer) {
 	p.b = b
 }
 
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func (p *pipe) Len() int {
 	p.mu.Lock()
 	defer p.mu.Unlock()

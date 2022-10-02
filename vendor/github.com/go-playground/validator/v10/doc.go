@@ -1316,12 +1316,15 @@ This validates that a string value is a valid semver version, defined in Semanti
 More information on https://semver.org/
 
 	Usage: semver
+<<<<<<< HEAD
 
 Credit Card
 
 This validates that a string value contains a valid credit card number using Luhn algoritm.
 
 	Usage: credit_card
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 
 Alias Validators and Tags
 

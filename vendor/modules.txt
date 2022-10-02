@@ -30,10 +30,17 @@ github.com/go-playground/locales/currency
 # github.com/go-playground/universal-translator v0.18.0
 ## explicit; go 1.13
 github.com/go-playground/universal-translator
+<<<<<<< HEAD
 # github.com/go-playground/validator/v10 v10.11.0
 ## explicit; go 1.13
 github.com/go-playground/validator/v10
 # github.com/goccy/go-json v0.9.11
+=======
+# github.com/go-playground/validator/v10 v10.10.0
+## explicit; go 1.13
+github.com/go-playground/validator/v10
+# github.com/goccy/go-json v0.9.7
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 ## explicit; go 1.12
 github.com/goccy/go-json
 github.com/goccy/go-json/internal/decoder
@@ -85,7 +92,11 @@ github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.2
 ## explicit; go 1.12
 github.com/modern-go/reflect2
+<<<<<<< HEAD
 # github.com/pelletier/go-toml/v2 v2.0.5
+=======
+# github.com/pelletier/go-toml/v2 v2.0.1
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 ## explicit; go 1.16
 github.com/pelletier/go-toml/v2
 github.com/pelletier/go-toml/v2/internal/ast
@@ -115,14 +126,23 @@ github.com/ugorji/go/codec
 # golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
 ## explicit; go 1.17
 golang.org/x/crypto/sha3
+<<<<<<< HEAD
 # golang.org/x/net v0.0.0-20220907135653-1e95f45603a7
 ## explicit; go 1.17
+=======
+# golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
+## explicit; go 1.11
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/h2c
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
+<<<<<<< HEAD
 # golang.org/x/sys v0.0.0-20220908164124-27713097b956
+=======
+# golang.org/x/sys v0.0.0-20211015200801-69063c4bb744
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
@@ -143,7 +163,11 @@ golang.org/x/text/unicode/norm
 ## explicit; go 1.11
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
+<<<<<<< HEAD
 # google.golang.org/protobuf v1.28.1
+=======
+# google.golang.org/protobuf v1.28.0
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 ## explicit; go 1.11
 google.golang.org/protobuf/encoding/protowire
 google.golang.org/protobuf/internal/detrand

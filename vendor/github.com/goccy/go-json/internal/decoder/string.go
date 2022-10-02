@@ -2,7 +2,10 @@ package decoder
 
 import (
 	"bytes"
+<<<<<<< HEAD
 	"fmt"
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	"reflect"
 	"unicode"
 	"unicode/utf16"
@@ -95,6 +98,7 @@ func unicodeToRune(code []byte) rune {
 	return r
 }
 
+<<<<<<< HEAD
 func readAtLeast(s *Stream, n int64, p *unsafe.Pointer) bool {
 	for s.cursor+n >= s.length {
 		if !s.read() {
@@ -105,20 +109,38 @@ func readAtLeast(s *Stream, n int64, p *unsafe.Pointer) bool {
 	return true
 }
 
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func decodeUnicodeRune(s *Stream, p unsafe.Pointer) (rune, int64, unsafe.Pointer, error) {
 	const defaultOffset = 5
 	const surrogateOffset = 11
 
+<<<<<<< HEAD
 	if !readAtLeast(s, defaultOffset, &p) {
 		return rune(0), 0, nil, errors.ErrInvalidCharacter(s.char(), "escaped string", s.totalOffset())
+=======
+	if s.cursor+defaultOffset >= s.length {
+		if !s.read() {
+			return rune(0), 0, nil, errors.ErrInvalidCharacter(s.char(), "escaped string", s.totalOffset())
+		}
+		p = s.bufptr()
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	}
 
 	r := unicodeToRune(s.buf[s.cursor+1 : s.cursor+defaultOffset])
 	if utf16.IsSurrogate(r) {
+<<<<<<< HEAD
 		if !readAtLeast(s, surrogateOffset, &p) {
 			return unicode.ReplacementChar, defaultOffset, p, nil
 		}
 		if s.buf[s.cursor+defaultOffset] != '\\' || s.buf[s.cursor+defaultOffset+1] != 'u' {
+=======
+		if s.cursor+surrogateOffset >= s.length {
+			s.read()
+			p = s.bufptr()
+		}
+		if s.cursor+surrogateOffset >= s.length || s.buf[s.cursor+defaultOffset] != '\\' || s.buf[s.cursor+defaultOffset+1] != 'u' {
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 			return unicode.ReplacementChar, defaultOffset, p, nil
 		}
 		r2 := unicodeToRune(s.buf[s.cursor+defaultOffset+2 : s.cursor+surrogateOffset])
@@ -171,7 +193,10 @@ RETRY:
 		if !s.read() {
 			return nil, errors.ErrInvalidCharacter(s.char(), "escaped string", s.totalOffset())
 		}
+<<<<<<< HEAD
 		p = s.bufptr()
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		goto RETRY
 	default:
 		return nil, errors.ErrUnexpectedEndOfJSON("string", s.totalOffset())
@@ -331,12 +356,15 @@ func (d *stringDecoder) decodeByte(buf []byte, cursor int64) ([]byte, int64, err
 						if cursor+5 >= buflen {
 							return nil, 0, errors.ErrUnexpectedEndOfJSON("escaped string", cursor)
 						}
+<<<<<<< HEAD
 						for i := int64(1); i <= 4; i++ {
 							c := char(b, cursor+i)
 							if !(('0' <= c && c <= '9') || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F')) {
 								return nil, 0, errors.ErrSyntax(fmt.Sprintf("json: invalid character %c in \\u hexadecimal character escape", c), cursor+i)
 							}
 						}
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 						cursor += 5
 					default:
 						return nil, 0, errors.ErrUnexpectedEndOfJSON("escaped string", cursor)
@@ -400,6 +428,7 @@ func unescapeString(buf []byte) int {
 				v3 := hexToInt[char(src, 4)]
 				v4 := hexToInt[char(src, 5)]
 				code := rune((v1 << 12) | (v2 << 8) | (v3 << 4) | v4)
+<<<<<<< HEAD
 				if code >= 0xd800 && code < 0xdc00 && uintptr(unsafeAdd(src, 11)) < uintptr(end) {
 					if char(src, 6) == '\\' && char(src, 7) == 'u' {
 						v1 := hexToInt[char(src, 8)]
@@ -413,6 +442,8 @@ func unescapeString(buf []byte) int {
 						}
 					}
 				}
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 				var b [utf8.UTFMax]byte
 				n := utf8.EncodeRune(b[:], code)
 				switch n {

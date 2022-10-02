@@ -58,22 +58,38 @@ type Option func(*options)
 // Transitional sets a Profile to use the Transitional mapping as defined in UTS
 // #46. This will cause, for example, "ß" to be mapped to "ss". Using the
 // transitional mapping provides a compromise between IDNA2003 and IDNA2008
+<<<<<<< HEAD
 // compatibility. It is used by some browsers when resolving domain names. This
 // option is only meaningful if combined with MapForLookup.
 func Transitional(transitional bool) Option {
 	return func(o *options) { o.transitional = transitional }
+=======
+// compatibility. It is used by most browsers when resolving domain names. This
+// option is only meaningful if combined with MapForLookup.
+func Transitional(transitional bool) Option {
+	return func(o *options) { o.transitional = true }
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 }
 
 // VerifyDNSLength sets whether a Profile should fail if any of the IDN parts
 // are longer than allowed by the RFC.
+<<<<<<< HEAD
 //
 // This option corresponds to the VerifyDnsLength flag in UTS #46.
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func VerifyDNSLength(verify bool) Option {
 	return func(o *options) { o.verifyDNSLength = verify }
 }
 
 // RemoveLeadingDots removes leading label separators. Leading runes that map to
 // dots, such as U+3002 IDEOGRAPHIC FULL STOP, are removed as well.
+<<<<<<< HEAD
+=======
+//
+// This is the behavior suggested by the UTS #46 and is adopted by some
+// browsers.
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func RemoveLeadingDots(remove bool) Option {
 	return func(o *options) { o.removeLeadingDots = remove }
 }
@@ -81,8 +97,11 @@ func RemoveLeadingDots(remove bool) Option {
 // ValidateLabels sets whether to check the mandatory label validation criteria
 // as defined in Section 5.4 of RFC 5891. This includes testing for correct use
 // of hyphens ('-'), normalization, validity of runes, and the context rules.
+<<<<<<< HEAD
 // In particular, ValidateLabels also sets the CheckHyphens and CheckJoiners flags
 // in UTS #46.
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func ValidateLabels(enable bool) Option {
 	return func(o *options) {
 		// Don't override existing mappings, but set one that at least checks
@@ -91,6 +110,7 @@ func ValidateLabels(enable bool) Option {
 			o.mapping = normalize
 		}
 		o.trie = trie
+<<<<<<< HEAD
 		o.checkJoiners = enable
 		o.checkHyphens = enable
 		if enable {
@@ -118,11 +138,16 @@ func CheckJoiners(enable bool) Option {
 	return func(o *options) {
 		o.trie = trie
 		o.checkJoiners = enable
+=======
+		o.validateLabels = enable
+		o.fromPuny = validateFromPunycode
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	}
 }
 
 // StrictDomainName limits the set of permissable ASCII characters to those
 // allowed in domain names as defined in RFC 1034 (A-Z, a-z, 0-9 and the
+<<<<<<< HEAD
 // hyphen). This is set by default for MapForLookup and ValidateForRegistration,
 // but is only useful if ValidateLabels is set.
 //
@@ -133,6 +158,20 @@ func CheckJoiners(enable bool) Option {
 // This option corresponds to the UseSTD3ASCIIRules flag in UTS #46.
 func StrictDomainName(use bool) Option {
 	return func(o *options) { o.useSTD3Rules = use }
+=======
+// hyphen). This is set by default for MapForLookup and ValidateForRegistration.
+//
+// This option is useful, for instance, for browsers that allow characters
+// outside this range, for example a '_' (U+005F LOW LINE). See
+// http://www.rfc-editor.org/std/std3.txt for more details This option
+// corresponds to the UseSTD3ASCIIRules option in UTS #46.
+func StrictDomainName(use bool) Option {
+	return func(o *options) {
+		o.trie = trie
+		o.useSTD3Rules = use
+		o.fromPuny = validateFromPunycode
+	}
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 }
 
 // NOTE: the following options pull in tables. The tables should not be linked
@@ -140,8 +179,11 @@ func StrictDomainName(use bool) Option {
 
 // BidiRule enables the Bidi rule as defined in RFC 5893. Any application
 // that relies on proper validation of labels should include this rule.
+<<<<<<< HEAD
 //
 // This option corresponds to the CheckBidi flag in UTS #46.
+=======
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func BidiRule() Option {
 	return func(o *options) { o.bidirule = bidirule.ValidString }
 }
@@ -178,8 +220,12 @@ func MapForLookup() Option {
 type options struct {
 	transitional      bool
 	useSTD3Rules      bool
+<<<<<<< HEAD
 	checkHyphens      bool
 	checkJoiners      bool
+=======
+	validateLabels    bool
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	verifyDNSLength   bool
 	removeLeadingDots bool
 
@@ -252,11 +298,16 @@ func (p *Profile) String() string {
 	if p.useSTD3Rules {
 		s += ":UseSTD3Rules"
 	}
+<<<<<<< HEAD
 	if p.checkHyphens {
 		s += ":CheckHyphens"
 	}
 	if p.checkJoiners {
 		s += ":CheckJoiners"
+=======
+	if p.validateLabels {
+		s += ":ValidateLabels"
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	}
 	if p.verifyDNSLength {
 		s += ":VerifyDNSLength"
@@ -285,10 +336,16 @@ var (
 	punycode = &Profile{}
 	lookup   = &Profile{options{
 		transitional:      true,
+<<<<<<< HEAD
 		removeLeadingDots: true,
 		useSTD3Rules:      true,
 		checkHyphens:      true,
 		checkJoiners:      true,
+=======
+		useSTD3Rules:      true,
+		validateLabels:    true,
+		removeLeadingDots: true,
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		trie:              trie,
 		fromPuny:          validateFromPunycode,
 		mapping:           validateAndMap,
@@ -296,9 +353,14 @@ var (
 	}}
 	display = &Profile{options{
 		useSTD3Rules:      true,
+<<<<<<< HEAD
 		removeLeadingDots: true,
 		checkHyphens:      true,
 		checkJoiners:      true,
+=======
+		validateLabels:    true,
+		removeLeadingDots: true,
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		trie:              trie,
 		fromPuny:          validateFromPunycode,
 		mapping:           validateAndMap,
@@ -306,9 +368,14 @@ var (
 	}}
 	registration = &Profile{options{
 		useSTD3Rules:    true,
+<<<<<<< HEAD
 		verifyDNSLength: true,
 		checkHyphens:    true,
 		checkJoiners:    true,
+=======
+		validateLabels:  true,
+		verifyDNSLength: true,
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		trie:            trie,
 		fromPuny:        validateFromPunycode,
 		mapping:         validateRegistration,
@@ -372,7 +439,11 @@ func (p *Profile) process(s string, toASCII bool) (string, error) {
 				continue
 			}
 			labels.set(u)
+<<<<<<< HEAD
 			if err == nil && p.fromPuny != nil {
+=======
+			if err == nil && p.validateLabels {
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 				err = p.fromPuny(p, u)
 			}
 			if err == nil {
@@ -662,6 +733,7 @@ func (p *Profile) validateLabel(s string) error {
 	if p.bidirule != nil && !p.bidirule(s) {
 		return &labelError{s, "B"}
 	}
+<<<<<<< HEAD
 	if p.checkHyphens {
 		if len(s) > 4 && s[2] == '-' && s[3] == '-' {
 			return &labelError{s, "V2"}
@@ -674,6 +746,18 @@ func (p *Profile) validateLabel(s string) error {
 		return nil
 	}
 	trie := p.trie // p.checkJoiners is only set if trie is set.
+=======
+	if !p.validateLabels {
+		return nil
+	}
+	trie := p.trie // p.validateLabels is only set if trie is set.
+	if len(s) > 4 && s[2] == '-' && s[3] == '-' {
+		return &labelError{s, "V2"}
+	}
+	if s[0] == '-' || s[len(s)-1] == '-' {
+		return &labelError{s, "V3"}
+	}
+>>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	// TODO: merge the use of this in the trie.
 	v, sz := trie.lookupString(s)
 	x := info(v)
