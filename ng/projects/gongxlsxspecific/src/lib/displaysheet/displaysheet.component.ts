@@ -5,7 +5,7 @@ import * as gongxlsx from 'gongxlsx'
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { Observable, timer } from 'rxjs';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatTabChangeEvent } from '@angular/material/tabs';
 
 type Constructor = new () => Object;
@@ -22,12 +22,12 @@ export class DisplaysheetComponent implements OnInit {
 
   // tabs to select the xl file
   tabsForFile = new Array<string>();
-  selectedFile = new FormControl(0);
+  selectedFile = new UntypedFormControl(0);
   selectedFileIndex = 0
 
   // tabs to select the sheet within the xl file
   tabsForSheetsOfFile = new Array<Array<string>>();
-  selectedSheet = new FormControl(0);
+  selectedSheet = new UntypedFormControl(0);
   selectedSheetIndex = 0
 
   columns = [] as any

@@ -64,7 +64,7 @@ func main() {
 
 	nbArgs := flag.Args()
 	if len(nbArgs) < 1 {
-		log.Panicf("there should be at least one file argument")
+		log.Panic("there should be at least one file argument")
 	}
 
 	sampleXLFile := new(models.XLFile).Stage()
