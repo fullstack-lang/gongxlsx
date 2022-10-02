@@ -38,11 +38,7 @@ RUN make
 RUN make install
 
 WORKDIR /root
-<<<<<<< HEAD
-RUN wget https://curl.se/download/curl-7.45.0.tar.gz
-=======
 RUN wget http://curl.haxx.se/download/curl-7.45.0.tar.gz
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 RUN tar -zxvf curl-7.45.0.tar.gz
 WORKDIR /root/curl-7.45.0
 RUN ./configure --with-ssl --with-nghttp2=/usr/local

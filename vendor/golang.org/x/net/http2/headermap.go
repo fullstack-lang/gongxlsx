@@ -6,10 +6,7 @@ package http2
 
 import (
 	"net/http"
-<<<<<<< HEAD
-=======
 	"strings"
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	"sync"
 )
 
@@ -82,19 +79,10 @@ func buildCommonHeaderMaps() {
 	}
 }
 
-<<<<<<< HEAD
-func lowerHeader(v string) (lower string, ascii bool) {
-	buildCommonHeaderMapsOnce()
-	if s, ok := commonLowerHeader[v]; ok {
-		return s, true
-	}
-	return asciiToLower(v)
-=======
 func lowerHeader(v string) string {
 	buildCommonHeaderMapsOnce()
 	if s, ok := commonLowerHeader[v]; ok {
 		return s
 	}
 	return strings.ToLower(v)
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 }

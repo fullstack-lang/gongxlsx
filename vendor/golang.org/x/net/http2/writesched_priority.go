@@ -383,17 +383,6 @@ func (ws *priorityWriteScheduler) AdjustStream(streamID uint32, priority Priorit
 
 func (ws *priorityWriteScheduler) Push(wr FrameWriteRequest) {
 	var n *priorityNode
-<<<<<<< HEAD
-	if wr.isControl() {
-		n = &ws.root
-	} else {
-		id := wr.StreamID()
-		n = ws.nodes[id]
-		if n == nil {
-			// id is an idle or closed stream. wr should not be a HEADERS or
-			// DATA frame. In other case, we push wr onto the root, rather
-			// than creating a new priorityNode.
-=======
 	if id := wr.StreamID(); id == 0 {
 		n = &ws.root
 	} else {
@@ -404,7 +393,6 @@ func (ws *priorityWriteScheduler) Push(wr FrameWriteRequest) {
 			// push wr onto the root, rather than creating a new priorityNode,
 			// since RST_STREAM is tiny and the stream's priority is unknown
 			// anyway. See issue #17919.
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 			if wr.DataSize() > 0 {
 				panic("add DATA on non-open stream")
 			}

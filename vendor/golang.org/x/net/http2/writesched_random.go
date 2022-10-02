@@ -45,19 +45,11 @@ func (ws *randomWriteScheduler) AdjustStream(streamID uint32, priority PriorityP
 }
 
 func (ws *randomWriteScheduler) Push(wr FrameWriteRequest) {
-<<<<<<< HEAD
-	if wr.isControl() {
-		ws.zero.push(wr)
-		return
-	}
-	id := wr.StreamID()
-=======
 	id := wr.StreamID()
 	if id == 0 {
 		ws.zero.push(wr)
 		return
 	}
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	q, ok := ws.sq[id]
 	if !ok {
 		q = ws.queuePool.get()
@@ -67,11 +59,7 @@ func (ws *randomWriteScheduler) Push(wr FrameWriteRequest) {
 }
 
 func (ws *randomWriteScheduler) Pop() (FrameWriteRequest, bool) {
-<<<<<<< HEAD
-	// Control and RST_STREAM frames first.
-=======
 	// Control frames first.
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	if !ws.zero.empty() {
 		return ws.zero.shift(), true
 	}

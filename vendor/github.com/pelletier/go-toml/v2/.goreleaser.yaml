@@ -16,15 +16,7 @@ builds:
     mod_timestamp: '{{ .CommitTimestamp }}'
     targets:
       - linux_amd64
-<<<<<<< HEAD
-      - linux_arm64
-      - linux_arm
       - windows_amd64
-      - windows_arm64
-      - windows_arm
-=======
-      - windows_amd64
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
       - darwin_amd64
       - darwin_arm64
   - id: tomljson
@@ -39,15 +31,7 @@ builds:
     mod_timestamp: '{{ .CommitTimestamp }}'
     targets:
       - linux_amd64
-<<<<<<< HEAD
-      - linux_arm64
-      - linux_arm
       - windows_amd64
-      - windows_arm64
-      - windows_arm
-=======
-      - windows_amd64
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
       - darwin_amd64
       - darwin_arm64
   - id: jsontoml
@@ -62,15 +46,7 @@ builds:
     mod_timestamp: '{{ .CommitTimestamp }}'
     targets:
       - linux_amd64
-<<<<<<< HEAD
-      - linux_arm64
-      - linux_arm
       - windows_amd64
-      - windows_arm64
-      - windows_arm
-=======
-      - windows_amd64
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
       - darwin_amd64
       - darwin_arm64
 universal_binaries:

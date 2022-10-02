@@ -49,10 +49,6 @@ func decode(encoded string) (string, error) {
 		}
 	}
 	i, n, bias := int32(0), initialN, initialBias
-<<<<<<< HEAD
-	overflow := false
-=======
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	for pos < len(encoded) {
 		oldI, w := i, int32(1)
 		for k := base; ; k += base {
@@ -64,16 +60,6 @@ func decode(encoded string) (string, error) {
 				return "", punyError(encoded)
 			}
 			pos++
-<<<<<<< HEAD
-			i, overflow = madd(i, digit, w)
-			if overflow {
-				return "", punyError(encoded)
-			}
-			t := k - bias
-			if k <= bias {
-				t = tmin
-			} else if k >= bias+tmax {
-=======
 			i += digit * w
 			if i < 0 {
 				return "", punyError(encoded)
@@ -82,37 +68,21 @@ func decode(encoded string) (string, error) {
 			if t < tmin {
 				t = tmin
 			} else if t > tmax {
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 				t = tmax
 			}
 			if digit < t {
 				break
 			}
-<<<<<<< HEAD
-			w, overflow = madd(0, w, base-t)
-			if overflow {
-				return "", punyError(encoded)
-			}
-		}
-		if len(output) >= 1024 {
-			return "", punyError(encoded)
-		}
-=======
 			w *= base - t
 			if w >= math.MaxInt32/base {
 				return "", punyError(encoded)
 			}
 		}
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		x := int32(len(output) + 1)
 		bias = adapt(i-oldI, x, oldI == 0)
 		n += i / x
 		i %= x
-<<<<<<< HEAD
-		if n < 0 || n > utf8.MaxRune {
-=======
 		if n > utf8.MaxRune || len(output) >= 1024 {
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 			return "", punyError(encoded)
 		}
 		output = append(output, 0)
@@ -145,10 +115,6 @@ func encode(prefix, s string) (string, error) {
 	if b > 0 {
 		output = append(output, '-')
 	}
-<<<<<<< HEAD
-	overflow := false
-=======
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	for remaining != 0 {
 		m := int32(0x7fffffff)
 		for _, r := range s {
@@ -156,13 +122,8 @@ func encode(prefix, s string) (string, error) {
 				m = r
 			}
 		}
-<<<<<<< HEAD
-		delta, overflow = madd(delta, m-n, h+1)
-		if overflow {
-=======
 		delta += (m - n) * (h + 1)
 		if delta < 0 {
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 			return "", punyError(s)
 		}
 		n = m
@@ -180,15 +141,9 @@ func encode(prefix, s string) (string, error) {
 			q := delta
 			for k := base; ; k += base {
 				t := k - bias
-<<<<<<< HEAD
-				if k <= bias {
-					t = tmin
-				} else if k >= bias+tmax {
-=======
 				if t < tmin {
 					t = tmin
 				} else if t > tmax {
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 					t = tmax
 				}
 				if q < t {
@@ -209,18 +164,6 @@ func encode(prefix, s string) (string, error) {
 	return string(output), nil
 }
 
-<<<<<<< HEAD
-// madd computes a + (b * c), detecting overflow.
-func madd(a, b, c int32) (next int32, overflow bool) {
-	p := int64(b) * int64(c)
-	if p > math.MaxInt32-int64(a) {
-		return 0, true
-	}
-	return a + int32(p), false
-}
-
-=======
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func decodeDigit(x byte) (digit int32, ok bool) {
 	switch {
 	case '0' <= x && x <= '9':

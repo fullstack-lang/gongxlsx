@@ -12,10 +12,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/base64"
-<<<<<<< HEAD
-=======
 	"encoding/binary"
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	"errors"
 	"fmt"
 	"io"
@@ -28,10 +25,7 @@ import (
 
 	"golang.org/x/net/http/httpguts"
 	"golang.org/x/net/http2"
-<<<<<<< HEAD
-=======
 	"golang.org/x/net/http2/hpack"
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 )
 
 var (
@@ -67,13 +61,6 @@ type h2cHandler struct {
 // Once a request is recognized as h2c, we hijack the connection and convert it
 // to an HTTP/2 connection which is understandable to s.ServeConn. (s.ServeConn
 // understands HTTP/2 except for the h2c part of it.)
-<<<<<<< HEAD
-//
-// The first request on an h2c connection is read entirely into memory before
-// the Handler is called. To limit the memory consumed by this request, wrap
-// the result of NewHandler in an http.MaxBytesHandler.
-=======
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 func NewHandler(h http.Handler, s *http2.Server) http.Handler {
 	return &h2cHandler{
 		Handler: h,
@@ -96,40 +83,14 @@ func (s h2cHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer conn.Close()
-<<<<<<< HEAD
-		s.s.ServeConn(conn, &http2.ServeConnOpts{
-			Context:          r.Context(),
-			Handler:          s.Handler,
-			SawClientPreface: true,
-=======
 
 		s.s.ServeConn(conn, &http2.ServeConnOpts{
 			Context: r.Context(),
 			Handler: s.Handler,
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 		})
 		return
 	}
 	// Handle Upgrade to h2c (RFC 7540 Section 3.2)
-<<<<<<< HEAD
-	if isH2CUpgrade(r.Header) {
-		conn, settings, err := h2cUpgrade(w, r)
-		if err != nil {
-			if http2VerboseLogs {
-				log.Printf("h2c: error h2c upgrade: %v", err)
-			}
-			return
-		}
-		defer conn.Close()
-		s.s.ServeConn(conn, &http2.ServeConnOpts{
-			Context:        r.Context(),
-			Handler:        s.Handler,
-			UpgradeRequest: r,
-			Settings:       settings,
-		})
-		return
-	}
-=======
 	if conn, err := h2cUpgrade(w, r); err == nil {
 		defer conn.Close()
 
@@ -140,7 +101,6 @@ func (s h2cHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	s.Handler.ServeHTTP(w, r)
 	return
 }
@@ -153,19 +113,11 @@ func (s h2cHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func initH2CWithPriorKnowledge(w http.ResponseWriter) (net.Conn, error) {
 	hijacker, ok := w.(http.Hijacker)
 	if !ok {
-<<<<<<< HEAD
-		return nil, errors.New("h2c: connection does not support Hijack")
-	}
-	conn, rw, err := hijacker.Hijack()
-	if err != nil {
-		return nil, err
-=======
 		panic("Hijack not supported.")
 	}
 	conn, rw, err := hijacker.Hijack()
 	if err != nil {
 		panic(fmt.Sprintf("Hijack failed: %v", err))
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	}
 
 	const expectedBody = "SM\r\n\r\n"
@@ -173,36 +125,6 @@ func initH2CWithPriorKnowledge(w http.ResponseWriter) (net.Conn, error) {
 	buf := make([]byte, len(expectedBody))
 	n, err := io.ReadFull(rw, buf)
 	if err != nil {
-<<<<<<< HEAD
-		return nil, fmt.Errorf("h2c: error reading client preface: %s", err)
-	}
-
-	if string(buf[:n]) == expectedBody {
-		return newBufConn(conn, rw), nil
-	}
-
-	conn.Close()
-	return nil, errors.New("h2c: invalid client preface")
-}
-
-// h2cUpgrade establishes a h2c connection using the HTTP/1 upgrade (Section 3.2).
-func h2cUpgrade(w http.ResponseWriter, r *http.Request) (_ net.Conn, settings []byte, err error) {
-	settings, err = getH2Settings(r.Header)
-	if err != nil {
-		return nil, nil, err
-	}
-	hijacker, ok := w.(http.Hijacker)
-	if !ok {
-		return nil, nil, errors.New("h2c: connection does not support Hijack")
-	}
-
-	body, _ := io.ReadAll(r.Body)
-	r.Body = io.NopCloser(bytes.NewBuffer(body))
-
-	conn, rw, err := hijacker.Hijack()
-	if err != nil {
-		return nil, nil, err
-=======
 		return nil, fmt.Errorf("could not read from the buffer: %s", err)
 	}
 
@@ -260,15 +182,11 @@ func h2cUpgrade(w http.ResponseWriter, r *http.Request) (net.Conn, error) {
 	conn, rw, err := hijacker.Hijack()
 	if err != nil {
 		return nil, fmt.Errorf("hijack failed: %v", err)
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	}
 
 	rw.Write([]byte("HTTP/1.1 101 Switching Protocols\r\n" +
 		"Connection: Upgrade\r\n" +
 		"Upgrade: h2c\r\n\r\n"))
-<<<<<<< HEAD
-	return newBufConn(conn, rw), settings, nil
-=======
 	rw.Flush()
 
 	// A conforming client will now send an H2 client preface which need to drain
@@ -450,7 +368,6 @@ func (w *settingsAckSwallowWriter) Write(p []byte) (int, error) {
 // Flush calls w.Writer.Flush.
 func (w *settingsAckSwallowWriter) Flush() error {
 	return w.Writer.Flush()
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 }
 
 // isH2CUpgrade returns true if the header properly request an upgrade to h2c
@@ -460,14 +377,9 @@ func isH2CUpgrade(h http.Header) bool {
 		httpguts.HeaderValuesContainsToken(h[textproto.CanonicalMIMEHeaderKey("Connection")], "HTTP2-Settings")
 }
 
-<<<<<<< HEAD
-// getH2Settings returns the settings in the HTTP2-Settings header.
-func getH2Settings(h http.Header) ([]byte, error) {
-=======
 // getH2Settings returns the []http2.Setting that are encoded in the
 // HTTP2-Settings header.
 func getH2Settings(h http.Header) ([]http2.Setting, error) {
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	vals, ok := h[textproto.CanonicalMIMEHeaderKey("HTTP2-Settings")]
 	if !ok {
 		return nil, errors.New("missing HTTP2-Settings header")
@@ -475,50 +387,13 @@ func getH2Settings(h http.Header) ([]http2.Setting, error) {
 	if len(vals) != 1 {
 		return nil, fmt.Errorf("expected 1 HTTP2-Settings. Got: %v", vals)
 	}
-<<<<<<< HEAD
-	settings, err := base64.RawURLEncoding.DecodeString(vals[0])
-	if err != nil {
-		return nil, err
-=======
 	settings, err := decodeSettings(vals[0])
 	if err != nil {
 		return nil, fmt.Errorf("Invalid HTTP2-Settings: %q", vals[0])
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 	}
 	return settings, nil
 }
 
-<<<<<<< HEAD
-func newBufConn(conn net.Conn, rw *bufio.ReadWriter) net.Conn {
-	rw.Flush()
-	if rw.Reader.Buffered() == 0 {
-		// If there's no buffered data to be read,
-		// we can just discard the bufio.ReadWriter.
-		return conn
-	}
-	return &bufConn{conn, rw.Reader}
-}
-
-// bufConn wraps a net.Conn, but reads drain the bufio.Reader first.
-type bufConn struct {
-	net.Conn
-	*bufio.Reader
-}
-
-func (c *bufConn) Read(p []byte) (int, error) {
-	if c.Reader == nil {
-		return c.Conn.Read(p)
-	}
-	n := c.Reader.Buffered()
-	if n == 0 {
-		c.Reader = nil
-		return c.Conn.Read(p)
-	}
-	if n < len(p) {
-		p = p[:n]
-	}
-	return c.Reader.Read(p)
-=======
 // decodeSettings decodes the base64url header value of the HTTP2-Settings
 // header. RFC 7540 Section 3.2.1.
 func decodeSettings(headerVal string) ([]http2.Setting, error) {
@@ -623,5 +498,4 @@ func isNonH2Header(header string) bool {
 		}
 	}
 	return false
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 }

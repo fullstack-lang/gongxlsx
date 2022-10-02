@@ -50,10 +50,6 @@ import (
 // always references the source object.
 //
 // For example:
-<<<<<<< HEAD
-//
-=======
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 //	// Append a 0 to a "repeated int32" field.
 //	// Since the Value returned by Mutable is guaranteed to alias
 //	// the source message, modifying the Value modifies the message.
@@ -396,7 +392,6 @@ func (v Value) MapKey() MapKey {
 //	╚═════════╧═════════════════════════════════════╝
 //
 // A MapKey is constructed and accessed through a Value:
-//
 //	k := ValueOf("hash").MapKey() // convert string to MapKey
 //	s := k.String()               // convert MapKey to string
 //

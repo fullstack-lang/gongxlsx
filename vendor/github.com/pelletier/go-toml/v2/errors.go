@@ -103,10 +103,6 @@ func (e *DecodeError) Key() Key {
 //
 // The function copies all bytes used in DecodeError, so that document and
 // highlight can be freely deallocated.
-<<<<<<< HEAD
-//
-=======
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 //nolint:funlen
 func wrapDecodeError(document []byte, de *decodeError) *DecodeError {
 	offset := danger.SubsliceOffset(document, de.highlight)

@@ -17,25 +17,6 @@ package idna
 //
 // The per-rune values have the following format:
 //
-<<<<<<< HEAD
-//	if mapped {
-//	  if inlinedXOR {
-//	    15..13 inline XOR marker
-//	    12..11 unused
-//	    10..3  inline XOR mask
-//	  } else {
-//	    15..3  index into xor or mapping table
-//	  }
-//	} else {
-//	    15..14 unused
-//	    13     mayNeedNorm
-//	    12..11 attributes
-//	    10..8  joining type
-//	     7..3  category type
-//	}
-//	   2  use xor pattern
-//	1..0  mapped category
-=======
 //   if mapped {
 //     if inlinedXOR {
 //       15..13 inline XOR marker
@@ -53,7 +34,6 @@ package idna
 //   }
 //      2  use xor pattern
 //   1..0  mapped category
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 //
 // See the definitions below for a more detailed description of the various
 // bits.

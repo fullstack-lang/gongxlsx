@@ -11,17 +11,10 @@ import (
 //
 // For example:
 //
-<<<<<<< HEAD
-//	it := n.Children()
-//	for it.Next() {
-//			it.Node()
-//	}
-=======
 // it := n.Children()
 // for it.Next() {
 // 		it.Node()
 // }
->>>>>>> 51da40b14c2f3ce312a008035422af2f3803a8a0
 type Iterator struct {
 	started bool
 	node    *Node
