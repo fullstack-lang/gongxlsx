@@ -64,13 +64,43 @@ func (c *equalsChecker) Check(got interface{}, args []interface{}, note func(key
 			err = fmt.Errorf("%s", r)
 		}
 	}()
-	if want := args[0]; got != want {
-		if _, ok := got.(error); ok && want == nil {
-			return errors.New("got non-nil error")
+	want := args[0]
+	if got == want {
+		return nil
+	}
+
+	// Customize error message for non-nil errors.
+	if _, ok := got.(error); ok && want == nil {
+		return errors.New("got non-nil error")
+	}
+
+	// Show error types when comparing errors with different types.
+	if got, ok := got.(error); ok {
+		if want, ok := want.(error); ok {
+			gotType := reflect.TypeOf(got)
+			wantType := reflect.TypeOf(want)
+			if gotType != wantType {
+				note("got type", Unquoted(gotType.String()))
+				note("want type", Unquoted(wantType.String()))
+			}
 		}
 		return errors.New("values are not equal")
 	}
-	return nil
+
+	// Show line diff when comparing different multi-line strings.
+	if got, ok := got.(string); ok {
+		if want, ok := want.(string); ok {
+			isMultiLine := func(s string) bool {
+				i := strings.Index(s, "\n")
+				return i != -1 && i < len(s)-1
+			}
+			if isMultiLine(got) || isMultiLine(want) {
+				diff := cmp.Diff(strings.SplitAfter(got, "\n"), strings.SplitAfter(want, "\n"))
+				note("line diff (-got +want)", Unquoted(diff))
+			}
+		}
+	}
+	return errors.New("values are not equal")
 }
 
 // CmpEquals returns a Checker checking equality of two arbitrary values
@@ -284,6 +314,17 @@ func (c *isNilChecker) Check(got interface{}, args []interface{}, note func(key 
 		return errors.New("got non-nil error")
 	}
 	return errors.New("got non-nil value")
+}
+
+// IsNotNil is a Checker checking that the provided value is not nil.
+// IsNotNil is the equivalent of qt.Not(qt.IsNil)
+//
+// For instance:
+//
+//     c.Assert(got, qt.IsNotNil)
+//
+var IsNotNil Checker = &notChecker{
+	Checker: IsNil,
 }
 
 // HasLen is a Checker checking that the provided value has the given length.
