@@ -462,6 +462,7 @@ func (backRepo *BackRepoStruct) CommitXLSheet(xlsheet *models.XLSheet) {
 	if id, ok := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet]; ok {
 		backRepo.BackRepoXLSheet.CommitPhaseTwoInstance(backRepo, id, xlsheet)
 	}
+	backRepo.CommitFromBackNb = backRepo.CommitFromBackNb + 1
 }
 
 // CommitXLSheet allows checkout of a single xlsheet (if already staged and with a BackRepo id)

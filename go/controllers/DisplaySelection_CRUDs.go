@@ -41,11 +41,12 @@ type DisplaySelectionInput struct {
 //
 // swagger:route GET /displayselections displayselections getDisplaySelections
 //
-// Get all displayselections
+// # Get all displayselections
 //
 // Responses:
-//    default: genericError
-//        200: displayselectionDBsResponse
+// default: genericError
+//
+//	200: displayselectionDBResponse
 func GetDisplaySelections(c *gin.Context) {
 	db := orm.BackRepo.BackRepoDisplaySelection.GetDB()
 
@@ -85,14 +86,15 @@ func GetDisplaySelections(c *gin.Context) {
 // swagger:route POST /displayselections displayselections postDisplaySelection
 //
 // Creates a displayselection
-//     Consumes:
-//     - application/json
 //
-//     Produces:
-//     - application/json
+//	Consumes:
+//	- application/json
 //
-//     Responses:
-//       200: displayselectionDBResponse
+//	Produces:
+//	- application/json
+//
+//	Responses:
+//	  200: nodeDBResponse
 func PostDisplaySelection(c *gin.Context) {
 	db := orm.BackRepo.BackRepoDisplaySelection.GetDB()
 
@@ -124,6 +126,14 @@ func PostDisplaySelection(c *gin.Context) {
 		return
 	}
 
+	// get an instance (not staged) from DB instance, and call callback function
+	orm.BackRepo.BackRepoDisplaySelection.CheckoutPhaseOneInstance(&displayselectionDB)
+	displayselection := (*orm.BackRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
+
+	if displayselection != nil {
+		models.AfterCreateFromFront(&models.Stage, displayselection)
+	}
+
 	// a POST is equivalent to a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
 	orm.BackRepo.IncrementPushFromFrontNb()
@@ -138,8 +148,9 @@ func PostDisplaySelection(c *gin.Context) {
 // Gets the details for a displayselection.
 //
 // Responses:
-//    default: genericError
-//        200: displayselectionDBResponse
+// default: genericError
+//
+//	200: displayselectionDBResponse
 func GetDisplaySelection(c *gin.Context) {
 	db := orm.BackRepo.BackRepoDisplaySelection.GetDB()
 
@@ -166,11 +177,12 @@ func GetDisplaySelection(c *gin.Context) {
 //
 // swagger:route PATCH /displayselections/{ID} displayselections updateDisplaySelection
 //
-// Update a displayselection
+// # Update a displayselection
 //
 // Responses:
-//    default: genericError
-//        200: displayselectionDBResponse
+// default: genericError
+//
+//	200: displayselectionDBResponse
 func UpdateDisplaySelection(c *gin.Context) {
 	db := orm.BackRepo.BackRepoDisplaySelection.GetDB()
 
@@ -211,8 +223,20 @@ func UpdateDisplaySelection(c *gin.Context) {
 		return
 	}
 
+	// get an instance (not staged) from DB instance, and call callback function
+	displayselectionNew := new(models.DisplaySelection)
+	displayselectionDB.CopyBasicFieldsToDisplaySelection(displayselectionNew)
+
+	// get stage instance from DB instance, and call callback function
+	displayselectionOld := (*orm.BackRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
+	if displayselectionOld != nil {
+		models.AfterUpdateFromFront(&models.Stage, displayselectionOld, displayselectionNew)
+	}
+
 	// an UPDATE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
+	// in some cases, with the marshalling of the stage, this operation might
+	// generates a checkout
 	orm.BackRepo.IncrementPushFromFrontNb()
 
 	// return status OK with the marshalling of the the displayselectionDB
@@ -223,10 +247,11 @@ func UpdateDisplaySelection(c *gin.Context) {
 //
 // swagger:route DELETE /displayselections/{ID} displayselections deleteDisplaySelection
 //
-// Delete a displayselection
+// # Delete a displayselection
 //
-// Responses:
-//    default: genericError
+// default: genericError
+//
+//	200: displayselectionDBResponse
 func DeleteDisplaySelection(c *gin.Context) {
 	db := orm.BackRepo.BackRepoDisplaySelection.GetDB()
 
@@ -243,6 +268,16 @@ func DeleteDisplaySelection(c *gin.Context) {
 
 	// with gorm.Model field, default delete is a soft delete. Unscoped() force delete
 	db.Unscoped().Delete(&displayselectionDB)
+
+	// get an instance (not staged) from DB instance, and call callback function
+	displayselectionDeleted := new(models.DisplaySelection)
+	displayselectionDB.CopyBasicFieldsToDisplaySelection(displayselectionDeleted)
+
+	// get stage instance from DB instance, and call callback function
+	displayselectionStaged := (*orm.BackRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
+	if displayselectionStaged != nil {
+		models.AfterDeleteFromFront(&models.Stage, displayselectionStaged, displayselectionDeleted)
+	}
 
 	// a DELETE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)

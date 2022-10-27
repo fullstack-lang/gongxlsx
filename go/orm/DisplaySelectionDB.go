@@ -380,6 +380,7 @@ func (backRepo *BackRepoStruct) CommitDisplaySelection(displayselection *models.
 	if id, ok := (*backRepo.BackRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID)[displayselection]; ok {
 		backRepo.BackRepoDisplaySelection.CommitPhaseTwoInstance(backRepo, id, displayselection)
 	}
+	backRepo.CommitFromBackNb = backRepo.CommitFromBackNb + 1
 }
 
 // CommitDisplaySelection allows checkout of a single displayselection (if already staged and with a BackRepo id)

@@ -404,6 +404,7 @@ func (backRepo *BackRepoStruct) CommitXLRow(xlrow *models.XLRow) {
 	if id, ok := (*backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlrow]; ok {
 		backRepo.BackRepoXLRow.CommitPhaseTwoInstance(backRepo, id, xlrow)
 	}
+	backRepo.CommitFromBackNb = backRepo.CommitFromBackNb + 1
 }
 
 // CommitXLRow allows checkout of a single xlrow (if already staged and with a BackRepo id)

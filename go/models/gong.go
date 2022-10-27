@@ -2,6 +2,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -10,6 +11,9 @@ import (
 	"sort"
 	"strings"
 )
+
+// errUnkownEnum is returns when a value cannot match enum values
+var errUnkownEnum = errors.New("unkown enum")
 
 // swagger:ignore
 type __void any
@@ -31,17 +35,47 @@ type StageStruct struct { // insertion point for definition of arrays registerin
 	DisplaySelections           map[*DisplaySelection]any
 	DisplaySelections_mapString map[string]*DisplaySelection
 
+	OnAfterDisplaySelectionCreateCallback OnAfterCreateInterface[DisplaySelection]
+	OnAfterDisplaySelectionUpdateCallback OnAfterUpdateInterface[DisplaySelection]
+	OnAfterDisplaySelectionDeleteCallback OnAfterDeleteInterface[DisplaySelection]
+	OnAfterDisplaySelectionReadCallback   OnAfterReadInterface[DisplaySelection]
+
+
 	XLCells           map[*XLCell]any
 	XLCells_mapString map[string]*XLCell
+
+	OnAfterXLCellCreateCallback OnAfterCreateInterface[XLCell]
+	OnAfterXLCellUpdateCallback OnAfterUpdateInterface[XLCell]
+	OnAfterXLCellDeleteCallback OnAfterDeleteInterface[XLCell]
+	OnAfterXLCellReadCallback   OnAfterReadInterface[XLCell]
+
 
 	XLFiles           map[*XLFile]any
 	XLFiles_mapString map[string]*XLFile
 
+	OnAfterXLFileCreateCallback OnAfterCreateInterface[XLFile]
+	OnAfterXLFileUpdateCallback OnAfterUpdateInterface[XLFile]
+	OnAfterXLFileDeleteCallback OnAfterDeleteInterface[XLFile]
+	OnAfterXLFileReadCallback   OnAfterReadInterface[XLFile]
+
+
 	XLRows           map[*XLRow]any
 	XLRows_mapString map[string]*XLRow
 
+	OnAfterXLRowCreateCallback OnAfterCreateInterface[XLRow]
+	OnAfterXLRowUpdateCallback OnAfterUpdateInterface[XLRow]
+	OnAfterXLRowDeleteCallback OnAfterDeleteInterface[XLRow]
+	OnAfterXLRowReadCallback   OnAfterReadInterface[XLRow]
+
+
 	XLSheets           map[*XLSheet]any
 	XLSheets_mapString map[string]*XLSheet
+
+	OnAfterXLSheetCreateCallback OnAfterCreateInterface[XLSheet]
+	OnAfterXLSheetUpdateCallback OnAfterUpdateInterface[XLSheet]
+	OnAfterXLSheetDeleteCallback OnAfterDeleteInterface[XLSheet]
+	OnAfterXLSheetReadCallback   OnAfterReadInterface[XLSheet]
+
 
 	AllModelsStructCreateCallback AllModelsStructCreateInterface
 
@@ -60,6 +94,29 @@ type StageStruct struct { // insertion point for definition of arrays registerin
 
 type OnInitCommitInterface interface {
 	BeforeCommit(stage *StageStruct)
+}
+
+// OnAfterCreateInterface callback when an instance is updated from the front
+type OnAfterCreateInterface[Type Gongstruct] interface {
+	OnAfterCreate(stage *StageStruct,
+		instance *Type)
+}
+
+// OnAfterReadInterface callback when an instance is updated from the front
+type OnAfterReadInterface[Type Gongstruct] interface {
+	OnAfterRead(stage *StageStruct,
+		instance *Type)
+}
+
+// OnAfterUpdateInterface callback when an instance is updated from the front
+type OnAfterUpdateInterface[Type Gongstruct] interface {
+	OnAfterUpdate(stage *StageStruct, old, new *Type)
+}
+
+// OnAfterDeleteInterface callback when an instance is updated from the front
+type OnAfterDeleteInterface[Type Gongstruct] interface {
+	OnAfterDelete(stage *StageStruct,
+		staged, front *Type)
 }
 
 type BackRepoInterface interface {

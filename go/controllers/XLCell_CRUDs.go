@@ -41,11 +41,12 @@ type XLCellInput struct {
 //
 // swagger:route GET /xlcells xlcells getXLCells
 //
-// Get all xlcells
+// # Get all xlcells
 //
 // Responses:
-//    default: genericError
-//        200: xlcellDBsResponse
+// default: genericError
+//
+//	200: xlcellDBResponse
 func GetXLCells(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLCell.GetDB()
 
@@ -85,14 +86,15 @@ func GetXLCells(c *gin.Context) {
 // swagger:route POST /xlcells xlcells postXLCell
 //
 // Creates a xlcell
-//     Consumes:
-//     - application/json
 //
-//     Produces:
-//     - application/json
+//	Consumes:
+//	- application/json
 //
-//     Responses:
-//       200: xlcellDBResponse
+//	Produces:
+//	- application/json
+//
+//	Responses:
+//	  200: nodeDBResponse
 func PostXLCell(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLCell.GetDB()
 
@@ -124,6 +126,14 @@ func PostXLCell(c *gin.Context) {
 		return
 	}
 
+	// get an instance (not staged) from DB instance, and call callback function
+	orm.BackRepo.BackRepoXLCell.CheckoutPhaseOneInstance(&xlcellDB)
+	xlcell := (*orm.BackRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
+
+	if xlcell != nil {
+		models.AfterCreateFromFront(&models.Stage, xlcell)
+	}
+
 	// a POST is equivalent to a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
 	orm.BackRepo.IncrementPushFromFrontNb()
@@ -138,8 +148,9 @@ func PostXLCell(c *gin.Context) {
 // Gets the details for a xlcell.
 //
 // Responses:
-//    default: genericError
-//        200: xlcellDBResponse
+// default: genericError
+//
+//	200: xlcellDBResponse
 func GetXLCell(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLCell.GetDB()
 
@@ -166,11 +177,12 @@ func GetXLCell(c *gin.Context) {
 //
 // swagger:route PATCH /xlcells/{ID} xlcells updateXLCell
 //
-// Update a xlcell
+// # Update a xlcell
 //
 // Responses:
-//    default: genericError
-//        200: xlcellDBResponse
+// default: genericError
+//
+//	200: xlcellDBResponse
 func UpdateXLCell(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLCell.GetDB()
 
@@ -211,8 +223,20 @@ func UpdateXLCell(c *gin.Context) {
 		return
 	}
 
+	// get an instance (not staged) from DB instance, and call callback function
+	xlcellNew := new(models.XLCell)
+	xlcellDB.CopyBasicFieldsToXLCell(xlcellNew)
+
+	// get stage instance from DB instance, and call callback function
+	xlcellOld := (*orm.BackRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
+	if xlcellOld != nil {
+		models.AfterUpdateFromFront(&models.Stage, xlcellOld, xlcellNew)
+	}
+
 	// an UPDATE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
+	// in some cases, with the marshalling of the stage, this operation might
+	// generates a checkout
 	orm.BackRepo.IncrementPushFromFrontNb()
 
 	// return status OK with the marshalling of the the xlcellDB
@@ -223,10 +247,11 @@ func UpdateXLCell(c *gin.Context) {
 //
 // swagger:route DELETE /xlcells/{ID} xlcells deleteXLCell
 //
-// Delete a xlcell
+// # Delete a xlcell
 //
-// Responses:
-//    default: genericError
+// default: genericError
+//
+//	200: xlcellDBResponse
 func DeleteXLCell(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLCell.GetDB()
 
@@ -243,6 +268,16 @@ func DeleteXLCell(c *gin.Context) {
 
 	// with gorm.Model field, default delete is a soft delete. Unscoped() force delete
 	db.Unscoped().Delete(&xlcellDB)
+
+	// get an instance (not staged) from DB instance, and call callback function
+	xlcellDeleted := new(models.XLCell)
+	xlcellDB.CopyBasicFieldsToXLCell(xlcellDeleted)
+
+	// get stage instance from DB instance, and call callback function
+	xlcellStaged := (*orm.BackRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
+	if xlcellStaged != nil {
+		models.AfterDeleteFromFront(&models.Stage, xlcellStaged, xlcellDeleted)
+	}
 
 	// a DELETE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)

@@ -398,6 +398,7 @@ func (backRepo *BackRepoStruct) CommitXLFile(xlfile *models.XLFile) {
 	if id, ok := (*backRepo.BackRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile]; ok {
 		backRepo.BackRepoXLFile.CommitPhaseTwoInstance(backRepo, id, xlfile)
 	}
+	backRepo.CommitFromBackNb = backRepo.CommitFromBackNb + 1
 }
 
 // CommitXLFile allows checkout of a single xlfile (if already staged and with a BackRepo id)

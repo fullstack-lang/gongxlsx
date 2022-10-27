@@ -41,11 +41,12 @@ type XLSheetInput struct {
 //
 // swagger:route GET /xlsheets xlsheets getXLSheets
 //
-// Get all xlsheets
+// # Get all xlsheets
 //
 // Responses:
-//    default: genericError
-//        200: xlsheetDBsResponse
+// default: genericError
+//
+//	200: xlsheetDBResponse
 func GetXLSheets(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 
@@ -85,14 +86,15 @@ func GetXLSheets(c *gin.Context) {
 // swagger:route POST /xlsheets xlsheets postXLSheet
 //
 // Creates a xlsheet
-//     Consumes:
-//     - application/json
 //
-//     Produces:
-//     - application/json
+//	Consumes:
+//	- application/json
 //
-//     Responses:
-//       200: xlsheetDBResponse
+//	Produces:
+//	- application/json
+//
+//	Responses:
+//	  200: nodeDBResponse
 func PostXLSheet(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 
@@ -124,6 +126,14 @@ func PostXLSheet(c *gin.Context) {
 		return
 	}
 
+	// get an instance (not staged) from DB instance, and call callback function
+	orm.BackRepo.BackRepoXLSheet.CheckoutPhaseOneInstance(&xlsheetDB)
+	xlsheet := (*orm.BackRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+
+	if xlsheet != nil {
+		models.AfterCreateFromFront(&models.Stage, xlsheet)
+	}
+
 	// a POST is equivalent to a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
 	orm.BackRepo.IncrementPushFromFrontNb()
@@ -138,8 +148,9 @@ func PostXLSheet(c *gin.Context) {
 // Gets the details for a xlsheet.
 //
 // Responses:
-//    default: genericError
-//        200: xlsheetDBResponse
+// default: genericError
+//
+//	200: xlsheetDBResponse
 func GetXLSheet(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 
@@ -166,11 +177,12 @@ func GetXLSheet(c *gin.Context) {
 //
 // swagger:route PATCH /xlsheets/{ID} xlsheets updateXLSheet
 //
-// Update a xlsheet
+// # Update a xlsheet
 //
 // Responses:
-//    default: genericError
-//        200: xlsheetDBResponse
+// default: genericError
+//
+//	200: xlsheetDBResponse
 func UpdateXLSheet(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 
@@ -211,8 +223,20 @@ func UpdateXLSheet(c *gin.Context) {
 		return
 	}
 
+	// get an instance (not staged) from DB instance, and call callback function
+	xlsheetNew := new(models.XLSheet)
+	xlsheetDB.CopyBasicFieldsToXLSheet(xlsheetNew)
+
+	// get stage instance from DB instance, and call callback function
+	xlsheetOld := (*orm.BackRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+	if xlsheetOld != nil {
+		models.AfterUpdateFromFront(&models.Stage, xlsheetOld, xlsheetNew)
+	}
+
 	// an UPDATE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
+	// in some cases, with the marshalling of the stage, this operation might
+	// generates a checkout
 	orm.BackRepo.IncrementPushFromFrontNb()
 
 	// return status OK with the marshalling of the the xlsheetDB
@@ -223,10 +247,11 @@ func UpdateXLSheet(c *gin.Context) {
 //
 // swagger:route DELETE /xlsheets/{ID} xlsheets deleteXLSheet
 //
-// Delete a xlsheet
+// # Delete a xlsheet
 //
-// Responses:
-//    default: genericError
+// default: genericError
+//
+//	200: xlsheetDBResponse
 func DeleteXLSheet(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 
@@ -243,6 +268,16 @@ func DeleteXLSheet(c *gin.Context) {
 
 	// with gorm.Model field, default delete is a soft delete. Unscoped() force delete
 	db.Unscoped().Delete(&xlsheetDB)
+
+	// get an instance (not staged) from DB instance, and call callback function
+	xlsheetDeleted := new(models.XLSheet)
+	xlsheetDB.CopyBasicFieldsToXLSheet(xlsheetDeleted)
+
+	// get stage instance from DB instance, and call callback function
+	xlsheetStaged := (*orm.BackRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+	if xlsheetStaged != nil {
+		models.AfterDeleteFromFront(&models.Stage, xlsheetStaged, xlsheetDeleted)
+	}
 
 	// a DELETE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)

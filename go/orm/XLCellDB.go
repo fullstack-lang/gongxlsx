@@ -370,6 +370,7 @@ func (backRepo *BackRepoStruct) CommitXLCell(xlcell *models.XLCell) {
 	if id, ok := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlcell]; ok {
 		backRepo.BackRepoXLCell.CommitPhaseTwoInstance(backRepo, id, xlcell)
 	}
+	backRepo.CommitFromBackNb = backRepo.CommitFromBackNb + 1
 }
 
 // CommitXLCell allows checkout of a single xlcell (if already staged and with a BackRepo id)

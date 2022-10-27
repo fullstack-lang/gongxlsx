@@ -41,11 +41,12 @@ type XLRowInput struct {
 //
 // swagger:route GET /xlrows xlrows getXLRows
 //
-// Get all xlrows
+// # Get all xlrows
 //
 // Responses:
-//    default: genericError
-//        200: xlrowDBsResponse
+// default: genericError
+//
+//	200: xlrowDBResponse
 func GetXLRows(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLRow.GetDB()
 
@@ -85,14 +86,15 @@ func GetXLRows(c *gin.Context) {
 // swagger:route POST /xlrows xlrows postXLRow
 //
 // Creates a xlrow
-//     Consumes:
-//     - application/json
 //
-//     Produces:
-//     - application/json
+//	Consumes:
+//	- application/json
 //
-//     Responses:
-//       200: xlrowDBResponse
+//	Produces:
+//	- application/json
+//
+//	Responses:
+//	  200: nodeDBResponse
 func PostXLRow(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLRow.GetDB()
 
@@ -124,6 +126,14 @@ func PostXLRow(c *gin.Context) {
 		return
 	}
 
+	// get an instance (not staged) from DB instance, and call callback function
+	orm.BackRepo.BackRepoXLRow.CheckoutPhaseOneInstance(&xlrowDB)
+	xlrow := (*orm.BackRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB.ID]
+
+	if xlrow != nil {
+		models.AfterCreateFromFront(&models.Stage, xlrow)
+	}
+
 	// a POST is equivalent to a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
 	orm.BackRepo.IncrementPushFromFrontNb()
@@ -138,8 +148,9 @@ func PostXLRow(c *gin.Context) {
 // Gets the details for a xlrow.
 //
 // Responses:
-//    default: genericError
-//        200: xlrowDBResponse
+// default: genericError
+//
+//	200: xlrowDBResponse
 func GetXLRow(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLRow.GetDB()
 
@@ -166,11 +177,12 @@ func GetXLRow(c *gin.Context) {
 //
 // swagger:route PATCH /xlrows/{ID} xlrows updateXLRow
 //
-// Update a xlrow
+// # Update a xlrow
 //
 // Responses:
-//    default: genericError
-//        200: xlrowDBResponse
+// default: genericError
+//
+//	200: xlrowDBResponse
 func UpdateXLRow(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLRow.GetDB()
 
@@ -211,8 +223,20 @@ func UpdateXLRow(c *gin.Context) {
 		return
 	}
 
+	// get an instance (not staged) from DB instance, and call callback function
+	xlrowNew := new(models.XLRow)
+	xlrowDB.CopyBasicFieldsToXLRow(xlrowNew)
+
+	// get stage instance from DB instance, and call callback function
+	xlrowOld := (*orm.BackRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB.ID]
+	if xlrowOld != nil {
+		models.AfterUpdateFromFront(&models.Stage, xlrowOld, xlrowNew)
+	}
+
 	// an UPDATE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
+	// in some cases, with the marshalling of the stage, this operation might
+	// generates a checkout
 	orm.BackRepo.IncrementPushFromFrontNb()
 
 	// return status OK with the marshalling of the the xlrowDB
@@ -223,10 +247,11 @@ func UpdateXLRow(c *gin.Context) {
 //
 // swagger:route DELETE /xlrows/{ID} xlrows deleteXLRow
 //
-// Delete a xlrow
+// # Delete a xlrow
 //
-// Responses:
-//    default: genericError
+// default: genericError
+//
+//	200: xlrowDBResponse
 func DeleteXLRow(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLRow.GetDB()
 
@@ -243,6 +268,16 @@ func DeleteXLRow(c *gin.Context) {
 
 	// with gorm.Model field, default delete is a soft delete. Unscoped() force delete
 	db.Unscoped().Delete(&xlrowDB)
+
+	// get an instance (not staged) from DB instance, and call callback function
+	xlrowDeleted := new(models.XLRow)
+	xlrowDB.CopyBasicFieldsToXLRow(xlrowDeleted)
+
+	// get stage instance from DB instance, and call callback function
+	xlrowStaged := (*orm.BackRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB.ID]
+	if xlrowStaged != nil {
+		models.AfterDeleteFromFront(&models.Stage, xlrowStaged, xlrowDeleted)
+	}
 
 	// a DELETE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)

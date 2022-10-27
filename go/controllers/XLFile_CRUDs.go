@@ -41,11 +41,12 @@ type XLFileInput struct {
 //
 // swagger:route GET /xlfiles xlfiles getXLFiles
 //
-// Get all xlfiles
+// # Get all xlfiles
 //
 // Responses:
-//    default: genericError
-//        200: xlfileDBsResponse
+// default: genericError
+//
+//	200: xlfileDBResponse
 func GetXLFiles(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLFile.GetDB()
 
@@ -85,14 +86,15 @@ func GetXLFiles(c *gin.Context) {
 // swagger:route POST /xlfiles xlfiles postXLFile
 //
 // Creates a xlfile
-//     Consumes:
-//     - application/json
 //
-//     Produces:
-//     - application/json
+//	Consumes:
+//	- application/json
 //
-//     Responses:
-//       200: xlfileDBResponse
+//	Produces:
+//	- application/json
+//
+//	Responses:
+//	  200: nodeDBResponse
 func PostXLFile(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLFile.GetDB()
 
@@ -124,6 +126,14 @@ func PostXLFile(c *gin.Context) {
 		return
 	}
 
+	// get an instance (not staged) from DB instance, and call callback function
+	orm.BackRepo.BackRepoXLFile.CheckoutPhaseOneInstance(&xlfileDB)
+	xlfile := (*orm.BackRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+
+	if xlfile != nil {
+		models.AfterCreateFromFront(&models.Stage, xlfile)
+	}
+
 	// a POST is equivalent to a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
 	orm.BackRepo.IncrementPushFromFrontNb()
@@ -138,8 +148,9 @@ func PostXLFile(c *gin.Context) {
 // Gets the details for a xlfile.
 //
 // Responses:
-//    default: genericError
-//        200: xlfileDBResponse
+// default: genericError
+//
+//	200: xlfileDBResponse
 func GetXLFile(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLFile.GetDB()
 
@@ -166,11 +177,12 @@ func GetXLFile(c *gin.Context) {
 //
 // swagger:route PATCH /xlfiles/{ID} xlfiles updateXLFile
 //
-// Update a xlfile
+// # Update a xlfile
 //
 // Responses:
-//    default: genericError
-//        200: xlfileDBResponse
+// default: genericError
+//
+//	200: xlfileDBResponse
 func UpdateXLFile(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLFile.GetDB()
 
@@ -211,8 +223,20 @@ func UpdateXLFile(c *gin.Context) {
 		return
 	}
 
+	// get an instance (not staged) from DB instance, and call callback function
+	xlfileNew := new(models.XLFile)
+	xlfileDB.CopyBasicFieldsToXLFile(xlfileNew)
+
+	// get stage instance from DB instance, and call callback function
+	xlfileOld := (*orm.BackRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+	if xlfileOld != nil {
+		models.AfterUpdateFromFront(&models.Stage, xlfileOld, xlfileNew)
+	}
+
 	// an UPDATE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
+	// in some cases, with the marshalling of the stage, this operation might
+	// generates a checkout
 	orm.BackRepo.IncrementPushFromFrontNb()
 
 	// return status OK with the marshalling of the the xlfileDB
@@ -223,10 +247,11 @@ func UpdateXLFile(c *gin.Context) {
 //
 // swagger:route DELETE /xlfiles/{ID} xlfiles deleteXLFile
 //
-// Delete a xlfile
+// # Delete a xlfile
 //
-// Responses:
-//    default: genericError
+// default: genericError
+//
+//	200: xlfileDBResponse
 func DeleteXLFile(c *gin.Context) {
 	db := orm.BackRepo.BackRepoXLFile.GetDB()
 
@@ -243,6 +268,16 @@ func DeleteXLFile(c *gin.Context) {
 
 	// with gorm.Model field, default delete is a soft delete. Unscoped() force delete
 	db.Unscoped().Delete(&xlfileDB)
+
+	// get an instance (not staged) from DB instance, and call callback function
+	xlfileDeleted := new(models.XLFile)
+	xlfileDB.CopyBasicFieldsToXLFile(xlfileDeleted)
+
+	// get stage instance from DB instance, and call callback function
+	xlfileStaged := (*orm.BackRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+	if xlfileStaged != nil {
+		models.AfterDeleteFromFront(&models.Stage, xlfileStaged, xlfileDeleted)
+	}
 
 	// a DELETE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
