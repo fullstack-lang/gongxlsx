@@ -49,7 +49,7 @@ export class DisplaysheetComponent implements OnInit {
 
   constructor(
     private gongxlsxFrontRepoService: gongxlsx.FrontRepoService,
-    private commitNbService: gongxlsx.CommitNbService,
+    private commitNbService: gongxlsx.CommitNbFromBackService,
     private pushFromFrontService: gongxlsx.PushFromFrontNbService,
   ) { }
 
@@ -59,7 +59,7 @@ export class DisplaysheetComponent implements OnInit {
     // timer to refresh the sheet if something has changed in the back
     this.obsTimer.subscribe(
       () => {
-        this.commitNbService.getCommitNb().subscribe(
+        this.commitNbService.getCommitNbFromBack().subscribe(
           commitFromBackNb => {
             // console.log("commit nb in the back " + commitFromBackNb + " local commit nb " + this.commitFromBackNb)
             if (commitFromBackNb > this.commitFromBackNb) {

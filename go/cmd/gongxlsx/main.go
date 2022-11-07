@@ -14,9 +14,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/fullstack-lang/gongxlsx"
-	"github.com/fullstack-lang/gongxlsx/go/controllers"
+	"github.com/fullstack-lang/gongxlsx/go/fullstack"
 	"github.com/fullstack-lang/gongxlsx/go/models"
-	"github.com/fullstack-lang/gongxlsx/go/orm"
 )
 
 var (
@@ -42,17 +41,7 @@ func main() {
 	r.Use(cors.Default())
 
 	// setup GORM
-	db := orm.SetupModels(*logDBFlag, ":memory:")
-	dbDB, err := db.DB()
-
-	// since gongsim is a multi threaded application. It is important to set up
-	// only one open connexion at a time
-	if err != nil {
-		panic("cannot access DB of db" + err.Error())
-	}
-	dbDB.SetMaxOpenConns(1)
-
-	controllers.RegisterControllers(r)
+	fullstack.Init(r)
 
 	// provide the static route for the angular pages
 	r.Use(static.Serve("/", EmbedFolder(gongxlsx.NgDistNg, "ng/dist/ng")))
