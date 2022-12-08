@@ -40,7 +40,6 @@ type StageStruct struct { // insertion point for definition of arrays registerin
 	OnAfterDisplaySelectionDeleteCallback OnAfterDeleteInterface[DisplaySelection]
 	OnAfterDisplaySelectionReadCallback   OnAfterReadInterface[DisplaySelection]
 
-
 	XLCells           map[*XLCell]any
 	XLCells_mapString map[string]*XLCell
 
@@ -48,7 +47,6 @@ type StageStruct struct { // insertion point for definition of arrays registerin
 	OnAfterXLCellUpdateCallback OnAfterUpdateInterface[XLCell]
 	OnAfterXLCellDeleteCallback OnAfterDeleteInterface[XLCell]
 	OnAfterXLCellReadCallback   OnAfterReadInterface[XLCell]
-
 
 	XLFiles           map[*XLFile]any
 	XLFiles_mapString map[string]*XLFile
@@ -58,7 +56,6 @@ type StageStruct struct { // insertion point for definition of arrays registerin
 	OnAfterXLFileDeleteCallback OnAfterDeleteInterface[XLFile]
 	OnAfterXLFileReadCallback   OnAfterReadInterface[XLFile]
 
-
 	XLRows           map[*XLRow]any
 	XLRows_mapString map[string]*XLRow
 
@@ -67,7 +64,6 @@ type StageStruct struct { // insertion point for definition of arrays registerin
 	OnAfterXLRowDeleteCallback OnAfterDeleteInterface[XLRow]
 	OnAfterXLRowReadCallback   OnAfterReadInterface[XLRow]
 
-
 	XLSheets           map[*XLSheet]any
 	XLSheets_mapString map[string]*XLSheet
 
@@ -75,7 +71,6 @@ type StageStruct struct { // insertion point for definition of arrays registerin
 	OnAfterXLSheetUpdateCallback OnAfterUpdateInterface[XLSheet]
 	OnAfterXLSheetDeleteCallback OnAfterDeleteInterface[XLSheet]
 	OnAfterXLSheetReadCallback   OnAfterReadInterface[XLSheet]
-
 
 	AllModelsStructCreateCallback AllModelsStructCreateInterface
 
@@ -755,11 +750,17 @@ import (
 	"{{ModelsPackageName}}"
 )
 
-func init() {
-	var __Dummy_time_variable time.Time
-	_ = __Dummy_time_variable
-	InjectionGateway["{{databaseName}}"] = {{databaseName}}Injection
-}
+// generated in order to avoid error in the package import
+// if there are no elements in the stage to marshall
+var ___dummy__Stage models.StageStruct
+var ___dummy__Time time.Time
+
+// init might be handy if one want to have the data embedded in the binary
+// but it has to properly reference the Injection gateway in the main package
+// func init() {
+// 	_ = __Dummy_time_variable
+// 	InjectionGateway["{{databaseName}}"] = {{databaseName}}Injection
+// }
 
 // {{databaseName}}Injection will stage objects of database "{{databaseName}}"
 func {{databaseName}}Injection() {
@@ -774,7 +775,7 @@ func {{databaseName}}Injection() {
 `
 
 const IdentifiersDecls = `
-	{{Identifier}} := (&models.{{GeneratedStructName}}{Name: "{{GeneratedFieldNameValue}}"}).Stage()`
+	{{Identifier}} := (&models.{{GeneratedStructName}}{Name: ` + "`" + `{{GeneratedFieldNameValue}}` + "`" + `}).Stage()`
 
 const StringInitStatement = `
 	{{Identifier}}.{{GeneratedFieldName}} = ` + "`" + `{{GeneratedFieldNameValue}}` + "`"
@@ -843,7 +844,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 		decl = strings.ReplaceAll(decl, "{{GeneratedFieldNameValue}}", displayselection.Name)
 		identifiersDecl += decl
 
-		initializerStatements += fmt.Sprintf("\n\n	// DisplaySelection %s values setup", displayselection.Name)
+		initializerStatements += "\n\n	// DisplaySelection values setup"
 		// Initialisation of values
 		setValueField = StringInitStatement
 		setValueField = strings.ReplaceAll(setValueField, "{{Identifier}}", id)
@@ -875,7 +876,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 		decl = strings.ReplaceAll(decl, "{{GeneratedFieldNameValue}}", xlcell.Name)
 		identifiersDecl += decl
 
-		initializerStatements += fmt.Sprintf("\n\n	// XLCell %s values setup", xlcell.Name)
+		initializerStatements += "\n\n	// XLCell values setup"
 		// Initialisation of values
 		setValueField = StringInitStatement
 		setValueField = strings.ReplaceAll(setValueField, "{{Identifier}}", id)
@@ -919,7 +920,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 		decl = strings.ReplaceAll(decl, "{{GeneratedFieldNameValue}}", xlfile.Name)
 		identifiersDecl += decl
 
-		initializerStatements += fmt.Sprintf("\n\n	// XLFile %s values setup", xlfile.Name)
+		initializerStatements += "\n\n	// XLFile values setup"
 		// Initialisation of values
 		setValueField = StringInitStatement
 		setValueField = strings.ReplaceAll(setValueField, "{{Identifier}}", id)
@@ -957,7 +958,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 		decl = strings.ReplaceAll(decl, "{{GeneratedFieldNameValue}}", xlrow.Name)
 		identifiersDecl += decl
 
-		initializerStatements += fmt.Sprintf("\n\n	// XLRow %s values setup", xlrow.Name)
+		initializerStatements += "\n\n	// XLRow values setup"
 		// Initialisation of values
 		setValueField = StringInitStatement
 		setValueField = strings.ReplaceAll(setValueField, "{{Identifier}}", id)
@@ -995,7 +996,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 		decl = strings.ReplaceAll(decl, "{{GeneratedFieldNameValue}}", xlsheet.Name)
 		identifiersDecl += decl
 
-		initializerStatements += fmt.Sprintf("\n\n	// XLSheet %s values setup", xlsheet.Name)
+		initializerStatements += "\n\n	// XLSheet values setup"
 		// Initialisation of values
 		setValueField = StringInitStatement
 		setValueField = strings.ReplaceAll(setValueField, "{{Identifier}}", id)
