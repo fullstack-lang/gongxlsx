@@ -274,8 +274,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseTwoInstance(backRepo *Bac
 // BackRepoXLFile.CheckoutPhaseOne Checkouts all BackRepo instances to the Stage
 //
 // Phase One will result in having instances on the stage aligned with the back repo
-// pointers are not initialized yet (this is for pahse two)
-//
+// pointers are not initialized yet (this is for phase two)
 func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOne() (Error error) {
 
 	xlfileDBArray := make([]XLFileDB, 0)
@@ -333,6 +332,9 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOneInstance(xlfileDB *X
 		xlfile.Stage()
 	}
 	xlfileDB.CopyBasicFieldsToXLFile(xlfile)
+
+	// in some cases, the instance might have been unstaged. It is necessary to stage it again
+	xlfile.Stage()
 
 	// preserve pointer to xlfileDB. Otherwise, pointer will is recycled and the map of pointers
 	// Map_XLFileDBID_XLFileDB)[xlfileDB hold variable pointers

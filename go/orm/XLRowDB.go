@@ -280,8 +280,7 @@ func (backRepoXLRow *BackRepoXLRowStruct) CommitPhaseTwoInstance(backRepo *BackR
 // BackRepoXLRow.CheckoutPhaseOne Checkouts all BackRepo instances to the Stage
 //
 // Phase One will result in having instances on the stage aligned with the back repo
-// pointers are not initialized yet (this is for pahse two)
-//
+// pointers are not initialized yet (this is for phase two)
 func (backRepoXLRow *BackRepoXLRowStruct) CheckoutPhaseOne() (Error error) {
 
 	xlrowDBArray := make([]XLRowDB, 0)
@@ -339,6 +338,9 @@ func (backRepoXLRow *BackRepoXLRowStruct) CheckoutPhaseOneInstance(xlrowDB *XLRo
 		xlrow.Stage()
 	}
 	xlrowDB.CopyBasicFieldsToXLRow(xlrow)
+
+	// in some cases, the instance might have been unstaged. It is necessary to stage it again
+	xlrow.Stage()
 
 	// preserve pointer to xlrowDB. Otherwise, pointer will is recycled and the map of pointers
 	// Map_XLRowDBID_XLRowDB)[xlrowDB hold variable pointers

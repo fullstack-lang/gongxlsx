@@ -275,8 +275,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseTwoIn
 // BackRepoDisplaySelection.CheckoutPhaseOne Checkouts all BackRepo instances to the Stage
 //
 // Phase One will result in having instances on the stage aligned with the back repo
-// pointers are not initialized yet (this is for pahse two)
-//
+// pointers are not initialized yet (this is for phase two)
 func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseOne() (Error error) {
 
 	displayselectionDBArray := make([]DisplaySelectionDB, 0)
@@ -334,6 +333,9 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseOne
 		displayselection.Stage()
 	}
 	displayselectionDB.CopyBasicFieldsToDisplaySelection(displayselection)
+
+	// in some cases, the instance might have been unstaged. It is necessary to stage it again
+	displayselection.Stage()
 
 	// preserve pointer to displayselectionDB. Otherwise, pointer will is recycled and the map of pointers
 	// Map_DisplaySelectionDBID_DisplaySelectionDB)[displayselectionDB hold variable pointers
