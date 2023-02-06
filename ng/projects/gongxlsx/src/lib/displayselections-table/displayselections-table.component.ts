@@ -147,7 +147,7 @@ export class DisplaySelectionsTableComponent implements OnInit {
       }
     )
     if (this.mode == TableComponentMode.DISPLAY_MODE) {
-      this.displayedColumns = ['ID', 'Edit', 'Delete', // insertion point for columns to display
+      this.displayedColumns = ['ID', 'Delete', // insertion point for columns to display
         "Name",
         "XLFile",
         "XLSheet",
@@ -240,15 +240,6 @@ export class DisplaySelectionsTableComponent implements OnInit {
     this.router.navigate([{
       outlets: {
         github_com_fullstack_lang_gongxlsx_go_editor: ["github_com_fullstack_lang_gongxlsx_go-" + "displayselection-detail", displayselectionID]
-      }
-    }]);
-  }
-
-  // set presentation outlet
-  setPresentationRouterOutlet(displayselectionID: number) {
-    this.router.navigate([{
-      outlets: {
-        github_com_fullstack_lang_gongxlsx_go_presentation: ["github_com_fullstack_lang_gongxlsx_go-" + "displayselection-presentation", displayselectionID]
       }
     }]);
   }

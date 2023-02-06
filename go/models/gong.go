@@ -87,9 +87,19 @@ type StageStruct struct { // insertion point for definition of arrays registerin
 	MetaPackageImportPath  string
 	MetaPackageImportAlias string
 	Map_DocLink_Renaming   map[string]GONG__Identifier
+
+	// map_Gongstruct_BackPointer is storage of back pointers
+	map_Gongstruct_BackPointer map[any]any
 }
 
-// swagger:ignore
+func SetBackPointer[T Gongstruct](stageStruct *StageStruct, instance *T, backPointer any) {
+	stageStruct.map_Gongstruct_BackPointer[instance] = backPointer
+}
+func GetBackPointer[T Gongstruct](stageStruct *StageStruct, instance *T) (backPointer any) {
+	backPointer, _ = stageStruct.map_Gongstruct_BackPointer[instance]
+	return
+}
+
 type GONG__Identifier struct {
 	Ident string
 	Type  GONG__ExpressionType
@@ -163,6 +173,7 @@ var Stage StageStruct = StageStruct{ // insertion point for array initiatialisat
 
 	// end of insertion point
 	Map_GongStructName_InstancesNb: make(map[string]int),
+	map_Gongstruct_BackPointer:     make(map[any]any),
 }
 
 func (stage *StageStruct) Commit() {
@@ -772,106 +783,6 @@ func (stage *StageStruct) Unstage() { // insertion point for array nil
 	}
 
 }
-
-// insertion point of functions that provide maps for reverse associations
-
-// generate function for reverse association maps of DisplaySelection
-func (stageStruct *StageStruct) CreateReverseMap_DisplaySelection_XLFile() (res map[*XLFile][]*DisplaySelection) {
-	res = make(map[*XLFile][]*DisplaySelection)
-
-	for displayselection := range stageStruct.DisplaySelections {
-		if displayselection.XLFile != nil {
-			xlfile_ := displayselection.XLFile
-			var displayselections []*DisplaySelection
-			_, ok := res[xlfile_]
-			if ok {
-				displayselections = res[xlfile_]
-			} else {
-				displayselections = make([]*DisplaySelection, 0)
-			}
-			displayselections = append(displayselections, displayselection)
-			res[xlfile_] = displayselections
-		}
-	}
-
-	return
-}
-func (stageStruct *StageStruct) CreateReverseMap_DisplaySelection_XLSheet() (res map[*XLSheet][]*DisplaySelection) {
-	res = make(map[*XLSheet][]*DisplaySelection)
-
-	for displayselection := range stageStruct.DisplaySelections {
-		if displayselection.XLSheet != nil {
-			xlsheet_ := displayselection.XLSheet
-			var displayselections []*DisplaySelection
-			_, ok := res[xlsheet_]
-			if ok {
-				displayselections = res[xlsheet_]
-			} else {
-				displayselections = make([]*DisplaySelection, 0)
-			}
-			displayselections = append(displayselections, displayselection)
-			res[xlsheet_] = displayselections
-		}
-	}
-
-	return
-}
-
-// generate function for reverse association maps of XLCell
-
-// generate function for reverse association maps of XLFile
-func (stageStruct *StageStruct) CreateReverseMap_XLFile_Sheets() (res map[*XLSheet]*XLFile) {
-	res = make(map[*XLSheet]*XLFile)
-
-	for xlfile := range stageStruct.XLFiles {
-		for _, xlsheet_ := range xlfile.Sheets {
-			res[xlsheet_] = xlfile
-		}
-	}
-
-	return
-}
-
-
-// generate function for reverse association maps of XLRow
-func (stageStruct *StageStruct) CreateReverseMap_XLRow_Cells() (res map[*XLCell]*XLRow) {
-	res = make(map[*XLCell]*XLRow)
-
-	for xlrow := range stageStruct.XLRows {
-		for _, xlcell_ := range xlrow.Cells {
-			res[xlcell_] = xlrow
-		}
-	}
-
-	return
-}
-
-
-// generate function for reverse association maps of XLSheet
-func (stageStruct *StageStruct) CreateReverseMap_XLSheet_Rows() (res map[*XLRow]*XLSheet) {
-	res = make(map[*XLRow]*XLSheet)
-
-	for xlsheet := range stageStruct.XLSheets {
-		for _, xlrow_ := range xlsheet.Rows {
-			res[xlrow_] = xlsheet
-		}
-	}
-
-	return
-}
-
-func (stageStruct *StageStruct) CreateReverseMap_XLSheet_SheetCells() (res map[*XLCell]*XLSheet) {
-	res = make(map[*XLCell]*XLSheet)
-
-	for xlsheet := range stageStruct.XLSheets {
-		for _, xlcell_ := range xlsheet.SheetCells {
-			res[xlcell_] = xlsheet
-		}
-	}
-
-	return
-}
-
 
 // Gongstruct is the type parameter for generated generic function that allows
 // - access to staged instances

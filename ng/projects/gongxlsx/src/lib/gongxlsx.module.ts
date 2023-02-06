@@ -42,27 +42,22 @@ import { GongstructSelectionService } from './gongstruct-selection.service'
 import { DisplaySelectionsTableComponent } from './displayselections-table/displayselections-table.component'
 import { DisplaySelectionSortingComponent } from './displayselection-sorting/displayselection-sorting.component'
 import { DisplaySelectionDetailComponent } from './displayselection-detail/displayselection-detail.component'
-import { DisplaySelectionPresentationComponent } from './displayselection-presentation/displayselection-presentation.component'
 
 import { XLCellsTableComponent } from './xlcells-table/xlcells-table.component'
 import { XLCellSortingComponent } from './xlcell-sorting/xlcell-sorting.component'
 import { XLCellDetailComponent } from './xlcell-detail/xlcell-detail.component'
-import { XLCellPresentationComponent } from './xlcell-presentation/xlcell-presentation.component'
 
 import { XLFilesTableComponent } from './xlfiles-table/xlfiles-table.component'
 import { XLFileSortingComponent } from './xlfile-sorting/xlfile-sorting.component'
 import { XLFileDetailComponent } from './xlfile-detail/xlfile-detail.component'
-import { XLFilePresentationComponent } from './xlfile-presentation/xlfile-presentation.component'
 
 import { XLRowsTableComponent } from './xlrows-table/xlrows-table.component'
 import { XLRowSortingComponent } from './xlrow-sorting/xlrow-sorting.component'
 import { XLRowDetailComponent } from './xlrow-detail/xlrow-detail.component'
-import { XLRowPresentationComponent } from './xlrow-presentation/xlrow-presentation.component'
 
 import { XLSheetsTableComponent } from './xlsheets-table/xlsheets-table.component'
 import { XLSheetSortingComponent } from './xlsheet-sorting/xlsheet-sorting.component'
 import { XLSheetDetailComponent } from './xlsheet-detail/xlsheet-detail.component'
-import { XLSheetPresentationComponent } from './xlsheet-presentation/xlsheet-presentation.component'
 
 
 @NgModule({
@@ -71,27 +66,22 @@ import { XLSheetPresentationComponent } from './xlsheet-presentation/xlsheet-pre
 		DisplaySelectionsTableComponent,
 		DisplaySelectionSortingComponent,
 		DisplaySelectionDetailComponent,
-		DisplaySelectionPresentationComponent,
 
 		XLCellsTableComponent,
 		XLCellSortingComponent,
 		XLCellDetailComponent,
-		XLCellPresentationComponent,
 
 		XLFilesTableComponent,
 		XLFileSortingComponent,
 		XLFileDetailComponent,
-		XLFilePresentationComponent,
 
 		XLRowsTableComponent,
 		XLRowSortingComponent,
 		XLRowDetailComponent,
-		XLRowPresentationComponent,
 
 		XLSheetsTableComponent,
 		XLSheetSortingComponent,
 		XLSheetDetailComponent,
-		XLSheetPresentationComponent,
 
 
 		SplitterComponent,
@@ -135,27 +125,22 @@ import { XLSheetPresentationComponent } from './xlsheet-presentation/xlsheet-pre
 		DisplaySelectionsTableComponent,
 		DisplaySelectionSortingComponent,
 		DisplaySelectionDetailComponent,
-		DisplaySelectionPresentationComponent,
 
 		XLCellsTableComponent,
 		XLCellSortingComponent,
 		XLCellDetailComponent,
-		XLCellPresentationComponent,
 
 		XLFilesTableComponent,
 		XLFileSortingComponent,
 		XLFileDetailComponent,
-		XLFilePresentationComponent,
 
 		XLRowsTableComponent,
 		XLRowSortingComponent,
 		XLRowDetailComponent,
-		XLRowPresentationComponent,
 
 		XLSheetsTableComponent,
 		XLSheetSortingComponent,
 		XLSheetDetailComponent,
-		XLSheetPresentationComponent,
 
 
 		SplitterComponent,
