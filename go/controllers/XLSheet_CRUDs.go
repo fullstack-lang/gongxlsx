@@ -52,6 +52,19 @@ func GetXLSheets(c *gin.Context) {
 
 	// source slice
 	var xlsheetDBs []orm.XLSheetDB
+
+	// type Values map[string][]string
+	values := c.Request.URL.Query()
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			// we have a single parameter
+			// we assume it is the stack
+			stackParam := value[0]
+			log.Println("GONG__StackPath", stackParam)
+		}
+	}
+
 	query := db.Find(&xlsheetDBs)
 	if query.Error != nil {
 		var returnError GenericError
@@ -96,7 +109,6 @@ func GetXLSheets(c *gin.Context) {
 //	Responses:
 //	  200: nodeDBResponse
 func PostXLSheet(c *gin.Context) {
-	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 
 	// Validate input
 	var input orm.XLSheetAPI
@@ -116,6 +128,7 @@ func PostXLSheet(c *gin.Context) {
 	xlsheetDB.XLSheetPointersEnconding = input.XLSheetPointersEnconding
 	xlsheetDB.CopyBasicFieldsFromXLSheet(&input.XLSheet)
 
+	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 	query := db.Create(&xlsheetDB)
 	if query.Error != nil {
 		var returnError GenericError
@@ -152,6 +165,19 @@ func PostXLSheet(c *gin.Context) {
 //
 //	200: xlsheetDBResponse
 func GetXLSheet(c *gin.Context) {
+
+	// type Values map[string][]string
+	values := c.Request.URL.Query()
+	if len(values) == 1 {
+		value := values["stack"]
+		if len(value) == 1 {
+			// we have a single parameter
+			// we assume it is the stack
+			stackParam := value[0]
+			log.Println("GET params", stackParam)
+		}
+	}
+
 	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 
 	// Get xlsheetDB in DB
@@ -184,6 +210,15 @@ func GetXLSheet(c *gin.Context) {
 //
 //	200: xlsheetDBResponse
 func UpdateXLSheet(c *gin.Context) {
+
+	// Validate input
+	var input orm.XLSheetAPI
+	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Println(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 
 	// Get model if exist
@@ -198,14 +233,6 @@ func UpdateXLSheet(c *gin.Context) {
 		returnError.Body.Message = query.Error.Error()
 		log.Println(query.Error.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
-		return
-	}
-
-	// Validate input
-	var input orm.XLSheetAPI
-	if err := c.ShouldBindJSON(&input); err != nil {
-		log.Println(err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 

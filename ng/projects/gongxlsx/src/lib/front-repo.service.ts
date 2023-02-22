@@ -74,6 +74,8 @@ export class DialogData {
   IntermediateStruct: string = "" // the "AclassBclassUse" 
   IntermediateStructField: string = "" // the "Bclass" as field
   NextAssociationStruct: string = "" // the "Bclass"
+
+  GONG__StackPath: string = ""
 }
 
 export enum SelectionMode {
@@ -88,6 +90,8 @@ export enum SelectionMode {
   providedIn: 'root'
 })
 export class FrontRepoService {
+
+  GONG__StackPath: string = ""
 
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -135,12 +139,12 @@ export class FrontRepoService {
     Observable<XLFileDB[]>,
     Observable<XLRowDB[]>,
     Observable<XLSheetDB[]>,
-  ] = [ // insertion point sub template 
-      this.displayselectionService.getDisplaySelections(),
-      this.xlcellService.getXLCells(),
-      this.xlfileService.getXLFiles(),
-      this.xlrowService.getXLRows(),
-      this.xlsheetService.getXLSheets(),
+  ] = [ // insertion point sub template
+      this.displayselectionService.getDisplaySelections(this.GONG__StackPath),
+      this.xlcellService.getXLCells(this.GONG__StackPath),
+      this.xlfileService.getXLFiles(this.GONG__StackPath),
+      this.xlrowService.getXLRows(this.GONG__StackPath),
+      this.xlsheetService.getXLSheets(this.GONG__StackPath),
     ];
 
   //
@@ -149,7 +153,18 @@ export class FrontRepoService {
   // This is an observable. Therefore, the control flow forks with
   // - pull() return immediatly the observable
   // - the observable observer, if it subscribe, is called when all GET calls are performs
-  pull(): Observable<FrontRepo> {
+  pull(GONG__StackPath: string = ""): Observable<FrontRepo> {
+
+    this.GONG__StackPath = GONG__StackPath
+
+    this.observableFrontRepo = [ // insertion point sub template
+      this.displayselectionService.getDisplaySelections(this.GONG__StackPath),
+      this.xlcellService.getXLCells(this.GONG__StackPath),
+      this.xlfileService.getXLFiles(this.GONG__StackPath),
+      this.xlrowService.getXLRows(this.GONG__StackPath),
+      this.xlsheetService.getXLSheets(this.GONG__StackPath),
+    ]
+
     return new Observable<FrontRepo>(
       (observer) => {
         combineLatest(

@@ -46,4 +46,3 @@ export * from './lib/xlsheet-db'
 export * from './lib/xlsheet.service'
 
 
-export * from './lib/GONG__ExpressionType'

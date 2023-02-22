@@ -827,21 +827,28 @@ type GongstructMapString interface {
 
 // GongGetSet returns the set staged GongstructType instances
 // it is usefull because it allows refactoring of gong struct identifier
-func GongGetSet[Type GongstructSet]() *Type {
+func GongGetSet[Type GongstructSet](stages ...*StageStruct) *Type {
 	var ret Type
+
+	var stage *StageStruct
+	if len(stages) > 0 {
+		stage = stages[0]
+	} else {
+		stage = &Stage
+	}
 
 	switch any(ret).(type) {
 	// insertion point for generic get functions
 	case map[*DisplaySelection]any:
-		return any(&Stage.DisplaySelections).(*Type)
+		return any(&stage.DisplaySelections).(*Type)
 	case map[*XLCell]any:
-		return any(&Stage.XLCells).(*Type)
+		return any(&stage.XLCells).(*Type)
 	case map[*XLFile]any:
-		return any(&Stage.XLFiles).(*Type)
+		return any(&stage.XLFiles).(*Type)
 	case map[*XLRow]any:
-		return any(&Stage.XLRows).(*Type)
+		return any(&stage.XLRows).(*Type)
 	case map[*XLSheet]any:
-		return any(&Stage.XLSheets).(*Type)
+		return any(&stage.XLSheets).(*Type)
 	default:
 		return nil
 	}
@@ -849,21 +856,28 @@ func GongGetSet[Type GongstructSet]() *Type {
 
 // GongGetMap returns the map of staged GongstructType instances
 // it is usefull because it allows refactoring of gong struct identifier
-func GongGetMap[Type GongstructMapString]() *Type {
+func GongGetMap[Type GongstructMapString](stages ...*StageStruct) *Type {
 	var ret Type
+
+	var stage *StageStruct
+	if len(stages) > 0 {
+		stage = stages[0]
+	} else {
+		stage = &Stage
+	}
 
 	switch any(ret).(type) {
 	// insertion point for generic get functions
 	case map[string]*DisplaySelection:
-		return any(&Stage.DisplaySelections_mapString).(*Type)
+		return any(&stage.DisplaySelections_mapString).(*Type)
 	case map[string]*XLCell:
-		return any(&Stage.XLCells_mapString).(*Type)
+		return any(&stage.XLCells_mapString).(*Type)
 	case map[string]*XLFile:
-		return any(&Stage.XLFiles_mapString).(*Type)
+		return any(&stage.XLFiles_mapString).(*Type)
 	case map[string]*XLRow:
-		return any(&Stage.XLRows_mapString).(*Type)
+		return any(&stage.XLRows_mapString).(*Type)
 	case map[string]*XLSheet:
-		return any(&Stage.XLSheets_mapString).(*Type)
+		return any(&stage.XLSheets_mapString).(*Type)
 	default:
 		return nil
 	}
@@ -871,21 +885,28 @@ func GongGetMap[Type GongstructMapString]() *Type {
 
 // GetGongstructInstancesSet returns the set staged GongstructType instances
 // it is usefull because it allows refactoring of gongstruct identifier
-func GetGongstructInstancesSet[Type Gongstruct]() *map[*Type]any {
+func GetGongstructInstancesSet[Type Gongstruct](stages ...*StageStruct) *map[*Type]any {
 	var ret Type
+
+	var stage *StageStruct
+	if len(stages) > 0 {
+		stage = stages[0]
+	} else {
+		stage = &Stage
+	}
 
 	switch any(ret).(type) {
 	// insertion point for generic get functions
 	case DisplaySelection:
-		return any(&Stage.DisplaySelections).(*map[*Type]any)
+		return any(&stage.DisplaySelections).(*map[*Type]any)
 	case XLCell:
-		return any(&Stage.XLCells).(*map[*Type]any)
+		return any(&stage.XLCells).(*map[*Type]any)
 	case XLFile:
-		return any(&Stage.XLFiles).(*map[*Type]any)
+		return any(&stage.XLFiles).(*map[*Type]any)
 	case XLRow:
-		return any(&Stage.XLRows).(*map[*Type]any)
+		return any(&stage.XLRows).(*map[*Type]any)
 	case XLSheet:
-		return any(&Stage.XLSheets).(*map[*Type]any)
+		return any(&stage.XLSheets).(*map[*Type]any)
 	default:
 		return nil
 	}
@@ -893,21 +914,28 @@ func GetGongstructInstancesSet[Type Gongstruct]() *map[*Type]any {
 
 // GetGongstructInstancesMap returns the map of staged GongstructType instances
 // it is usefull because it allows refactoring of gong struct identifier
-func GetGongstructInstancesMap[Type Gongstruct]() *map[string]*Type {
+func GetGongstructInstancesMap[Type Gongstruct](stages ...*StageStruct) *map[string]*Type {
 	var ret Type
+
+	var stage *StageStruct
+	if len(stages) > 0 {
+		stage = stages[0]
+	} else {
+		stage = &Stage
+	}
 
 	switch any(ret).(type) {
 	// insertion point for generic get functions
 	case DisplaySelection:
-		return any(&Stage.DisplaySelections_mapString).(*map[string]*Type)
+		return any(&stage.DisplaySelections_mapString).(*map[string]*Type)
 	case XLCell:
-		return any(&Stage.XLCells_mapString).(*map[string]*Type)
+		return any(&stage.XLCells_mapString).(*map[string]*Type)
 	case XLFile:
-		return any(&Stage.XLFiles_mapString).(*map[string]*Type)
+		return any(&stage.XLFiles_mapString).(*map[string]*Type)
 	case XLRow:
-		return any(&Stage.XLRows_mapString).(*map[string]*Type)
+		return any(&stage.XLRows_mapString).(*map[string]*Type)
 	case XLSheet:
-		return any(&Stage.XLSheets_mapString).(*map[string]*Type)
+		return any(&stage.XLSheets_mapString).(*map[string]*Type)
 	default:
 		return nil
 	}

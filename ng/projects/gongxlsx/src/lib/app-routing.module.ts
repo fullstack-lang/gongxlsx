@@ -19,30 +19,30 @@ import { XLSheetDetailComponent } from './xlsheet-detail/xlsheet-detail.componen
 
 
 const routes: Routes = [ // insertion point for routes declarations
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselections', component: DisplaySelectionsTableComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_table' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselection-adder', component: DisplaySelectionDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselection-adder/:id/:originStruct/:originStructFieldName', component: DisplaySelectionDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselection-detail/:id', component: DisplaySelectionDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselections/:GONG__StackPath', component: DisplaySelectionsTableComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_table' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselection-adder/:GONG__StackPath', component: DisplaySelectionDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselection-adder/:id/:originStruct/:originStructFieldName/:GONG__StackPath', component: DisplaySelectionDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-displayselection-detail/:id/:GONG__StackPath', component: DisplaySelectionDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
 
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlcells', component: XLCellsTableComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_table' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlcell-adder', component: XLCellDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlcell-adder/:id/:originStruct/:originStructFieldName', component: XLCellDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlcell-detail/:id', component: XLCellDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlcells/:GONG__StackPath', component: XLCellsTableComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_table' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlcell-adder/:GONG__StackPath', component: XLCellDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlcell-adder/:id/:originStruct/:originStructFieldName/:GONG__StackPath', component: XLCellDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlcell-detail/:id/:GONG__StackPath', component: XLCellDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
 
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlfiles', component: XLFilesTableComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_table' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlfile-adder', component: XLFileDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlfile-adder/:id/:originStruct/:originStructFieldName', component: XLFileDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlfile-detail/:id', component: XLFileDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlfiles/:GONG__StackPath', component: XLFilesTableComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_table' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlfile-adder/:GONG__StackPath', component: XLFileDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlfile-adder/:id/:originStruct/:originStructFieldName/:GONG__StackPath', component: XLFileDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlfile-detail/:id/:GONG__StackPath', component: XLFileDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
 
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlrows', component: XLRowsTableComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_table' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlrow-adder', component: XLRowDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlrow-adder/:id/:originStruct/:originStructFieldName', component: XLRowDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlrow-detail/:id', component: XLRowDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlrows/:GONG__StackPath', component: XLRowsTableComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_table' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlrow-adder/:GONG__StackPath', component: XLRowDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlrow-adder/:id/:originStruct/:originStructFieldName/:GONG__StackPath', component: XLRowDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlrow-detail/:id/:GONG__StackPath', component: XLRowDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
 
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlsheets', component: XLSheetsTableComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_table' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlsheet-adder', component: XLSheetDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlsheet-adder/:id/:originStruct/:originStructFieldName', component: XLSheetDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
-	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlsheet-detail/:id', component: XLSheetDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlsheets/:GONG__StackPath', component: XLSheetsTableComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_table' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlsheet-adder/:GONG__StackPath', component: XLSheetDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlsheet-adder/:id/:originStruct/:originStructFieldName/:GONG__StackPath', component: XLSheetDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
+	{ path: 'github_com_fullstack_lang_gongxlsx_go-xlsheet-detail/:id/:GONG__StackPath', component: XLSheetDetailComponent, outlet: 'github_com_fullstack_lang_gongxlsx_go_editor' },
 
 ];
 
