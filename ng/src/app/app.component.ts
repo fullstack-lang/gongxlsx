@@ -11,6 +11,7 @@ export class AppComponent {
   default = 'Default view'
   diagrams = 'Diagrams view'
   meta = 'Meta view'
+  xlsx = 'xlsx view'
 
-  views: string[] = [this.default, this.diagrams, this.meta];
+  views: string[] = [this.default, this.diagrams, this.meta, this.xlsx];
 }
