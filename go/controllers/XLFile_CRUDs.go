@@ -47,23 +47,22 @@ type XLFileInput struct {
 // default: genericError
 //
 //	200: xlfileDBResponse
-func GetXLFiles(c *gin.Context) {
-	db := orm.BackRepo.BackRepoXLFile.GetDB()
+func (controller *Controller) GetXLFiles(c *gin.Context) {
 
 	// source slice
 	var xlfileDBs []orm.XLFileDB
 
-	// type Values map[string][]string
 	values := c.Request.URL.Query()
+	stackPath := ""
 	if len(values) == 1 {
 		value := values["GONG__StackPath"]
 		if len(value) == 1 {
-			// we have a single parameter
-			// we assume it is the stack
-			stackParam := value[0]
-			log.Println("GONG__StackPath", stackParam)
+			stackPath = value[0]
+			log.Println("GetXLFiles", "GONG__StackPath", stackPath)
 		}
 	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLFile.GetDB()
 
 	query := db.Find(&xlfileDBs)
 	if query.Error != nil {
@@ -108,7 +107,19 @@ func GetXLFiles(c *gin.Context) {
 //
 //	Responses:
 //	  200: nodeDBResponse
-func PostXLFile(c *gin.Context) {
+func (controller *Controller) PostXLFile(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("PostXLFiles", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLFile.GetDB()
 
 	// Validate input
 	var input orm.XLFileAPI
@@ -128,7 +139,6 @@ func PostXLFile(c *gin.Context) {
 	xlfileDB.XLFilePointersEnconding = input.XLFilePointersEnconding
 	xlfileDB.CopyBasicFieldsFromXLFile(&input.XLFile)
 
-	db := orm.BackRepo.BackRepoXLFile.GetDB()
 	query := db.Create(&xlfileDB)
 	if query.Error != nil {
 		var returnError GenericError
@@ -140,16 +150,16 @@ func PostXLFile(c *gin.Context) {
 	}
 
 	// get an instance (not staged) from DB instance, and call callback function
-	orm.BackRepo.BackRepoXLFile.CheckoutPhaseOneInstance(&xlfileDB)
-	xlfile := (*orm.BackRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+	backRepo.BackRepoXLFile.CheckoutPhaseOneInstance(&xlfileDB)
+	xlfile := (*backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
 
 	if xlfile != nil {
-		models.AfterCreateFromFront(&models.Stage, xlfile)
+		models.AfterCreateFromFront(backRepo.GetStage(), xlfile)
 	}
 
 	// a POST is equivalent to a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, xlfileDB)
 }
@@ -164,21 +174,19 @@ func PostXLFile(c *gin.Context) {
 // default: genericError
 //
 //	200: xlfileDBResponse
-func GetXLFile(c *gin.Context) {
+func (controller *Controller) GetXLFile(c *gin.Context) {
 
-	// type Values map[string][]string
 	values := c.Request.URL.Query()
+	stackPath := ""
 	if len(values) == 1 {
-		value := values["stack"]
+		value := values["GONG__StackPath"]
 		if len(value) == 1 {
-			// we have a single parameter
-			// we assume it is the stack
-			stackParam := value[0]
-			log.Println("GET params", stackParam)
+			stackPath = value[0]
+			log.Println("GetXLFile", "GONG__StackPath", stackPath)
 		}
 	}
-
-	db := orm.BackRepo.BackRepoXLFile.GetDB()
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLFile.GetDB()
 
 	// Get xlfileDB in DB
 	var xlfileDB orm.XLFileDB
@@ -209,7 +217,19 @@ func GetXLFile(c *gin.Context) {
 // default: genericError
 //
 //	200: xlfileDBResponse
-func UpdateXLFile(c *gin.Context) {
+func (controller *Controller) UpdateXLFile(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("UpdateXLFile", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLFile.GetDB()
 
 	// Validate input
 	var input orm.XLFileAPI
@@ -218,8 +238,6 @@ func UpdateXLFile(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	db := orm.BackRepo.BackRepoXLFile.GetDB()
 
 	// Get model if exist
 	var xlfileDB orm.XLFileDB
@@ -255,16 +273,16 @@ func UpdateXLFile(c *gin.Context) {
 	xlfileDB.CopyBasicFieldsToXLFile(xlfileNew)
 
 	// get stage instance from DB instance, and call callback function
-	xlfileOld := (*orm.BackRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+	xlfileOld := (*backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
 	if xlfileOld != nil {
-		models.AfterUpdateFromFront(&models.Stage, xlfileOld, xlfileNew)
+		models.AfterUpdateFromFront(backRepo.GetStage(), xlfileOld, xlfileNew)
 	}
 
 	// an UPDATE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
 	// in some cases, with the marshalling of the stage, this operation might
 	// generates a checkout
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	// return status OK with the marshalling of the the xlfileDB
 	c.JSON(http.StatusOK, xlfileDB)
@@ -279,8 +297,19 @@ func UpdateXLFile(c *gin.Context) {
 // default: genericError
 //
 //	200: xlfileDBResponse
-func DeleteXLFile(c *gin.Context) {
-	db := orm.BackRepo.BackRepoXLFile.GetDB()
+func (controller *Controller) DeleteXLFile(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("DeleteXLFile", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLFile.GetDB()
 
 	// Get model if exist
 	var xlfileDB orm.XLFileDB
@@ -301,14 +330,14 @@ func DeleteXLFile(c *gin.Context) {
 	xlfileDB.CopyBasicFieldsToXLFile(xlfileDeleted)
 
 	// get stage instance from DB instance, and call callback function
-	xlfileStaged := (*orm.BackRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+	xlfileStaged := (*backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
 	if xlfileStaged != nil {
-		models.AfterDeleteFromFront(&models.Stage, xlfileStaged, xlfileDeleted)
+		models.AfterDeleteFromFront(backRepo.GetStage(), xlfileStaged, xlfileDeleted)
 	}
 
 	// a DELETE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }

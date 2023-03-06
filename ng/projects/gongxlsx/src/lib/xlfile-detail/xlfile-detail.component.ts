@@ -152,13 +152,13 @@ export class XLFileDetailComponent implements OnInit {
 
 		switch (this.state) {
 			case XLFileDetailComponentState.UPDATE_INSTANCE:
-				this.xlfileService.updateXLFile(this.xlfile)
+				this.xlfileService.updateXLFile(this.xlfile, this.GONG__StackPath)
 					.subscribe(xlfile => {
 						this.xlfileService.XLFileServiceChanged.next("update")
 					});
 				break;
 			default:
-				this.xlfileService.postXLFile(this.xlfile).subscribe(xlfile => {
+				this.xlfileService.postXLFile(this.xlfile, this.GONG__StackPath).subscribe(xlfile => {
 					this.xlfileService.XLFileServiceChanged.next("post")
 					this.xlfile = new (XLFileDB) // reset fields
 				});

@@ -196,13 +196,13 @@ export class XLCellDetailComponent implements OnInit {
 
 		switch (this.state) {
 			case XLCellDetailComponentState.UPDATE_INSTANCE:
-				this.xlcellService.updateXLCell(this.xlcell)
+				this.xlcellService.updateXLCell(this.xlcell, this.GONG__StackPath)
 					.subscribe(xlcell => {
 						this.xlcellService.XLCellServiceChanged.next("update")
 					});
 				break;
 			default:
-				this.xlcellService.postXLCell(this.xlcell).subscribe(xlcell => {
+				this.xlcellService.postXLCell(this.xlcell, this.GONG__StackPath).subscribe(xlcell => {
 					this.xlcellService.XLCellServiceChanged.next("post")
 					this.xlcell = new (XLCellDB) // reset fields
 				});

@@ -114,6 +114,13 @@ type BackRepoXLRowStruct struct {
 	Map_XLRowDBID_XLRowPtr *map[uint]*models.XLRow
 
 	db *gorm.DB
+
+	stage *models.StageStruct
+}
+
+func (backRepoXLRow *BackRepoXLRowStruct) GetStage() (stage *models.StageStruct) {
+	stage = backRepoXLRow.stage
+	return
 }
 
 func (backRepoXLRow *BackRepoXLRowStruct) GetDB() *gorm.DB {
@@ -128,7 +135,7 @@ func (backRepoXLRow *BackRepoXLRowStruct) GetXLRowDBFromXLRowPtr(xlrow *models.X
 }
 
 // BackRepoXLRow.Init set up the BackRepo of the XLRow
-func (backRepoXLRow *BackRepoXLRowStruct) Init(db *gorm.DB) (Error error) {
+func (backRepoXLRow *BackRepoXLRowStruct) Init(stage *models.StageStruct, db *gorm.DB) (Error error) {
 
 	if backRepoXLRow.Map_XLRowDBID_XLRowPtr != nil {
 		err := errors.New("In Init, backRepoXLRow.Map_XLRowDBID_XLRowPtr should be nil")
@@ -155,6 +162,7 @@ func (backRepoXLRow *BackRepoXLRowStruct) Init(db *gorm.DB) (Error error) {
 	backRepoXLRow.Map_XLRowPtr_XLRowDBID = &tmpID
 
 	backRepoXLRow.db = db
+	backRepoXLRow.stage = stage
 	return
 }
 
@@ -292,7 +300,7 @@ func (backRepoXLRow *BackRepoXLRowStruct) CheckoutPhaseOne() (Error error) {
 	// list of instances to be removed
 	// start from the initial map on the stage and remove instances that have been checked out
 	xlrowInstancesToBeRemovedFromTheStage := make(map[*models.XLRow]any)
-	for key, value := range models.Stage.XLRows {
+	for key, value := range backRepoXLRow.stage.XLRows {
 		xlrowInstancesToBeRemovedFromTheStage[key] = value
 	}
 
@@ -310,7 +318,7 @@ func (backRepoXLRow *BackRepoXLRowStruct) CheckoutPhaseOne() (Error error) {
 
 	// remove from stage and back repo's 3 maps all xlrows that are not in the checkout
 	for xlrow := range xlrowInstancesToBeRemovedFromTheStage {
-		xlrow.Unstage()
+		xlrow.Unstage(backRepoXLRow.GetStage())
 
 		// remove instance from the back repo 3 maps
 		xlrowID := (*backRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlrow]
@@ -335,12 +343,12 @@ func (backRepoXLRow *BackRepoXLRowStruct) CheckoutPhaseOneInstance(xlrowDB *XLRo
 
 		// append model store with the new element
 		xlrow.Name = xlrowDB.Name_Data.String
-		xlrow.Stage()
+		xlrow.Stage(backRepoXLRow.GetStage())
 	}
 	xlrowDB.CopyBasicFieldsToXLRow(xlrow)
 
 	// in some cases, the instance might have been unstaged. It is necessary to stage it again
-	xlrow.Stage()
+	xlrow.Stage(backRepoXLRow.GetStage())
 
 	// preserve pointer to xlrowDB. Otherwise, pointer will is recycled and the map of pointers
 	// Map_XLRowDBID_XLRowDB)[xlrowDB hold variable pointers

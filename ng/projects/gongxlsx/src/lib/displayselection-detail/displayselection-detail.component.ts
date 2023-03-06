@@ -172,13 +172,13 @@ export class DisplaySelectionDetailComponent implements OnInit {
 
 		switch (this.state) {
 			case DisplaySelectionDetailComponentState.UPDATE_INSTANCE:
-				this.displayselectionService.updateDisplaySelection(this.displayselection)
+				this.displayselectionService.updateDisplaySelection(this.displayselection, this.GONG__StackPath)
 					.subscribe(displayselection => {
 						this.displayselectionService.DisplaySelectionServiceChanged.next("update")
 					});
 				break;
 			default:
-				this.displayselectionService.postDisplaySelection(this.displayselection).subscribe(displayselection => {
+				this.displayselectionService.postDisplaySelection(this.displayselection, this.GONG__StackPath).subscribe(displayselection => {
 					this.displayselectionService.DisplaySelectionServiceChanged.next("post")
 					this.displayselection = new (DisplaySelectionDB) // reset fields
 				});

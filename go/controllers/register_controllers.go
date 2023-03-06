@@ -2,11 +2,10 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/fullstack-lang/gongxlsx/go/orm"
 )
 
 // genQuery return the name of the column
@@ -43,56 +42,76 @@ type ValidationError struct {
 func RegisterControllers(r *gin.Engine) {
 	v1 := r.Group("/api/github.com/fullstack-lang/gongxlsx/go")
 	{ // insertion point for registrations
-		v1.GET("/v1/displayselections", GetDisplaySelections)
-		v1.GET("/v1/displayselections/:id", GetDisplaySelection)
-		v1.POST("/v1/displayselections", PostDisplaySelection)
-		v1.PATCH("/v1/displayselections/:id", UpdateDisplaySelection)
-		v1.PUT("/v1/displayselections/:id", UpdateDisplaySelection)
-		v1.DELETE("/v1/displayselections/:id", DeleteDisplaySelection)
+		v1.GET("/v1/displayselections", GetController().GetDisplaySelections)
+		v1.GET("/v1/displayselections/:id", GetController().GetDisplaySelection)
+		v1.POST("/v1/displayselections", GetController().PostDisplaySelection)
+		v1.PATCH("/v1/displayselections/:id", GetController().UpdateDisplaySelection)
+		v1.PUT("/v1/displayselections/:id", GetController().UpdateDisplaySelection)
+		v1.DELETE("/v1/displayselections/:id", GetController().DeleteDisplaySelection)
 
-		v1.GET("/v1/xlcells", GetXLCells)
-		v1.GET("/v1/xlcells/:id", GetXLCell)
-		v1.POST("/v1/xlcells", PostXLCell)
-		v1.PATCH("/v1/xlcells/:id", UpdateXLCell)
-		v1.PUT("/v1/xlcells/:id", UpdateXLCell)
-		v1.DELETE("/v1/xlcells/:id", DeleteXLCell)
+		v1.GET("/v1/xlcells", GetController().GetXLCells)
+		v1.GET("/v1/xlcells/:id", GetController().GetXLCell)
+		v1.POST("/v1/xlcells", GetController().PostXLCell)
+		v1.PATCH("/v1/xlcells/:id", GetController().UpdateXLCell)
+		v1.PUT("/v1/xlcells/:id", GetController().UpdateXLCell)
+		v1.DELETE("/v1/xlcells/:id", GetController().DeleteXLCell)
 
-		v1.GET("/v1/xlfiles", GetXLFiles)
-		v1.GET("/v1/xlfiles/:id", GetXLFile)
-		v1.POST("/v1/xlfiles", PostXLFile)
-		v1.PATCH("/v1/xlfiles/:id", UpdateXLFile)
-		v1.PUT("/v1/xlfiles/:id", UpdateXLFile)
-		v1.DELETE("/v1/xlfiles/:id", DeleteXLFile)
+		v1.GET("/v1/xlfiles", GetController().GetXLFiles)
+		v1.GET("/v1/xlfiles/:id", GetController().GetXLFile)
+		v1.POST("/v1/xlfiles", GetController().PostXLFile)
+		v1.PATCH("/v1/xlfiles/:id", GetController().UpdateXLFile)
+		v1.PUT("/v1/xlfiles/:id", GetController().UpdateXLFile)
+		v1.DELETE("/v1/xlfiles/:id", GetController().DeleteXLFile)
 
-		v1.GET("/v1/xlrows", GetXLRows)
-		v1.GET("/v1/xlrows/:id", GetXLRow)
-		v1.POST("/v1/xlrows", PostXLRow)
-		v1.PATCH("/v1/xlrows/:id", UpdateXLRow)
-		v1.PUT("/v1/xlrows/:id", UpdateXLRow)
-		v1.DELETE("/v1/xlrows/:id", DeleteXLRow)
+		v1.GET("/v1/xlrows", GetController().GetXLRows)
+		v1.GET("/v1/xlrows/:id", GetController().GetXLRow)
+		v1.POST("/v1/xlrows", GetController().PostXLRow)
+		v1.PATCH("/v1/xlrows/:id", GetController().UpdateXLRow)
+		v1.PUT("/v1/xlrows/:id", GetController().UpdateXLRow)
+		v1.DELETE("/v1/xlrows/:id", GetController().DeleteXLRow)
 
-		v1.GET("/v1/xlsheets", GetXLSheets)
-		v1.GET("/v1/xlsheets/:id", GetXLSheet)
-		v1.POST("/v1/xlsheets", PostXLSheet)
-		v1.PATCH("/v1/xlsheets/:id", UpdateXLSheet)
-		v1.PUT("/v1/xlsheets/:id", UpdateXLSheet)
-		v1.DELETE("/v1/xlsheets/:id", DeleteXLSheet)
+		v1.GET("/v1/xlsheets", GetController().GetXLSheets)
+		v1.GET("/v1/xlsheets/:id", GetController().GetXLSheet)
+		v1.POST("/v1/xlsheets", GetController().PostXLSheet)
+		v1.PATCH("/v1/xlsheets/:id", GetController().UpdateXLSheet)
+		v1.PUT("/v1/xlsheets/:id", GetController().UpdateXLSheet)
+		v1.DELETE("/v1/xlsheets/:id", GetController().DeleteXLSheet)
 
-		v1.GET("/v1/commitfrombacknb", GetLastCommitFromBackNb)
-		v1.GET("/v1/pushfromfrontnb", GetLastPushFromFrontNb)
+		v1.GET("/v1/commitfrombacknb", GetController().GetLastCommitFromBackNb)
+		v1.GET("/v1/pushfromfrontnb", GetController().GetLastPushFromFrontNb)
 	}
 }
 
 // swagger:route GET /commitfrombacknb backrepo GetLastCommitFromBackNb
-func GetLastCommitFromBackNb(c *gin.Context) {
-	res := orm.GetLastCommitFromBackNb()
+func (controller *Controller) GetLastCommitFromBackNb(c *gin.Context) {
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("GetLastCommitFromBackNb", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	res := backRepo.GetLastCommitFromBackNb()
 
 	c.JSON(http.StatusOK, res)
 }
 
 // swagger:route GET /pushfromfrontnb backrepo GetLastPushFromFrontNb
-func GetLastPushFromFrontNb(c *gin.Context) {
-	res := orm.GetLastPushFromFrontNb()
+func(controller *Controller) GetLastPushFromFrontNb(c *gin.Context) {
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("GetLastPushFromFrontNb", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	res := backRepo.GetLastPushFromFrontNb()
 
 	c.JSON(http.StatusOK, res)
 }

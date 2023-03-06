@@ -100,7 +100,7 @@ export class XLSheetSortingComponent implements OnInit {
 
     this.associatedXLSheets.forEach(
       xlsheet => {
-        this.xlsheetService.updateXLSheet(xlsheet)
+        this.xlsheetService.updateXLSheet(xlsheet, this.dialogData.GONG__StackPath)
           .subscribe(xlsheet => {
             this.xlsheetService.XLSheetServiceChanged.next("update")
           });

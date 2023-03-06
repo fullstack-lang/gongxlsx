@@ -47,23 +47,22 @@ type XLSheetInput struct {
 // default: genericError
 //
 //	200: xlsheetDBResponse
-func GetXLSheets(c *gin.Context) {
-	db := orm.BackRepo.BackRepoXLSheet.GetDB()
+func (controller *Controller) GetXLSheets(c *gin.Context) {
 
 	// source slice
 	var xlsheetDBs []orm.XLSheetDB
 
-	// type Values map[string][]string
 	values := c.Request.URL.Query()
+	stackPath := ""
 	if len(values) == 1 {
 		value := values["GONG__StackPath"]
 		if len(value) == 1 {
-			// we have a single parameter
-			// we assume it is the stack
-			stackParam := value[0]
-			log.Println("GONG__StackPath", stackParam)
+			stackPath = value[0]
+			log.Println("GetXLSheets", "GONG__StackPath", stackPath)
 		}
 	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLSheet.GetDB()
 
 	query := db.Find(&xlsheetDBs)
 	if query.Error != nil {
@@ -108,7 +107,19 @@ func GetXLSheets(c *gin.Context) {
 //
 //	Responses:
 //	  200: nodeDBResponse
-func PostXLSheet(c *gin.Context) {
+func (controller *Controller) PostXLSheet(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("PostXLSheets", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLSheet.GetDB()
 
 	// Validate input
 	var input orm.XLSheetAPI
@@ -128,7 +139,6 @@ func PostXLSheet(c *gin.Context) {
 	xlsheetDB.XLSheetPointersEnconding = input.XLSheetPointersEnconding
 	xlsheetDB.CopyBasicFieldsFromXLSheet(&input.XLSheet)
 
-	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 	query := db.Create(&xlsheetDB)
 	if query.Error != nil {
 		var returnError GenericError
@@ -140,16 +150,16 @@ func PostXLSheet(c *gin.Context) {
 	}
 
 	// get an instance (not staged) from DB instance, and call callback function
-	orm.BackRepo.BackRepoXLSheet.CheckoutPhaseOneInstance(&xlsheetDB)
-	xlsheet := (*orm.BackRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+	backRepo.BackRepoXLSheet.CheckoutPhaseOneInstance(&xlsheetDB)
+	xlsheet := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
 
 	if xlsheet != nil {
-		models.AfterCreateFromFront(&models.Stage, xlsheet)
+		models.AfterCreateFromFront(backRepo.GetStage(), xlsheet)
 	}
 
 	// a POST is equivalent to a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, xlsheetDB)
 }
@@ -164,21 +174,19 @@ func PostXLSheet(c *gin.Context) {
 // default: genericError
 //
 //	200: xlsheetDBResponse
-func GetXLSheet(c *gin.Context) {
+func (controller *Controller) GetXLSheet(c *gin.Context) {
 
-	// type Values map[string][]string
 	values := c.Request.URL.Query()
+	stackPath := ""
 	if len(values) == 1 {
-		value := values["stack"]
+		value := values["GONG__StackPath"]
 		if len(value) == 1 {
-			// we have a single parameter
-			// we assume it is the stack
-			stackParam := value[0]
-			log.Println("GET params", stackParam)
+			stackPath = value[0]
+			log.Println("GetXLSheet", "GONG__StackPath", stackPath)
 		}
 	}
-
-	db := orm.BackRepo.BackRepoXLSheet.GetDB()
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLSheet.GetDB()
 
 	// Get xlsheetDB in DB
 	var xlsheetDB orm.XLSheetDB
@@ -209,7 +217,19 @@ func GetXLSheet(c *gin.Context) {
 // default: genericError
 //
 //	200: xlsheetDBResponse
-func UpdateXLSheet(c *gin.Context) {
+func (controller *Controller) UpdateXLSheet(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("UpdateXLSheet", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLSheet.GetDB()
 
 	// Validate input
 	var input orm.XLSheetAPI
@@ -218,8 +238,6 @@ func UpdateXLSheet(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	db := orm.BackRepo.BackRepoXLSheet.GetDB()
 
 	// Get model if exist
 	var xlsheetDB orm.XLSheetDB
@@ -255,16 +273,16 @@ func UpdateXLSheet(c *gin.Context) {
 	xlsheetDB.CopyBasicFieldsToXLSheet(xlsheetNew)
 
 	// get stage instance from DB instance, and call callback function
-	xlsheetOld := (*orm.BackRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+	xlsheetOld := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
 	if xlsheetOld != nil {
-		models.AfterUpdateFromFront(&models.Stage, xlsheetOld, xlsheetNew)
+		models.AfterUpdateFromFront(backRepo.GetStage(), xlsheetOld, xlsheetNew)
 	}
 
 	// an UPDATE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
 	// in some cases, with the marshalling of the stage, this operation might
 	// generates a checkout
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	// return status OK with the marshalling of the the xlsheetDB
 	c.JSON(http.StatusOK, xlsheetDB)
@@ -279,8 +297,19 @@ func UpdateXLSheet(c *gin.Context) {
 // default: genericError
 //
 //	200: xlsheetDBResponse
-func DeleteXLSheet(c *gin.Context) {
-	db := orm.BackRepo.BackRepoXLSheet.GetDB()
+func (controller *Controller) DeleteXLSheet(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("DeleteXLSheet", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLSheet.GetDB()
 
 	// Get model if exist
 	var xlsheetDB orm.XLSheetDB
@@ -301,14 +330,14 @@ func DeleteXLSheet(c *gin.Context) {
 	xlsheetDB.CopyBasicFieldsToXLSheet(xlsheetDeleted)
 
 	// get stage instance from DB instance, and call callback function
-	xlsheetStaged := (*orm.BackRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+	xlsheetStaged := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
 	if xlsheetStaged != nil {
-		models.AfterDeleteFromFront(&models.Stage, xlsheetStaged, xlsheetDeleted)
+		models.AfterDeleteFromFront(backRepo.GetStage(), xlsheetStaged, xlsheetDeleted)
 	}
 
 	// a DELETE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }

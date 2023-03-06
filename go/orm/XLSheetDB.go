@@ -126,6 +126,13 @@ type BackRepoXLSheetStruct struct {
 	Map_XLSheetDBID_XLSheetPtr *map[uint]*models.XLSheet
 
 	db *gorm.DB
+
+	stage *models.StageStruct
+}
+
+func (backRepoXLSheet *BackRepoXLSheetStruct) GetStage() (stage *models.StageStruct) {
+	stage = backRepoXLSheet.stage
+	return
 }
 
 func (backRepoXLSheet *BackRepoXLSheetStruct) GetDB() *gorm.DB {
@@ -140,7 +147,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) GetXLSheetDBFromXLSheetPtr(xlsheet
 }
 
 // BackRepoXLSheet.Init set up the BackRepo of the XLSheet
-func (backRepoXLSheet *BackRepoXLSheetStruct) Init(db *gorm.DB) (Error error) {
+func (backRepoXLSheet *BackRepoXLSheetStruct) Init(stage *models.StageStruct, db *gorm.DB) (Error error) {
 
 	if backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr != nil {
 		err := errors.New("In Init, backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr should be nil")
@@ -167,6 +174,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) Init(db *gorm.DB) (Error error) {
 	backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID = &tmpID
 
 	backRepoXLSheet.db = db
+	backRepoXLSheet.stage = stage
 	return
 }
 
@@ -323,7 +331,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOne() (Error error) {
 	// list of instances to be removed
 	// start from the initial map on the stage and remove instances that have been checked out
 	xlsheetInstancesToBeRemovedFromTheStage := make(map[*models.XLSheet]any)
-	for key, value := range models.Stage.XLSheets {
+	for key, value := range backRepoXLSheet.stage.XLSheets {
 		xlsheetInstancesToBeRemovedFromTheStage[key] = value
 	}
 
@@ -341,7 +349,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOne() (Error error) {
 
 	// remove from stage and back repo's 3 maps all xlsheets that are not in the checkout
 	for xlsheet := range xlsheetInstancesToBeRemovedFromTheStage {
-		xlsheet.Unstage()
+		xlsheet.Unstage(backRepoXLSheet.GetStage())
 
 		// remove instance from the back repo 3 maps
 		xlsheetID := (*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet]
@@ -366,12 +374,12 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOneInstance(xlsheetDB
 
 		// append model store with the new element
 		xlsheet.Name = xlsheetDB.Name_Data.String
-		xlsheet.Stage()
+		xlsheet.Stage(backRepoXLSheet.GetStage())
 	}
 	xlsheetDB.CopyBasicFieldsToXLSheet(xlsheet)
 
 	// in some cases, the instance might have been unstaged. It is necessary to stage it again
-	xlsheet.Stage()
+	xlsheet.Stage(backRepoXLSheet.GetStage())
 
 	// preserve pointer to xlsheetDB. Otherwise, pointer will is recycled and the map of pointers
 	// Map_XLSheetDBID_XLSheetDB)[xlsheetDB hold variable pointers

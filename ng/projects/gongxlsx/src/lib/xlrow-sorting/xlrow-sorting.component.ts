@@ -100,7 +100,7 @@ export class XLRowSortingComponent implements OnInit {
 
     this.associatedXLRows.forEach(
       xlrow => {
-        this.xlrowService.updateXLRow(xlrow)
+        this.xlrowService.updateXLRow(xlrow, this.dialogData.GONG__StackPath)
           .subscribe(xlrow => {
             this.xlrowService.XLRowServiceChanged.next("update")
           });

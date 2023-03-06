@@ -100,7 +100,7 @@ export class XLCellSortingComponent implements OnInit {
 
     this.associatedXLCells.forEach(
       xlcell => {
-        this.xlcellService.updateXLCell(xlcell)
+        this.xlcellService.updateXLCell(xlcell, this.dialogData.GONG__StackPath)
           .subscribe(xlcell => {
             this.xlcellService.XLCellServiceChanged.next("update")
           });

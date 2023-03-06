@@ -234,93 +234,38 @@ func (stage *StageStruct) RestoreXL(dirPath string) {
 
 // insertion point for cumulative sub template with model space calls
 // Stage puts displayselection to the model stage
-func (displayselection *DisplaySelection) Stage() *DisplaySelection {
-	Stage.DisplaySelections[displayselection] = __member
-	Stage.DisplaySelections_mapString[displayselection.Name] = displayselection
+func (displayselection *DisplaySelection) Stage(stage *StageStruct) *DisplaySelection {
+	stage.DisplaySelections[displayselection] = __member
+	stage.DisplaySelections_mapString[displayselection.Name] = displayselection
 
 	return displayselection
 }
 
 // Unstage removes displayselection off the model stage
-func (displayselection *DisplaySelection) Unstage() *DisplaySelection {
-	delete(Stage.DisplaySelections, displayselection)
-	delete(Stage.DisplaySelections_mapString, displayselection.Name)
+func (displayselection *DisplaySelection) Unstage(stage *StageStruct) *DisplaySelection {
+	delete(stage.DisplaySelections, displayselection)
+	delete(stage.DisplaySelections_mapString, displayselection.Name)
 	return displayselection
 }
 
 // commit displayselection to the back repo (if it is already staged)
-func (displayselection *DisplaySelection) Commit() *DisplaySelection {
-	if _, ok := Stage.DisplaySelections[displayselection]; ok {
-		if Stage.BackRepo != nil {
-			Stage.BackRepo.CommitDisplaySelection(displayselection)
+func (displayselection *DisplaySelection) Commit(stage *StageStruct) *DisplaySelection {
+	if _, ok := stage.DisplaySelections[displayselection]; ok {
+		if stage.BackRepo != nil {
+			stage.BackRepo.CommitDisplaySelection(displayselection)
 		}
 	}
 	return displayselection
 }
 
 // Checkout displayselection to the back repo (if it is already staged)
-func (displayselection *DisplaySelection) Checkout() *DisplaySelection {
-	if _, ok := Stage.DisplaySelections[displayselection]; ok {
-		if Stage.BackRepo != nil {
-			Stage.BackRepo.CheckoutDisplaySelection(displayselection)
+func (displayselection *DisplaySelection) Checkout(stage *StageStruct) *DisplaySelection {
+	if _, ok := stage.DisplaySelections[displayselection]; ok {
+		if stage.BackRepo != nil {
+			stage.BackRepo.CheckoutDisplaySelection(displayselection)
 		}
 	}
 	return displayselection
-}
-
-//
-// Legacy, to be deleted
-//
-
-// StageCopy appends a copy of displayselection to the model stage
-func (displayselection *DisplaySelection) StageCopy() *DisplaySelection {
-	_displayselection := new(DisplaySelection)
-	*_displayselection = *displayselection
-	_displayselection.Stage()
-	return _displayselection
-}
-
-// StageAndCommit appends displayselection to the model stage and commit to the orm repo
-func (displayselection *DisplaySelection) StageAndCommit() *DisplaySelection {
-	displayselection.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMDisplaySelection(displayselection)
-	}
-	return displayselection
-}
-
-// DeleteStageAndCommit appends displayselection to the model stage and commit to the orm repo
-func (displayselection *DisplaySelection) DeleteStageAndCommit() *DisplaySelection {
-	displayselection.Unstage()
-	DeleteORMDisplaySelection(displayselection)
-	return displayselection
-}
-
-// StageCopyAndCommit appends a copy of displayselection to the model stage and commit to the orm repo
-func (displayselection *DisplaySelection) StageCopyAndCommit() *DisplaySelection {
-	_displayselection := new(DisplaySelection)
-	*_displayselection = *displayselection
-	_displayselection.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMDisplaySelection(displayselection)
-	}
-	return _displayselection
-}
-
-// CreateORMDisplaySelection enables dynamic staging of a DisplaySelection instance
-func CreateORMDisplaySelection(displayselection *DisplaySelection) {
-	displayselection.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMDisplaySelection(displayselection)
-	}
-}
-
-// DeleteORMDisplaySelection enables dynamic staging of a DisplaySelection instance
-func DeleteORMDisplaySelection(displayselection *DisplaySelection) {
-	displayselection.Unstage()
-	if Stage.AllModelsStructDeleteCallback != nil {
-		Stage.AllModelsStructDeleteCallback.DeleteORMDisplaySelection(displayselection)
-	}
 }
 
 // for satisfaction of GongStruct interface
@@ -329,93 +274,38 @@ func (displayselection *DisplaySelection) GetName() (res string) {
 }
 
 // Stage puts xlcell to the model stage
-func (xlcell *XLCell) Stage() *XLCell {
-	Stage.XLCells[xlcell] = __member
-	Stage.XLCells_mapString[xlcell.Name] = xlcell
+func (xlcell *XLCell) Stage(stage *StageStruct) *XLCell {
+	stage.XLCells[xlcell] = __member
+	stage.XLCells_mapString[xlcell.Name] = xlcell
 
 	return xlcell
 }
 
 // Unstage removes xlcell off the model stage
-func (xlcell *XLCell) Unstage() *XLCell {
-	delete(Stage.XLCells, xlcell)
-	delete(Stage.XLCells_mapString, xlcell.Name)
+func (xlcell *XLCell) Unstage(stage *StageStruct) *XLCell {
+	delete(stage.XLCells, xlcell)
+	delete(stage.XLCells_mapString, xlcell.Name)
 	return xlcell
 }
 
 // commit xlcell to the back repo (if it is already staged)
-func (xlcell *XLCell) Commit() *XLCell {
-	if _, ok := Stage.XLCells[xlcell]; ok {
-		if Stage.BackRepo != nil {
-			Stage.BackRepo.CommitXLCell(xlcell)
+func (xlcell *XLCell) Commit(stage *StageStruct) *XLCell {
+	if _, ok := stage.XLCells[xlcell]; ok {
+		if stage.BackRepo != nil {
+			stage.BackRepo.CommitXLCell(xlcell)
 		}
 	}
 	return xlcell
 }
 
 // Checkout xlcell to the back repo (if it is already staged)
-func (xlcell *XLCell) Checkout() *XLCell {
-	if _, ok := Stage.XLCells[xlcell]; ok {
-		if Stage.BackRepo != nil {
-			Stage.BackRepo.CheckoutXLCell(xlcell)
+func (xlcell *XLCell) Checkout(stage *StageStruct) *XLCell {
+	if _, ok := stage.XLCells[xlcell]; ok {
+		if stage.BackRepo != nil {
+			stage.BackRepo.CheckoutXLCell(xlcell)
 		}
 	}
 	return xlcell
-}
-
-//
-// Legacy, to be deleted
-//
-
-// StageCopy appends a copy of xlcell to the model stage
-func (xlcell *XLCell) StageCopy() *XLCell {
-	_xlcell := new(XLCell)
-	*_xlcell = *xlcell
-	_xlcell.Stage()
-	return _xlcell
-}
-
-// StageAndCommit appends xlcell to the model stage and commit to the orm repo
-func (xlcell *XLCell) StageAndCommit() *XLCell {
-	xlcell.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXLCell(xlcell)
-	}
-	return xlcell
-}
-
-// DeleteStageAndCommit appends xlcell to the model stage and commit to the orm repo
-func (xlcell *XLCell) DeleteStageAndCommit() *XLCell {
-	xlcell.Unstage()
-	DeleteORMXLCell(xlcell)
-	return xlcell
-}
-
-// StageCopyAndCommit appends a copy of xlcell to the model stage and commit to the orm repo
-func (xlcell *XLCell) StageCopyAndCommit() *XLCell {
-	_xlcell := new(XLCell)
-	*_xlcell = *xlcell
-	_xlcell.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXLCell(xlcell)
-	}
-	return _xlcell
-}
-
-// CreateORMXLCell enables dynamic staging of a XLCell instance
-func CreateORMXLCell(xlcell *XLCell) {
-	xlcell.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXLCell(xlcell)
-	}
-}
-
-// DeleteORMXLCell enables dynamic staging of a XLCell instance
-func DeleteORMXLCell(xlcell *XLCell) {
-	xlcell.Unstage()
-	if Stage.AllModelsStructDeleteCallback != nil {
-		Stage.AllModelsStructDeleteCallback.DeleteORMXLCell(xlcell)
-	}
 }
 
 // for satisfaction of GongStruct interface
@@ -424,93 +314,38 @@ func (xlcell *XLCell) GetName() (res string) {
 }
 
 // Stage puts xlfile to the model stage
-func (xlfile *XLFile) Stage() *XLFile {
-	Stage.XLFiles[xlfile] = __member
-	Stage.XLFiles_mapString[xlfile.Name] = xlfile
+func (xlfile *XLFile) Stage(stage *StageStruct) *XLFile {
+	stage.XLFiles[xlfile] = __member
+	stage.XLFiles_mapString[xlfile.Name] = xlfile
 
 	return xlfile
 }
 
 // Unstage removes xlfile off the model stage
-func (xlfile *XLFile) Unstage() *XLFile {
-	delete(Stage.XLFiles, xlfile)
-	delete(Stage.XLFiles_mapString, xlfile.Name)
+func (xlfile *XLFile) Unstage(stage *StageStruct) *XLFile {
+	delete(stage.XLFiles, xlfile)
+	delete(stage.XLFiles_mapString, xlfile.Name)
 	return xlfile
 }
 
 // commit xlfile to the back repo (if it is already staged)
-func (xlfile *XLFile) Commit() *XLFile {
-	if _, ok := Stage.XLFiles[xlfile]; ok {
-		if Stage.BackRepo != nil {
-			Stage.BackRepo.CommitXLFile(xlfile)
+func (xlfile *XLFile) Commit(stage *StageStruct) *XLFile {
+	if _, ok := stage.XLFiles[xlfile]; ok {
+		if stage.BackRepo != nil {
+			stage.BackRepo.CommitXLFile(xlfile)
 		}
 	}
 	return xlfile
 }
 
 // Checkout xlfile to the back repo (if it is already staged)
-func (xlfile *XLFile) Checkout() *XLFile {
-	if _, ok := Stage.XLFiles[xlfile]; ok {
-		if Stage.BackRepo != nil {
-			Stage.BackRepo.CheckoutXLFile(xlfile)
+func (xlfile *XLFile) Checkout(stage *StageStruct) *XLFile {
+	if _, ok := stage.XLFiles[xlfile]; ok {
+		if stage.BackRepo != nil {
+			stage.BackRepo.CheckoutXLFile(xlfile)
 		}
 	}
 	return xlfile
-}
-
-//
-// Legacy, to be deleted
-//
-
-// StageCopy appends a copy of xlfile to the model stage
-func (xlfile *XLFile) StageCopy() *XLFile {
-	_xlfile := new(XLFile)
-	*_xlfile = *xlfile
-	_xlfile.Stage()
-	return _xlfile
-}
-
-// StageAndCommit appends xlfile to the model stage and commit to the orm repo
-func (xlfile *XLFile) StageAndCommit() *XLFile {
-	xlfile.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXLFile(xlfile)
-	}
-	return xlfile
-}
-
-// DeleteStageAndCommit appends xlfile to the model stage and commit to the orm repo
-func (xlfile *XLFile) DeleteStageAndCommit() *XLFile {
-	xlfile.Unstage()
-	DeleteORMXLFile(xlfile)
-	return xlfile
-}
-
-// StageCopyAndCommit appends a copy of xlfile to the model stage and commit to the orm repo
-func (xlfile *XLFile) StageCopyAndCommit() *XLFile {
-	_xlfile := new(XLFile)
-	*_xlfile = *xlfile
-	_xlfile.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXLFile(xlfile)
-	}
-	return _xlfile
-}
-
-// CreateORMXLFile enables dynamic staging of a XLFile instance
-func CreateORMXLFile(xlfile *XLFile) {
-	xlfile.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXLFile(xlfile)
-	}
-}
-
-// DeleteORMXLFile enables dynamic staging of a XLFile instance
-func DeleteORMXLFile(xlfile *XLFile) {
-	xlfile.Unstage()
-	if Stage.AllModelsStructDeleteCallback != nil {
-		Stage.AllModelsStructDeleteCallback.DeleteORMXLFile(xlfile)
-	}
 }
 
 // for satisfaction of GongStruct interface
@@ -519,93 +354,38 @@ func (xlfile *XLFile) GetName() (res string) {
 }
 
 // Stage puts xlrow to the model stage
-func (xlrow *XLRow) Stage() *XLRow {
-	Stage.XLRows[xlrow] = __member
-	Stage.XLRows_mapString[xlrow.Name] = xlrow
+func (xlrow *XLRow) Stage(stage *StageStruct) *XLRow {
+	stage.XLRows[xlrow] = __member
+	stage.XLRows_mapString[xlrow.Name] = xlrow
 
 	return xlrow
 }
 
 // Unstage removes xlrow off the model stage
-func (xlrow *XLRow) Unstage() *XLRow {
-	delete(Stage.XLRows, xlrow)
-	delete(Stage.XLRows_mapString, xlrow.Name)
+func (xlrow *XLRow) Unstage(stage *StageStruct) *XLRow {
+	delete(stage.XLRows, xlrow)
+	delete(stage.XLRows_mapString, xlrow.Name)
 	return xlrow
 }
 
 // commit xlrow to the back repo (if it is already staged)
-func (xlrow *XLRow) Commit() *XLRow {
-	if _, ok := Stage.XLRows[xlrow]; ok {
-		if Stage.BackRepo != nil {
-			Stage.BackRepo.CommitXLRow(xlrow)
+func (xlrow *XLRow) Commit(stage *StageStruct) *XLRow {
+	if _, ok := stage.XLRows[xlrow]; ok {
+		if stage.BackRepo != nil {
+			stage.BackRepo.CommitXLRow(xlrow)
 		}
 	}
 	return xlrow
 }
 
 // Checkout xlrow to the back repo (if it is already staged)
-func (xlrow *XLRow) Checkout() *XLRow {
-	if _, ok := Stage.XLRows[xlrow]; ok {
-		if Stage.BackRepo != nil {
-			Stage.BackRepo.CheckoutXLRow(xlrow)
+func (xlrow *XLRow) Checkout(stage *StageStruct) *XLRow {
+	if _, ok := stage.XLRows[xlrow]; ok {
+		if stage.BackRepo != nil {
+			stage.BackRepo.CheckoutXLRow(xlrow)
 		}
 	}
 	return xlrow
-}
-
-//
-// Legacy, to be deleted
-//
-
-// StageCopy appends a copy of xlrow to the model stage
-func (xlrow *XLRow) StageCopy() *XLRow {
-	_xlrow := new(XLRow)
-	*_xlrow = *xlrow
-	_xlrow.Stage()
-	return _xlrow
-}
-
-// StageAndCommit appends xlrow to the model stage and commit to the orm repo
-func (xlrow *XLRow) StageAndCommit() *XLRow {
-	xlrow.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXLRow(xlrow)
-	}
-	return xlrow
-}
-
-// DeleteStageAndCommit appends xlrow to the model stage and commit to the orm repo
-func (xlrow *XLRow) DeleteStageAndCommit() *XLRow {
-	xlrow.Unstage()
-	DeleteORMXLRow(xlrow)
-	return xlrow
-}
-
-// StageCopyAndCommit appends a copy of xlrow to the model stage and commit to the orm repo
-func (xlrow *XLRow) StageCopyAndCommit() *XLRow {
-	_xlrow := new(XLRow)
-	*_xlrow = *xlrow
-	_xlrow.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXLRow(xlrow)
-	}
-	return _xlrow
-}
-
-// CreateORMXLRow enables dynamic staging of a XLRow instance
-func CreateORMXLRow(xlrow *XLRow) {
-	xlrow.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXLRow(xlrow)
-	}
-}
-
-// DeleteORMXLRow enables dynamic staging of a XLRow instance
-func DeleteORMXLRow(xlrow *XLRow) {
-	xlrow.Unstage()
-	if Stage.AllModelsStructDeleteCallback != nil {
-		Stage.AllModelsStructDeleteCallback.DeleteORMXLRow(xlrow)
-	}
 }
 
 // for satisfaction of GongStruct interface
@@ -614,93 +394,38 @@ func (xlrow *XLRow) GetName() (res string) {
 }
 
 // Stage puts xlsheet to the model stage
-func (xlsheet *XLSheet) Stage() *XLSheet {
-	Stage.XLSheets[xlsheet] = __member
-	Stage.XLSheets_mapString[xlsheet.Name] = xlsheet
+func (xlsheet *XLSheet) Stage(stage *StageStruct) *XLSheet {
+	stage.XLSheets[xlsheet] = __member
+	stage.XLSheets_mapString[xlsheet.Name] = xlsheet
 
 	return xlsheet
 }
 
 // Unstage removes xlsheet off the model stage
-func (xlsheet *XLSheet) Unstage() *XLSheet {
-	delete(Stage.XLSheets, xlsheet)
-	delete(Stage.XLSheets_mapString, xlsheet.Name)
+func (xlsheet *XLSheet) Unstage(stage *StageStruct) *XLSheet {
+	delete(stage.XLSheets, xlsheet)
+	delete(stage.XLSheets_mapString, xlsheet.Name)
 	return xlsheet
 }
 
 // commit xlsheet to the back repo (if it is already staged)
-func (xlsheet *XLSheet) Commit() *XLSheet {
-	if _, ok := Stage.XLSheets[xlsheet]; ok {
-		if Stage.BackRepo != nil {
-			Stage.BackRepo.CommitXLSheet(xlsheet)
+func (xlsheet *XLSheet) Commit(stage *StageStruct) *XLSheet {
+	if _, ok := stage.XLSheets[xlsheet]; ok {
+		if stage.BackRepo != nil {
+			stage.BackRepo.CommitXLSheet(xlsheet)
 		}
 	}
 	return xlsheet
 }
 
 // Checkout xlsheet to the back repo (if it is already staged)
-func (xlsheet *XLSheet) Checkout() *XLSheet {
-	if _, ok := Stage.XLSheets[xlsheet]; ok {
-		if Stage.BackRepo != nil {
-			Stage.BackRepo.CheckoutXLSheet(xlsheet)
+func (xlsheet *XLSheet) Checkout(stage *StageStruct) *XLSheet {
+	if _, ok := stage.XLSheets[xlsheet]; ok {
+		if stage.BackRepo != nil {
+			stage.BackRepo.CheckoutXLSheet(xlsheet)
 		}
 	}
 	return xlsheet
-}
-
-//
-// Legacy, to be deleted
-//
-
-// StageCopy appends a copy of xlsheet to the model stage
-func (xlsheet *XLSheet) StageCopy() *XLSheet {
-	_xlsheet := new(XLSheet)
-	*_xlsheet = *xlsheet
-	_xlsheet.Stage()
-	return _xlsheet
-}
-
-// StageAndCommit appends xlsheet to the model stage and commit to the orm repo
-func (xlsheet *XLSheet) StageAndCommit() *XLSheet {
-	xlsheet.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXLSheet(xlsheet)
-	}
-	return xlsheet
-}
-
-// DeleteStageAndCommit appends xlsheet to the model stage and commit to the orm repo
-func (xlsheet *XLSheet) DeleteStageAndCommit() *XLSheet {
-	xlsheet.Unstage()
-	DeleteORMXLSheet(xlsheet)
-	return xlsheet
-}
-
-// StageCopyAndCommit appends a copy of xlsheet to the model stage and commit to the orm repo
-func (xlsheet *XLSheet) StageCopyAndCommit() *XLSheet {
-	_xlsheet := new(XLSheet)
-	*_xlsheet = *xlsheet
-	_xlsheet.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXLSheet(xlsheet)
-	}
-	return _xlsheet
-}
-
-// CreateORMXLSheet enables dynamic staging of a XLSheet instance
-func CreateORMXLSheet(xlsheet *XLSheet) {
-	xlsheet.Stage()
-	if Stage.AllModelsStructCreateCallback != nil {
-		Stage.AllModelsStructCreateCallback.CreateORMXLSheet(xlsheet)
-	}
-}
-
-// DeleteORMXLSheet enables dynamic staging of a XLSheet instance
-func DeleteORMXLSheet(xlsheet *XLSheet) {
-	xlsheet.Unstage()
-	if Stage.AllModelsStructDeleteCallback != nil {
-		Stage.AllModelsStructDeleteCallback.DeleteORMXLSheet(xlsheet)
-	}
 }
 
 // for satisfaction of GongStruct interface
@@ -763,23 +488,23 @@ func (stage *StageStruct) Nil() { // insertion point for array nil
 
 func (stage *StageStruct) Unstage() { // insertion point for array nil
 	for displayselection := range stage.DisplaySelections {
-		displayselection.Unstage()
+		displayselection.Unstage(stage)
 	}
 
 	for xlcell := range stage.XLCells {
-		xlcell.Unstage()
+		xlcell.Unstage(stage)
 	}
 
 	for xlfile := range stage.XLFiles {
-		xlfile.Unstage()
+		xlfile.Unstage(stage)
 	}
 
 	for xlrow := range stage.XLRows {
-		xlrow.Unstage()
+		xlrow.Unstage(stage)
 	}
 
 	for xlsheet := range stage.XLSheets {
-		xlsheet.Unstage()
+		xlsheet.Unstage(stage)
 	}
 
 }
@@ -831,6 +556,7 @@ func GongGetSet[Type GongstructSet](stages ...*StageStruct) *Type {
 	var ret Type
 
 	var stage *StageStruct
+	_ = stage
 	if len(stages) > 0 {
 		stage = stages[0]
 	} else {
@@ -860,6 +586,7 @@ func GongGetMap[Type GongstructMapString](stages ...*StageStruct) *Type {
 	var ret Type
 
 	var stage *StageStruct
+	_ = stage
 	if len(stages) > 0 {
 		stage = stages[0]
 	} else {
@@ -889,6 +616,7 @@ func GetGongstructInstancesSet[Type Gongstruct](stages ...*StageStruct) *map[*Ty
 	var ret Type
 
 	var stage *StageStruct
+	_ = stage
 	if len(stages) > 0 {
 		stage = stages[0]
 	} else {
@@ -918,6 +646,7 @@ func GetGongstructInstancesMap[Type Gongstruct](stages ...*StageStruct) *map[str
 	var ret Type
 
 	var stage *StageStruct
+	_ = stage
 	if len(stages) > 0 {
 		stage = stages[0]
 	} else {
@@ -994,7 +723,16 @@ func GetAssociationName[Type Gongstruct]() *Type {
 // The function provides a map with keys as instances of End and values to arrays of *Start
 // the map is construed by iterating over all Start instances and populationg keys with End instances
 // and values with slice of Start instances
-func GetPointerReverseMap[Start, End Gongstruct](fieldname string) map[*End][]*Start {
+func GetPointerReverseMap[Start, End Gongstruct](fieldname string, stages ...*StageStruct) map[*End][]*Start {
+
+	var stage *StageStruct
+	_ = stage
+	if len(stages) > 0 {
+		stage = stages[0]
+	} else {
+		stage = &Stage
+	}
+
 	var ret Start
 
 	switch any(ret).(type) {
@@ -1005,7 +743,7 @@ func GetPointerReverseMap[Start, End Gongstruct](fieldname string) map[*End][]*S
 		// insertion point for per direct association field
 		case "XLFile":
 			res := make(map[*XLFile][]*DisplaySelection)
-			for displayselection := range Stage.DisplaySelections {
+			for displayselection := range stage.DisplaySelections {
 				if displayselection.XLFile != nil {
 					xlfile_ := displayselection.XLFile
 					var displayselections []*DisplaySelection
@@ -1022,7 +760,7 @@ func GetPointerReverseMap[Start, End Gongstruct](fieldname string) map[*End][]*S
 			return any(res).(map[*End][]*Start)
 		case "XLSheet":
 			res := make(map[*XLSheet][]*DisplaySelection)
-			for displayselection := range Stage.DisplaySelections {
+			for displayselection := range stage.DisplaySelections {
 				if displayselection.XLSheet != nil {
 					xlsheet_ := displayselection.XLSheet
 					var displayselections []*DisplaySelection
@@ -1068,7 +806,16 @@ func GetPointerReverseMap[Start, End Gongstruct](fieldname string) map[*End][]*S
 // The function provides a map with keys as instances of End and values to *Start instances
 // the map is construed by iterating over all Start instances and populating keys with End instances
 // and values with the Start instances
-func GetSliceOfPointersReverseMap[Start, End Gongstruct](fieldname string) map[*End]*Start {
+func GetSliceOfPointersReverseMap[Start, End Gongstruct](fieldname string, stages ...*StageStruct) map[*End]*Start {
+
+	var stage *StageStruct
+	_ = stage
+	if len(stages) > 0 {
+		stage = stages[0]
+	} else {
+		stage = &Stage
+	}
+
 	var ret Start
 
 	switch any(ret).(type) {
@@ -1089,7 +836,7 @@ func GetSliceOfPointersReverseMap[Start, End Gongstruct](fieldname string) map[*
 		// insertion point for per direct association field
 		case "Sheets":
 			res := make(map[*XLSheet]*XLFile)
-			for xlfile := range Stage.XLFiles {
+			for xlfile := range stage.XLFiles {
 				for _, xlsheet_ := range xlfile.Sheets {
 					res[xlsheet_] = xlfile
 				}
@@ -1102,7 +849,7 @@ func GetSliceOfPointersReverseMap[Start, End Gongstruct](fieldname string) map[*
 		// insertion point for per direct association field
 		case "Cells":
 			res := make(map[*XLCell]*XLRow)
-			for xlrow := range Stage.XLRows {
+			for xlrow := range stage.XLRows {
 				for _, xlcell_ := range xlrow.Cells {
 					res[xlcell_] = xlrow
 				}
@@ -1115,7 +862,7 @@ func GetSliceOfPointersReverseMap[Start, End Gongstruct](fieldname string) map[*
 		// insertion point for per direct association field
 		case "Rows":
 			res := make(map[*XLRow]*XLSheet)
-			for xlsheet := range Stage.XLSheets {
+			for xlsheet := range stage.XLSheets {
 				for _, xlrow_ := range xlsheet.Rows {
 					res[xlrow_] = xlsheet
 				}
@@ -1123,7 +870,7 @@ func GetSliceOfPointersReverseMap[Start, End Gongstruct](fieldname string) map[*
 			return any(res).(map[*End]*Start)
 		case "SheetCells":
 			res := make(map[*XLCell]*XLSheet)
-			for xlsheet := range Stage.XLSheets {
+			for xlsheet := range stage.XLSheets {
 				for _, xlcell_ := range xlsheet.SheetCells {
 					res[xlcell_] = xlsheet
 				}

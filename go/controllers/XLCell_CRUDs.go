@@ -47,23 +47,22 @@ type XLCellInput struct {
 // default: genericError
 //
 //	200: xlcellDBResponse
-func GetXLCells(c *gin.Context) {
-	db := orm.BackRepo.BackRepoXLCell.GetDB()
+func (controller *Controller) GetXLCells(c *gin.Context) {
 
 	// source slice
 	var xlcellDBs []orm.XLCellDB
 
-	// type Values map[string][]string
 	values := c.Request.URL.Query()
+	stackPath := ""
 	if len(values) == 1 {
 		value := values["GONG__StackPath"]
 		if len(value) == 1 {
-			// we have a single parameter
-			// we assume it is the stack
-			stackParam := value[0]
-			log.Println("GONG__StackPath", stackParam)
+			stackPath = value[0]
+			log.Println("GetXLCells", "GONG__StackPath", stackPath)
 		}
 	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLCell.GetDB()
 
 	query := db.Find(&xlcellDBs)
 	if query.Error != nil {
@@ -108,7 +107,19 @@ func GetXLCells(c *gin.Context) {
 //
 //	Responses:
 //	  200: nodeDBResponse
-func PostXLCell(c *gin.Context) {
+func (controller *Controller) PostXLCell(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("PostXLCells", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLCell.GetDB()
 
 	// Validate input
 	var input orm.XLCellAPI
@@ -128,7 +139,6 @@ func PostXLCell(c *gin.Context) {
 	xlcellDB.XLCellPointersEnconding = input.XLCellPointersEnconding
 	xlcellDB.CopyBasicFieldsFromXLCell(&input.XLCell)
 
-	db := orm.BackRepo.BackRepoXLCell.GetDB()
 	query := db.Create(&xlcellDB)
 	if query.Error != nil {
 		var returnError GenericError
@@ -140,16 +150,16 @@ func PostXLCell(c *gin.Context) {
 	}
 
 	// get an instance (not staged) from DB instance, and call callback function
-	orm.BackRepo.BackRepoXLCell.CheckoutPhaseOneInstance(&xlcellDB)
-	xlcell := (*orm.BackRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
+	backRepo.BackRepoXLCell.CheckoutPhaseOneInstance(&xlcellDB)
+	xlcell := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
 
 	if xlcell != nil {
-		models.AfterCreateFromFront(&models.Stage, xlcell)
+		models.AfterCreateFromFront(backRepo.GetStage(), xlcell)
 	}
 
 	// a POST is equivalent to a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, xlcellDB)
 }
@@ -164,21 +174,19 @@ func PostXLCell(c *gin.Context) {
 // default: genericError
 //
 //	200: xlcellDBResponse
-func GetXLCell(c *gin.Context) {
+func (controller *Controller) GetXLCell(c *gin.Context) {
 
-	// type Values map[string][]string
 	values := c.Request.URL.Query()
+	stackPath := ""
 	if len(values) == 1 {
-		value := values["stack"]
+		value := values["GONG__StackPath"]
 		if len(value) == 1 {
-			// we have a single parameter
-			// we assume it is the stack
-			stackParam := value[0]
-			log.Println("GET params", stackParam)
+			stackPath = value[0]
+			log.Println("GetXLCell", "GONG__StackPath", stackPath)
 		}
 	}
-
-	db := orm.BackRepo.BackRepoXLCell.GetDB()
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLCell.GetDB()
 
 	// Get xlcellDB in DB
 	var xlcellDB orm.XLCellDB
@@ -209,7 +217,19 @@ func GetXLCell(c *gin.Context) {
 // default: genericError
 //
 //	200: xlcellDBResponse
-func UpdateXLCell(c *gin.Context) {
+func (controller *Controller) UpdateXLCell(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("UpdateXLCell", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLCell.GetDB()
 
 	// Validate input
 	var input orm.XLCellAPI
@@ -218,8 +238,6 @@ func UpdateXLCell(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	db := orm.BackRepo.BackRepoXLCell.GetDB()
 
 	// Get model if exist
 	var xlcellDB orm.XLCellDB
@@ -255,16 +273,16 @@ func UpdateXLCell(c *gin.Context) {
 	xlcellDB.CopyBasicFieldsToXLCell(xlcellNew)
 
 	// get stage instance from DB instance, and call callback function
-	xlcellOld := (*orm.BackRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
+	xlcellOld := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
 	if xlcellOld != nil {
-		models.AfterUpdateFromFront(&models.Stage, xlcellOld, xlcellNew)
+		models.AfterUpdateFromFront(backRepo.GetStage(), xlcellOld, xlcellNew)
 	}
 
 	// an UPDATE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
 	// in some cases, with the marshalling of the stage, this operation might
 	// generates a checkout
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	// return status OK with the marshalling of the the xlcellDB
 	c.JSON(http.StatusOK, xlcellDB)
@@ -279,8 +297,19 @@ func UpdateXLCell(c *gin.Context) {
 // default: genericError
 //
 //	200: xlcellDBResponse
-func DeleteXLCell(c *gin.Context) {
-	db := orm.BackRepo.BackRepoXLCell.GetDB()
+func (controller *Controller) DeleteXLCell(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("DeleteXLCell", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLCell.GetDB()
 
 	// Get model if exist
 	var xlcellDB orm.XLCellDB
@@ -301,14 +330,14 @@ func DeleteXLCell(c *gin.Context) {
 	xlcellDB.CopyBasicFieldsToXLCell(xlcellDeleted)
 
 	// get stage instance from DB instance, and call callback function
-	xlcellStaged := (*orm.BackRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
+	xlcellStaged := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
 	if xlcellStaged != nil {
-		models.AfterDeleteFromFront(&models.Stage, xlcellStaged, xlcellDeleted)
+		models.AfterDeleteFromFront(backRepo.GetStage(), xlcellStaged, xlcellDeleted)
 	}
 
 	// a DELETE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }

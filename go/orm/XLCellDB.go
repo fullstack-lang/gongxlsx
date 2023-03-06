@@ -126,6 +126,13 @@ type BackRepoXLCellStruct struct {
 	Map_XLCellDBID_XLCellPtr *map[uint]*models.XLCell
 
 	db *gorm.DB
+
+	stage *models.StageStruct
+}
+
+func (backRepoXLCell *BackRepoXLCellStruct) GetStage() (stage *models.StageStruct) {
+	stage = backRepoXLCell.stage
+	return
 }
 
 func (backRepoXLCell *BackRepoXLCellStruct) GetDB() *gorm.DB {
@@ -140,7 +147,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) GetXLCellDBFromXLCellPtr(xlcell *mod
 }
 
 // BackRepoXLCell.Init set up the BackRepo of the XLCell
-func (backRepoXLCell *BackRepoXLCellStruct) Init(db *gorm.DB) (Error error) {
+func (backRepoXLCell *BackRepoXLCellStruct) Init(stage *models.StageStruct, db *gorm.DB) (Error error) {
 
 	if backRepoXLCell.Map_XLCellDBID_XLCellPtr != nil {
 		err := errors.New("In Init, backRepoXLCell.Map_XLCellDBID_XLCellPtr should be nil")
@@ -167,6 +174,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) Init(db *gorm.DB) (Error error) {
 	backRepoXLCell.Map_XLCellPtr_XLCellDBID = &tmpID
 
 	backRepoXLCell.db = db
+	backRepoXLCell.stage = stage
 	return
 }
 
@@ -285,7 +293,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) CheckoutPhaseOne() (Error error) {
 	// list of instances to be removed
 	// start from the initial map on the stage and remove instances that have been checked out
 	xlcellInstancesToBeRemovedFromTheStage := make(map[*models.XLCell]any)
-	for key, value := range models.Stage.XLCells {
+	for key, value := range backRepoXLCell.stage.XLCells {
 		xlcellInstancesToBeRemovedFromTheStage[key] = value
 	}
 
@@ -303,7 +311,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) CheckoutPhaseOne() (Error error) {
 
 	// remove from stage and back repo's 3 maps all xlcells that are not in the checkout
 	for xlcell := range xlcellInstancesToBeRemovedFromTheStage {
-		xlcell.Unstage()
+		xlcell.Unstage(backRepoXLCell.GetStage())
 
 		// remove instance from the back repo 3 maps
 		xlcellID := (*backRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlcell]
@@ -328,12 +336,12 @@ func (backRepoXLCell *BackRepoXLCellStruct) CheckoutPhaseOneInstance(xlcellDB *X
 
 		// append model store with the new element
 		xlcell.Name = xlcellDB.Name_Data.String
-		xlcell.Stage()
+		xlcell.Stage(backRepoXLCell.GetStage())
 	}
 	xlcellDB.CopyBasicFieldsToXLCell(xlcell)
 
 	// in some cases, the instance might have been unstaged. It is necessary to stage it again
-	xlcell.Stage()
+	xlcell.Stage(backRepoXLCell.GetStage())
 
 	// preserve pointer to xlcellDB. Otherwise, pointer will is recycled and the map of pointers
 	// Map_XLCellDBID_XLCellDB)[xlcellDB hold variable pointers

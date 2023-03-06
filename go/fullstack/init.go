@@ -4,6 +4,7 @@ import (
 	// gongxlsx stack for model analysis
 
 	gongxlsx_controllers "github.com/fullstack-lang/gongxlsx/go/controllers"
+	gongxlsx_models "github.com/fullstack-lang/gongxlsx/go/models"
 	gongxlsx_orm "github.com/fullstack-lang/gongxlsx/go/orm"
 	"github.com/gin-gonic/gin"
 
@@ -19,7 +20,7 @@ func Init(r *gin.Engine, filenames ...string) {
 		filenames = append(filenames, ":memory:")
 	}
 
-	db_inMemory := gongxlsx_orm.SetupModels(false, filenames[0])
+	db_inMemory := gongxlsx_orm.SetupModels(&gongxlsx_models.Stage, false, filenames[0])
 
 	// since gongxlsxsim is a multi threaded application. It is important to set up
 	// only one open connexion at a time

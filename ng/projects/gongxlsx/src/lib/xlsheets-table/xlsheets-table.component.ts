@@ -184,7 +184,7 @@ export class XLSheetsTableComponent implements OnInit {
 
   ngOnInit(): void {
     let stackPath = this.activatedRoute.snapshot.paramMap.get('GONG__StackPath')
-    if ( stackPath != undefined) {
+    if (stackPath != undefined) {
       this.GONG__StackPath = stackPath
     }
 
@@ -220,10 +220,14 @@ export class XLSheetsTableComponent implements OnInit {
           let mapOfSourceInstances = this.frontRepo[this.dialogData.SourceStruct + "s" as keyof FrontRepo] as Map<number, XLSheetDB>
           let sourceInstance = mapOfSourceInstances.get(this.dialogData.ID)!
 
-          let sourceField = sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance]! as unknown as XLSheetDB[]
-          for (let associationInstance of sourceField) {
-            let xlsheet = associationInstance[this.dialogData.IntermediateStructField as keyof typeof associationInstance] as unknown as XLSheetDB
-            this.initialSelection.push(xlsheet)
+          // we associates on sourceInstance of type SourceStruct with a MANY MANY associations to XLSheetDB
+          // the field name is sourceField
+          let sourceFieldArray = sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance]! as unknown as XLSheetDB[]
+          if (sourceFieldArray != null) {
+            for (let associationInstance of sourceFieldArray) {
+              let xlsheet = associationInstance[this.dialogData.IntermediateStructField as keyof typeof associationInstance] as unknown as XLSheetDB
+              this.initialSelection.push(xlsheet)
+            }
           }
 
           this.selection = new SelectionModel<XLSheetDB>(allowMultiSelect, this.initialSelection);
@@ -244,7 +248,7 @@ export class XLSheetsTableComponent implements OnInit {
     // list of xlsheets is truncated of xlsheet before the delete
     this.xlsheets = this.xlsheets.filter(h => h !== xlsheet);
 
-    this.xlsheetService.deleteXLSheet(xlsheetID).subscribe(
+    this.xlsheetService.deleteXLSheet(xlsheetID, this.GONG__StackPath).subscribe(
       xlsheet => {
         this.xlsheetService.XLSheetServiceChanged.next("delete")
       }
@@ -310,7 +314,7 @@ export class XLSheetsTableComponent implements OnInit {
 
       // update all xlsheet (only update selection & initial selection)
       for (let xlsheet of toUpdate) {
-        this.xlsheetService.updateXLSheet(xlsheet)
+        this.xlsheetService.updateXLSheet(xlsheet, this.GONG__StackPath)
           .subscribe(xlsheet => {
             this.xlsheetService.XLSheetServiceChanged.next("update")
           });

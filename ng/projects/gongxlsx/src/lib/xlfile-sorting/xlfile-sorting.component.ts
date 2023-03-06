@@ -100,7 +100,7 @@ export class XLFileSortingComponent implements OnInit {
 
     this.associatedXLFiles.forEach(
       xlfile => {
-        this.xlfileService.updateXLFile(xlfile)
+        this.xlfileService.updateXLFile(xlfile, this.dialogData.GONG__StackPath)
           .subscribe(xlfile => {
             this.xlfileService.XLFileServiceChanged.next("update")
           });

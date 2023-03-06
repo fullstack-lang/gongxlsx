@@ -20,6 +20,8 @@ func IsStaged[Type Gongstruct](stage *StageStruct, instance *Type) (ok bool) {
 	case *XLSheet:
 		ok = stage.IsStagedXLSheet(target)
 
+	default:
+		_ = target
 	}
 	return
 }
@@ -84,6 +86,8 @@ func StageBranch[Type Gongstruct](stage *StageStruct, instance *Type) {
 	case *XLSheet:
 		stage.StageBranchXLSheet(target)
 
+	default:
+		_ = target
 	}
 }
 
@@ -95,7 +99,7 @@ func (stage *StageStruct) StageBranchDisplaySelection(displayselection *DisplayS
 		return
 	}
 
-	displayselection.Stage()
+	displayselection.Stage(stage)
 
 	//insertion point for the staging of instances referenced by pointers
 	if displayselection.XLFile != nil {
@@ -116,7 +120,7 @@ func (stage *StageStruct) StageBranchXLCell(xlcell *XLCell) {
 		return
 	}
 
-	xlcell.Stage()
+	xlcell.Stage(stage)
 
 	//insertion point for the staging of instances referenced by pointers
 
@@ -131,7 +135,7 @@ func (stage *StageStruct) StageBranchXLFile(xlfile *XLFile) {
 		return
 	}
 
-	xlfile.Stage()
+	xlfile.Stage(stage)
 
 	//insertion point for the staging of instances referenced by pointers
 
@@ -149,7 +153,7 @@ func (stage *StageStruct) StageBranchXLRow(xlrow *XLRow) {
 		return
 	}
 
-	xlrow.Stage()
+	xlrow.Stage(stage)
 
 	//insertion point for the staging of instances referenced by pointers
 
@@ -167,7 +171,7 @@ func (stage *StageStruct) StageBranchXLSheet(xlsheet *XLSheet) {
 		return
 	}
 
-	xlsheet.Stage()
+	xlsheet.Stage(stage)
 
 	//insertion point for the staging of instances referenced by pointers
 
@@ -205,6 +209,8 @@ func UnstageBranch[Type Gongstruct](stage *StageStruct, instance *Type) {
 	case *XLSheet:
 		stage.UnstageBranchXLSheet(target)
 
+	default:
+		_ = target
 	}
 }
 
@@ -216,7 +222,7 @@ func (stage *StageStruct) UnstageBranchDisplaySelection(displayselection *Displa
 		return
 	}
 
-	displayselection.Unstage()
+	displayselection.Unstage(stage)
 
 	//insertion point for the staging of instances referenced by pointers
 	if displayselection.XLFile != nil {
@@ -237,7 +243,7 @@ func (stage *StageStruct) UnstageBranchXLCell(xlcell *XLCell) {
 		return
 	}
 
-	xlcell.Unstage()
+	xlcell.Unstage(stage)
 
 	//insertion point for the staging of instances referenced by pointers
 
@@ -252,7 +258,7 @@ func (stage *StageStruct) UnstageBranchXLFile(xlfile *XLFile) {
 		return
 	}
 
-	xlfile.Unstage()
+	xlfile.Unstage(stage)
 
 	//insertion point for the staging of instances referenced by pointers
 
@@ -270,7 +276,7 @@ func (stage *StageStruct) UnstageBranchXLRow(xlrow *XLRow) {
 		return
 	}
 
-	xlrow.Unstage()
+	xlrow.Unstage(stage)
 
 	//insertion point for the staging of instances referenced by pointers
 
@@ -288,7 +294,7 @@ func (stage *StageStruct) UnstageBranchXLSheet(xlsheet *XLSheet) {
 		return
 	}
 
-	xlsheet.Unstage()
+	xlsheet.Unstage(stage)
 
 	//insertion point for the staging of instances referenced by pointers
 

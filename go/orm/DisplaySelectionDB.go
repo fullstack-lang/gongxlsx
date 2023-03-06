@@ -110,6 +110,13 @@ type BackRepoDisplaySelectionStruct struct {
 	Map_DisplaySelectionDBID_DisplaySelectionPtr *map[uint]*models.DisplaySelection
 
 	db *gorm.DB
+
+	stage *models.StageStruct
+}
+
+func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) GetStage() (stage *models.StageStruct) {
+	stage = backRepoDisplaySelection.stage
+	return
 }
 
 func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) GetDB() *gorm.DB {
@@ -124,7 +131,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) GetDisplaySelect
 }
 
 // BackRepoDisplaySelection.Init set up the BackRepo of the DisplaySelection
-func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) Init(db *gorm.DB) (Error error) {
+func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) Init(stage *models.StageStruct, db *gorm.DB) (Error error) {
 
 	if backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr != nil {
 		err := errors.New("In Init, backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr should be nil")
@@ -151,6 +158,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) Init(db *gorm.DB
 	backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID = &tmpID
 
 	backRepoDisplaySelection.db = db
+	backRepoDisplaySelection.stage = stage
 	return
 }
 
@@ -287,7 +295,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseOne
 	// list of instances to be removed
 	// start from the initial map on the stage and remove instances that have been checked out
 	displayselectionInstancesToBeRemovedFromTheStage := make(map[*models.DisplaySelection]any)
-	for key, value := range models.Stage.DisplaySelections {
+	for key, value := range backRepoDisplaySelection.stage.DisplaySelections {
 		displayselectionInstancesToBeRemovedFromTheStage[key] = value
 	}
 
@@ -305,7 +313,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseOne
 
 	// remove from stage and back repo's 3 maps all displayselections that are not in the checkout
 	for displayselection := range displayselectionInstancesToBeRemovedFromTheStage {
-		displayselection.Unstage()
+		displayselection.Unstage(backRepoDisplaySelection.GetStage())
 
 		// remove instance from the back repo 3 maps
 		displayselectionID := (*backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID)[displayselection]
@@ -330,12 +338,12 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseOne
 
 		// append model store with the new element
 		displayselection.Name = displayselectionDB.Name_Data.String
-		displayselection.Stage()
+		displayselection.Stage(backRepoDisplaySelection.GetStage())
 	}
 	displayselectionDB.CopyBasicFieldsToDisplaySelection(displayselection)
 
 	// in some cases, the instance might have been unstaged. It is necessary to stage it again
-	displayselection.Stage()
+	displayselection.Stage(backRepoDisplaySelection.GetStage())
 
 	// preserve pointer to displayselectionDB. Otherwise, pointer will is recycled and the map of pointers
 	// Map_DisplaySelectionDBID_DisplaySelectionDB)[displayselectionDB hold variable pointers

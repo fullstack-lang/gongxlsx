@@ -100,7 +100,7 @@ export class DisplaySelectionSortingComponent implements OnInit {
 
     this.associatedDisplaySelections.forEach(
       displayselection => {
-        this.displayselectionService.updateDisplaySelection(displayselection)
+        this.displayselectionService.updateDisplaySelection(displayselection, this.dialogData.GONG__StackPath)
           .subscribe(displayselection => {
             this.displayselectionService.DisplaySelectionServiceChanged.next("update")
           });

@@ -47,23 +47,22 @@ type XLRowInput struct {
 // default: genericError
 //
 //	200: xlrowDBResponse
-func GetXLRows(c *gin.Context) {
-	db := orm.BackRepo.BackRepoXLRow.GetDB()
+func (controller *Controller) GetXLRows(c *gin.Context) {
 
 	// source slice
 	var xlrowDBs []orm.XLRowDB
 
-	// type Values map[string][]string
 	values := c.Request.URL.Query()
+	stackPath := ""
 	if len(values) == 1 {
 		value := values["GONG__StackPath"]
 		if len(value) == 1 {
-			// we have a single parameter
-			// we assume it is the stack
-			stackParam := value[0]
-			log.Println("GONG__StackPath", stackParam)
+			stackPath = value[0]
+			log.Println("GetXLRows", "GONG__StackPath", stackPath)
 		}
 	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLRow.GetDB()
 
 	query := db.Find(&xlrowDBs)
 	if query.Error != nil {
@@ -108,7 +107,19 @@ func GetXLRows(c *gin.Context) {
 //
 //	Responses:
 //	  200: nodeDBResponse
-func PostXLRow(c *gin.Context) {
+func (controller *Controller) PostXLRow(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("PostXLRows", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLRow.GetDB()
 
 	// Validate input
 	var input orm.XLRowAPI
@@ -128,7 +139,6 @@ func PostXLRow(c *gin.Context) {
 	xlrowDB.XLRowPointersEnconding = input.XLRowPointersEnconding
 	xlrowDB.CopyBasicFieldsFromXLRow(&input.XLRow)
 
-	db := orm.BackRepo.BackRepoXLRow.GetDB()
 	query := db.Create(&xlrowDB)
 	if query.Error != nil {
 		var returnError GenericError
@@ -140,16 +150,16 @@ func PostXLRow(c *gin.Context) {
 	}
 
 	// get an instance (not staged) from DB instance, and call callback function
-	orm.BackRepo.BackRepoXLRow.CheckoutPhaseOneInstance(&xlrowDB)
-	xlrow := (*orm.BackRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB.ID]
+	backRepo.BackRepoXLRow.CheckoutPhaseOneInstance(&xlrowDB)
+	xlrow := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB.ID]
 
 	if xlrow != nil {
-		models.AfterCreateFromFront(&models.Stage, xlrow)
+		models.AfterCreateFromFront(backRepo.GetStage(), xlrow)
 	}
 
 	// a POST is equivalent to a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, xlrowDB)
 }
@@ -164,21 +174,19 @@ func PostXLRow(c *gin.Context) {
 // default: genericError
 //
 //	200: xlrowDBResponse
-func GetXLRow(c *gin.Context) {
+func (controller *Controller) GetXLRow(c *gin.Context) {
 
-	// type Values map[string][]string
 	values := c.Request.URL.Query()
+	stackPath := ""
 	if len(values) == 1 {
-		value := values["stack"]
+		value := values["GONG__StackPath"]
 		if len(value) == 1 {
-			// we have a single parameter
-			// we assume it is the stack
-			stackParam := value[0]
-			log.Println("GET params", stackParam)
+			stackPath = value[0]
+			log.Println("GetXLRow", "GONG__StackPath", stackPath)
 		}
 	}
-
-	db := orm.BackRepo.BackRepoXLRow.GetDB()
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLRow.GetDB()
 
 	// Get xlrowDB in DB
 	var xlrowDB orm.XLRowDB
@@ -209,7 +217,19 @@ func GetXLRow(c *gin.Context) {
 // default: genericError
 //
 //	200: xlrowDBResponse
-func UpdateXLRow(c *gin.Context) {
+func (controller *Controller) UpdateXLRow(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("UpdateXLRow", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLRow.GetDB()
 
 	// Validate input
 	var input orm.XLRowAPI
@@ -218,8 +238,6 @@ func UpdateXLRow(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	db := orm.BackRepo.BackRepoXLRow.GetDB()
 
 	// Get model if exist
 	var xlrowDB orm.XLRowDB
@@ -255,16 +273,16 @@ func UpdateXLRow(c *gin.Context) {
 	xlrowDB.CopyBasicFieldsToXLRow(xlrowNew)
 
 	// get stage instance from DB instance, and call callback function
-	xlrowOld := (*orm.BackRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB.ID]
+	xlrowOld := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB.ID]
 	if xlrowOld != nil {
-		models.AfterUpdateFromFront(&models.Stage, xlrowOld, xlrowNew)
+		models.AfterUpdateFromFront(backRepo.GetStage(), xlrowOld, xlrowNew)
 	}
 
 	// an UPDATE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
 	// in some cases, with the marshalling of the stage, this operation might
 	// generates a checkout
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	// return status OK with the marshalling of the the xlrowDB
 	c.JSON(http.StatusOK, xlrowDB)
@@ -279,8 +297,19 @@ func UpdateXLRow(c *gin.Context) {
 // default: genericError
 //
 //	200: xlrowDBResponse
-func DeleteXLRow(c *gin.Context) {
-	db := orm.BackRepo.BackRepoXLRow.GetDB()
+func (controller *Controller) DeleteXLRow(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("DeleteXLRow", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoXLRow.GetDB()
 
 	// Get model if exist
 	var xlrowDB orm.XLRowDB
@@ -301,14 +330,14 @@ func DeleteXLRow(c *gin.Context) {
 	xlrowDB.CopyBasicFieldsToXLRow(xlrowDeleted)
 
 	// get stage instance from DB instance, and call callback function
-	xlrowStaged := (*orm.BackRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB.ID]
+	xlrowStaged := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB.ID]
 	if xlrowStaged != nil {
-		models.AfterDeleteFromFront(&models.Stage, xlrowStaged, xlrowDeleted)
+		models.AfterDeleteFromFront(backRepo.GetStage(), xlrowStaged, xlrowDeleted)
 	}
 
 	// a DELETE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }

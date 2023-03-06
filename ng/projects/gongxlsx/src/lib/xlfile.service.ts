@@ -20,10 +20,6 @@ import { XLFileDB } from './xlfile-db';
 })
 export class XLFileService {
 
-  httpOptions = {
-    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-  };
-
   // Kamar Raïmo: Adding a way to communicate between components that share information
   // so that they are notified of a change.
   XLFileServiceChanged: BehaviorSubject<string> = new BehaviorSubject("");
@@ -32,7 +28,6 @@ export class XLFileService {
 
   constructor(
     private http: HttpClient,
-    private location: Location,
     @Inject(DOCUMENT) private document: Document
   ) {
     // path to the service share the same origin with the path to the document
@@ -67,15 +62,19 @@ export class XLFileService {
     );
   }
 
-  //////// Save methods //////////
-
   /** POST: add a new xlfile to the server */
-  postXLFile(xlfiledb: XLFileDB): Observable<XLFileDB> {
+  postXLFile(xlfiledb: XLFileDB, GONG__StackPath: string): Observable<XLFileDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
     xlfiledb.Sheets = []
 
-    return this.http.post<XLFileDB>(this.xlfilesUrl, xlfiledb, this.httpOptions).pipe(
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    }
+
+	return this.http.post<XLFileDB>(this.xlfilesUrl, xlfiledb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
         this.log(`posted xlfiledb id=${xlfiledb.ID}`)
@@ -85,25 +84,37 @@ export class XLFileService {
   }
 
   /** DELETE: delete the xlfiledb from the server */
-  deleteXLFile(xlfiledb: XLFileDB | number): Observable<XLFileDB> {
+  deleteXLFile(xlfiledb: XLFileDB | number, GONG__StackPath: string): Observable<XLFileDB> {
     const id = typeof xlfiledb === 'number' ? xlfiledb : xlfiledb.ID;
     const url = `${this.xlfilesUrl}/${id}`;
 
-    return this.http.delete<XLFileDB>(url, this.httpOptions).pipe(
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    };
+
+    return this.http.delete<XLFileDB>(url, httpOptions).pipe(
       tap(_ => this.log(`deleted xlfiledb id=${id}`)),
       catchError(this.handleError<XLFileDB>('deleteXLFile'))
     );
   }
 
   /** PUT: update the xlfiledb on the server */
-  updateXLFile(xlfiledb: XLFileDB): Observable<XLFileDB> {
+  updateXLFile(xlfiledb: XLFileDB, GONG__StackPath: string): Observable<XLFileDB> {
     const id = typeof xlfiledb === 'number' ? xlfiledb : xlfiledb.ID;
     const url = `${this.xlfilesUrl}/${id}`;
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
     xlfiledb.Sheets = []
 
-    return this.http.put<XLFileDB>(url, xlfiledb, this.httpOptions).pipe(
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    };
+
+    return this.http.put<XLFileDB>(url, xlfiledb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
         this.log(`updated xlfiledb id=${xlfiledb.ID}`)

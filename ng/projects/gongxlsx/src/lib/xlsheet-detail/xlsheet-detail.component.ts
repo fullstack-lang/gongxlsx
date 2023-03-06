@@ -174,13 +174,13 @@ export class XLSheetDetailComponent implements OnInit {
 
 		switch (this.state) {
 			case XLSheetDetailComponentState.UPDATE_INSTANCE:
-				this.xlsheetService.updateXLSheet(this.xlsheet)
+				this.xlsheetService.updateXLSheet(this.xlsheet, this.GONG__StackPath)
 					.subscribe(xlsheet => {
 						this.xlsheetService.XLSheetServiceChanged.next("update")
 					});
 				break;
 			default:
-				this.xlsheetService.postXLSheet(this.xlsheet).subscribe(xlsheet => {
+				this.xlsheetService.postXLSheet(this.xlsheet, this.GONG__StackPath).subscribe(xlsheet => {
 					this.xlsheetService.XLSheetServiceChanged.next("post")
 					this.xlsheet = new (XLSheetDB) // reset fields
 				});

@@ -1,51 +1,166 @@
 {
 	"version": "2.0.0",
 	"tasks": [
-		{
-			"label": "03 - ng serve",
-			"type": "shell",
-			"options": {
-				"cwd": "ng"
-			},
-			"command": "ng serve",
-			"group": "build"
+	  {
+		"label": "02 - run gongxlsx -unmarshallFromCode=stage.go -marshallOnCommit=stage",
+		"type": "shell",
+		"options": {
+		  "cwd": "${workspaceFolder}/go/cmd/gongxlsx"
 		},
-		{
-			"label": "02 - go run",
-			"type": "shell",
-			"options": {
-				"cwd": "./go/cmd/gongxlsx"
-			},
-			"command": "go",
-			"args": [
-				"run",
-				"main.go",
-				"samplefile.xlsx",
-				"samplefile2.xlsx"
-			],
-			"group": "build"
+		"command": "go",
+		"args": [
+		  "run",
+		  "main.go",
+		  "-diagrams",
+		  "-unmarshallFromCode=stage.go",
+		  "-marshallOnCommit=stage"
+		],
+		"group": "build"
+	  },
+	  {
+		"label": "02 - run gongxlsx w/o diagrams",
+		"type": "shell",
+		"options": {
+		  "cwd": "${workspaceFolder}/go/cmd/gongxlsx"
 		},
-		{
-			"label": "01 - gongc",
-			"type": "shell",
-			"options": {
-				"cwd": "go/models"
-			},
-			"command": "gongc",
-			"args": [],
-			"group": "build"
+		"command": "go",
+		"args": [
+		  "run",
+		  ".",
+		  "-diagrams=false",
+		  "--unmarshall=stage",
+		  "-marshallOnCommit=stage"
+		],
+		"group": "build"
+	  },
+	  {
+		"label": "03 - lsof -i tcp:8080 ",
+		"type": "shell",
+		"command": "lsof -i tcp:8080 ",
+		"group": "build"
+	  },
+	  {
+		"label": "03 - ng build",
+		"type": "shell",
+		"command": "cd ng; ng build",
+		"group": "build",
+		"problemMatcher": []
+	  },
+	  {
+		"label": "04 - ng serve",
+		"type": "shell",
+		"command": "cd ng; ng serve",
+		"group": "build",
+		"problemMatcher": []
+	  },
+	  {
+		"label": "01 - gongc gongxlsx",
+		"type": "shell",
+		"options": {
+		  "cwd": "${workspaceFolder}/go/models"
 		},
-		{
-			"label": "01 - gongc & run",
-			"type": "shell",
-			"options": {
-				"cwd": "go/models"
-			},
-			"command": "gongc",
-			"args": [
-				"-run"
-			],
-			"group": "build"
+		"command": "gongc",
+		"group": "build",
+		"args": []
+	  },
+	  {
+		"label": "01 - gongc gongxlsx -skipNg",
+		"type": "shell",
+		"options": {
+		  "cwd": "${workspaceFolder}/go/models"
 		},
+		"command": "gongc",
+		"group": "build",
+		"args": [
+		  "-skipNg"
+		]
+	  },
+	  {
+		"label": "01 - gongc gongxlsx -skipGoModCommands",
+		"type": "shell",
+		"options": {
+		  "cwd": "${workspaceFolder}/go/models"
+		},
+		"command": "gongc",
+		"group": "build",
+		"args": [
+			"-skipGoModCommands"
+		]
+	  },
+	  {
+		"label": "01 - gongc gongxlsx -skipNg -skipGoModCommands",
+		"type": "shell",
+		"options": {
+		  "cwd": "${workspaceFolder}/go/models"
+		},
+		"command": "gongc",
+		"group": "build",
+		"args": [
+		  "-skipNg",
+		  " -skipGoModCommands"
+		]
+	  },
+	  {
+		"label": "00 - go mod vendor",
+		"type": "shell",
+		"group": "build",
+		"command": "go mod vendor"
+	  },
+	  {
+		"label": "00 - update gong dependencies",
+		"type": "shell",
+		"command": "go",
+		"args": [
+		  "get",
+		  "-d",
+		  "github.com/fullstack-lang/gong@HEAD",
+		  "github.com/fullstack-lang/gongdoc@HEAD",
+		],
+		"group": "build"
+	  },
+	  {
+		"label": "00 - go get -d github.com/fullstack-lang/gong@HEAD",
+		"type": "shell",
+		"command": "go",
+		"args": [
+		  "get",
+		  "-d",
+		  "github.com/fullstack-lang/gong@HEAD",
+		],
+		"group": "build"
+	  },
+	  {
+		"label": "00 - go get -d github.com/fullstack-lang/gongdoc@HEAD",
+		"type": "shell",
+		"command": "go",
+		"args": [
+		  "get",
+		  "-d",
+		  "github.com/fullstack-lang/gongdoc@HEAD",
+		],
+		"group": "build"
+	  },
+	  {
+		"label": "00 - go mod tidy",
+		"type": "shell",
+		"command": "go",
+		"args": [
+		  "mod",
+		  "tidy"
+		],
+		"group": "build"
+	  },
+	  {
+		"label": "00 - go build",
+		"type": "shell",
+		"options": {
+		  "cwd": "${workspaceFolder}/go/cmd/gongxlsx"
+		},
+		"command": "go",
+		"args": [
+		  "build"
+		],
+		"group": "build"
+	  },
 	]
-}
+  }

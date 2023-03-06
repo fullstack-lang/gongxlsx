@@ -13,7 +13,7 @@ type XLFile struct {
 	Sheets   []*XLSheet
 }
 
-func (xlfile *XLFile) Open(path string) {
+func (xlfile *XLFile) Open(stage *StageStruct, path string) {
 
 	xlfile.Name = path
 	var err error
@@ -28,7 +28,7 @@ func (xlfile *XLFile) Open(path string) {
 	for _, sh := range xlfile.file.Sheets {
 		// fmt.Println(i, sh.Name)
 
-		xlsheet := new(XLSheet).Stage()
+		xlsheet := new(XLSheet).Stage(stage)
 		xlsheet.Name = sh.Name
 		xlsheet.sheet = sh
 		xlsheet.MaxCol = sh.MaxCol
@@ -49,7 +49,7 @@ func (xlfile *XLFile) Open(path string) {
 				continue
 			}
 			row, _ := sh.Row(rowIndex)
-			xlrow := new(XLRow).Stage()
+			xlrow := new(XLRow).Stage(stage)
 			xlrow.row = row
 			//			xlrow.Name = xlsheet.Name + "-" + fmt.Sprintf("%4d", rowIndex)
 			xlrow.Name = cell.Value
@@ -59,7 +59,7 @@ func (xlfile *XLFile) Open(path string) {
 
 			// get cells
 			for colIndex := 0; colIndex < xlsheet.MaxCol; colIndex = colIndex + 1 {
-				xlcell := new(XLCell).Stage()
+				xlcell := new(XLCell).Stage(stage)
 
 				xlcell.cell, err = sh.Cell(rowIndex, colIndex)
 				if err != nil {

@@ -6,5 +6,11 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'ng';
+
+  view = 'Default view'
+  default = 'Default view'
+  diagrams = 'Diagrams view'
+  meta = 'Meta view'
+
+  views: string[] = [this.default, this.diagrams, this.meta];
 }

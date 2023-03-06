@@ -159,7 +159,7 @@ export class XLFilesTableComponent implements OnInit {
 
   ngOnInit(): void {
     let stackPath = this.activatedRoute.snapshot.paramMap.get('GONG__StackPath')
-    if ( stackPath != undefined) {
+    if (stackPath != undefined) {
       this.GONG__StackPath = stackPath
     }
 
@@ -195,10 +195,14 @@ export class XLFilesTableComponent implements OnInit {
           let mapOfSourceInstances = this.frontRepo[this.dialogData.SourceStruct + "s" as keyof FrontRepo] as Map<number, XLFileDB>
           let sourceInstance = mapOfSourceInstances.get(this.dialogData.ID)!
 
-          let sourceField = sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance]! as unknown as XLFileDB[]
-          for (let associationInstance of sourceField) {
-            let xlfile = associationInstance[this.dialogData.IntermediateStructField as keyof typeof associationInstance] as unknown as XLFileDB
-            this.initialSelection.push(xlfile)
+          // we associates on sourceInstance of type SourceStruct with a MANY MANY associations to XLFileDB
+          // the field name is sourceField
+          let sourceFieldArray = sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance]! as unknown as XLFileDB[]
+          if (sourceFieldArray != null) {
+            for (let associationInstance of sourceFieldArray) {
+              let xlfile = associationInstance[this.dialogData.IntermediateStructField as keyof typeof associationInstance] as unknown as XLFileDB
+              this.initialSelection.push(xlfile)
+            }
           }
 
           this.selection = new SelectionModel<XLFileDB>(allowMultiSelect, this.initialSelection);
@@ -219,7 +223,7 @@ export class XLFilesTableComponent implements OnInit {
     // list of xlfiles is truncated of xlfile before the delete
     this.xlfiles = this.xlfiles.filter(h => h !== xlfile);
 
-    this.xlfileService.deleteXLFile(xlfileID).subscribe(
+    this.xlfileService.deleteXLFile(xlfileID, this.GONG__StackPath).subscribe(
       xlfile => {
         this.xlfileService.XLFileServiceChanged.next("delete")
       }
@@ -285,7 +289,7 @@ export class XLFilesTableComponent implements OnInit {
 
       // update all xlfile (only update selection & initial selection)
       for (let xlfile of toUpdate) {
-        this.xlfileService.updateXLFile(xlfile)
+        this.xlfileService.updateXLFile(xlfile, this.GONG__StackPath)
           .subscribe(xlfile => {
             this.xlfileService.XLFileServiceChanged.next("update")
           });

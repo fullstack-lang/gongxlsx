@@ -21,10 +21,6 @@ import { XLFileDB } from './xlfile-db'
 })
 export class XLSheetService {
 
-  httpOptions = {
-    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-  };
-
   // Kamar Raïmo: Adding a way to communicate between components that share information
   // so that they are notified of a change.
   XLSheetServiceChanged: BehaviorSubject<string> = new BehaviorSubject("");
@@ -33,7 +29,6 @@ export class XLSheetService {
 
   constructor(
     private http: HttpClient,
-    private location: Location,
     @Inject(DOCUMENT) private document: Document
   ) {
     // path to the service share the same origin with the path to the document
@@ -68,10 +63,8 @@ export class XLSheetService {
     );
   }
 
-  //////// Save methods //////////
-
   /** POST: add a new xlsheet to the server */
-  postXLSheet(xlsheetdb: XLSheetDB): Observable<XLSheetDB> {
+  postXLSheet(xlsheetdb: XLSheetDB, GONG__StackPath: string): Observable<XLSheetDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
     xlsheetdb.Rows = []
@@ -79,7 +72,13 @@ export class XLSheetService {
     let _XLFile_Sheets_reverse = xlsheetdb.XLFile_Sheets_reverse
     xlsheetdb.XLFile_Sheets_reverse = new XLFileDB
 
-    return this.http.post<XLSheetDB>(this.xlsheetsUrl, xlsheetdb, this.httpOptions).pipe(
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    }
+
+	return this.http.post<XLSheetDB>(this.xlsheetsUrl, xlsheetdb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
         xlsheetdb.XLFile_Sheets_reverse = _XLFile_Sheets_reverse
@@ -90,18 +89,24 @@ export class XLSheetService {
   }
 
   /** DELETE: delete the xlsheetdb from the server */
-  deleteXLSheet(xlsheetdb: XLSheetDB | number): Observable<XLSheetDB> {
+  deleteXLSheet(xlsheetdb: XLSheetDB | number, GONG__StackPath: string): Observable<XLSheetDB> {
     const id = typeof xlsheetdb === 'number' ? xlsheetdb : xlsheetdb.ID;
     const url = `${this.xlsheetsUrl}/${id}`;
 
-    return this.http.delete<XLSheetDB>(url, this.httpOptions).pipe(
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    };
+
+    return this.http.delete<XLSheetDB>(url, httpOptions).pipe(
       tap(_ => this.log(`deleted xlsheetdb id=${id}`)),
       catchError(this.handleError<XLSheetDB>('deleteXLSheet'))
     );
   }
 
   /** PUT: update the xlsheetdb on the server */
-  updateXLSheet(xlsheetdb: XLSheetDB): Observable<XLSheetDB> {
+  updateXLSheet(xlsheetdb: XLSheetDB, GONG__StackPath: string): Observable<XLSheetDB> {
     const id = typeof xlsheetdb === 'number' ? xlsheetdb : xlsheetdb.ID;
     const url = `${this.xlsheetsUrl}/${id}`;
 
@@ -111,7 +116,13 @@ export class XLSheetService {
     let _XLFile_Sheets_reverse = xlsheetdb.XLFile_Sheets_reverse
     xlsheetdb.XLFile_Sheets_reverse = new XLFileDB
 
-    return this.http.put<XLSheetDB>(url, xlsheetdb, this.httpOptions).pipe(
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    };
+
+    return this.http.put<XLSheetDB>(url, xlsheetdb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
         xlsheetdb.XLFile_Sheets_reverse = _XLFile_Sheets_reverse

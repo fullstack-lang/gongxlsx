@@ -22,10 +22,6 @@ import { XLSheetDB } from './xlsheet-db'
 })
 export class DisplaySelectionService {
 
-  httpOptions = {
-    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-  };
-
   // Kamar Raïmo: Adding a way to communicate between components that share information
   // so that they are notified of a change.
   DisplaySelectionServiceChanged: BehaviorSubject<string> = new BehaviorSubject("");
@@ -34,7 +30,6 @@ export class DisplaySelectionService {
 
   constructor(
     private http: HttpClient,
-    private location: Location,
     @Inject(DOCUMENT) private document: Document
   ) {
     // path to the service share the same origin with the path to the document
@@ -69,16 +64,20 @@ export class DisplaySelectionService {
     );
   }
 
-  //////// Save methods //////////
-
   /** POST: add a new displayselection to the server */
-  postDisplaySelection(displayselectiondb: DisplaySelectionDB): Observable<DisplaySelectionDB> {
+  postDisplaySelection(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string): Observable<DisplaySelectionDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
     displayselectiondb.XLFile = new XLFileDB
     displayselectiondb.XLSheet = new XLSheetDB
 
-    return this.http.post<DisplaySelectionDB>(this.displayselectionsUrl, displayselectiondb, this.httpOptions).pipe(
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    }
+
+	return this.http.post<DisplaySelectionDB>(this.displayselectionsUrl, displayselectiondb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
         this.log(`posted displayselectiondb id=${displayselectiondb.ID}`)
@@ -88,18 +87,24 @@ export class DisplaySelectionService {
   }
 
   /** DELETE: delete the displayselectiondb from the server */
-  deleteDisplaySelection(displayselectiondb: DisplaySelectionDB | number): Observable<DisplaySelectionDB> {
+  deleteDisplaySelection(displayselectiondb: DisplaySelectionDB | number, GONG__StackPath: string): Observable<DisplaySelectionDB> {
     const id = typeof displayselectiondb === 'number' ? displayselectiondb : displayselectiondb.ID;
     const url = `${this.displayselectionsUrl}/${id}`;
 
-    return this.http.delete<DisplaySelectionDB>(url, this.httpOptions).pipe(
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    };
+
+    return this.http.delete<DisplaySelectionDB>(url, httpOptions).pipe(
       tap(_ => this.log(`deleted displayselectiondb id=${id}`)),
       catchError(this.handleError<DisplaySelectionDB>('deleteDisplaySelection'))
     );
   }
 
   /** PUT: update the displayselectiondb on the server */
-  updateDisplaySelection(displayselectiondb: DisplaySelectionDB): Observable<DisplaySelectionDB> {
+  updateDisplaySelection(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string): Observable<DisplaySelectionDB> {
     const id = typeof displayselectiondb === 'number' ? displayselectiondb : displayselectiondb.ID;
     const url = `${this.displayselectionsUrl}/${id}`;
 
@@ -107,7 +112,13 @@ export class DisplaySelectionService {
     displayselectiondb.XLFile = new XLFileDB
     displayselectiondb.XLSheet = new XLSheetDB
 
-    return this.http.put<DisplaySelectionDB>(url, displayselectiondb, this.httpOptions).pipe(
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    };
+
+    return this.http.put<DisplaySelectionDB>(url, displayselectiondb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
         this.log(`updated displayselectiondb id=${displayselectiondb.ID}`)

@@ -47,23 +47,22 @@ type DisplaySelectionInput struct {
 // default: genericError
 //
 //	200: displayselectionDBResponse
-func GetDisplaySelections(c *gin.Context) {
-	db := orm.BackRepo.BackRepoDisplaySelection.GetDB()
+func (controller *Controller) GetDisplaySelections(c *gin.Context) {
 
 	// source slice
 	var displayselectionDBs []orm.DisplaySelectionDB
 
-	// type Values map[string][]string
 	values := c.Request.URL.Query()
+	stackPath := ""
 	if len(values) == 1 {
 		value := values["GONG__StackPath"]
 		if len(value) == 1 {
-			// we have a single parameter
-			// we assume it is the stack
-			stackParam := value[0]
-			log.Println("GONG__StackPath", stackParam)
+			stackPath = value[0]
+			log.Println("GetDisplaySelections", "GONG__StackPath", stackPath)
 		}
 	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoDisplaySelection.GetDB()
 
 	query := db.Find(&displayselectionDBs)
 	if query.Error != nil {
@@ -108,7 +107,19 @@ func GetDisplaySelections(c *gin.Context) {
 //
 //	Responses:
 //	  200: nodeDBResponse
-func PostDisplaySelection(c *gin.Context) {
+func (controller *Controller) PostDisplaySelection(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("PostDisplaySelections", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoDisplaySelection.GetDB()
 
 	// Validate input
 	var input orm.DisplaySelectionAPI
@@ -128,7 +139,6 @@ func PostDisplaySelection(c *gin.Context) {
 	displayselectionDB.DisplaySelectionPointersEnconding = input.DisplaySelectionPointersEnconding
 	displayselectionDB.CopyBasicFieldsFromDisplaySelection(&input.DisplaySelection)
 
-	db := orm.BackRepo.BackRepoDisplaySelection.GetDB()
 	query := db.Create(&displayselectionDB)
 	if query.Error != nil {
 		var returnError GenericError
@@ -140,16 +150,16 @@ func PostDisplaySelection(c *gin.Context) {
 	}
 
 	// get an instance (not staged) from DB instance, and call callback function
-	orm.BackRepo.BackRepoDisplaySelection.CheckoutPhaseOneInstance(&displayselectionDB)
-	displayselection := (*orm.BackRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
+	backRepo.BackRepoDisplaySelection.CheckoutPhaseOneInstance(&displayselectionDB)
+	displayselection := (*backRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
 
 	if displayselection != nil {
-		models.AfterCreateFromFront(&models.Stage, displayselection)
+		models.AfterCreateFromFront(backRepo.GetStage(), displayselection)
 	}
 
 	// a POST is equivalent to a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, displayselectionDB)
 }
@@ -164,21 +174,19 @@ func PostDisplaySelection(c *gin.Context) {
 // default: genericError
 //
 //	200: displayselectionDBResponse
-func GetDisplaySelection(c *gin.Context) {
+func (controller *Controller) GetDisplaySelection(c *gin.Context) {
 
-	// type Values map[string][]string
 	values := c.Request.URL.Query()
+	stackPath := ""
 	if len(values) == 1 {
-		value := values["stack"]
+		value := values["GONG__StackPath"]
 		if len(value) == 1 {
-			// we have a single parameter
-			// we assume it is the stack
-			stackParam := value[0]
-			log.Println("GET params", stackParam)
+			stackPath = value[0]
+			log.Println("GetDisplaySelection", "GONG__StackPath", stackPath)
 		}
 	}
-
-	db := orm.BackRepo.BackRepoDisplaySelection.GetDB()
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoDisplaySelection.GetDB()
 
 	// Get displayselectionDB in DB
 	var displayselectionDB orm.DisplaySelectionDB
@@ -209,7 +217,19 @@ func GetDisplaySelection(c *gin.Context) {
 // default: genericError
 //
 //	200: displayselectionDBResponse
-func UpdateDisplaySelection(c *gin.Context) {
+func (controller *Controller) UpdateDisplaySelection(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("UpdateDisplaySelection", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoDisplaySelection.GetDB()
 
 	// Validate input
 	var input orm.DisplaySelectionAPI
@@ -218,8 +238,6 @@ func UpdateDisplaySelection(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	db := orm.BackRepo.BackRepoDisplaySelection.GetDB()
 
 	// Get model if exist
 	var displayselectionDB orm.DisplaySelectionDB
@@ -255,16 +273,16 @@ func UpdateDisplaySelection(c *gin.Context) {
 	displayselectionDB.CopyBasicFieldsToDisplaySelection(displayselectionNew)
 
 	// get stage instance from DB instance, and call callback function
-	displayselectionOld := (*orm.BackRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
+	displayselectionOld := (*backRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
 	if displayselectionOld != nil {
-		models.AfterUpdateFromFront(&models.Stage, displayselectionOld, displayselectionNew)
+		models.AfterUpdateFromFront(backRepo.GetStage(), displayselectionOld, displayselectionNew)
 	}
 
 	// an UPDATE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
 	// in some cases, with the marshalling of the stage, this operation might
 	// generates a checkout
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	// return status OK with the marshalling of the the displayselectionDB
 	c.JSON(http.StatusOK, displayselectionDB)
@@ -279,8 +297,19 @@ func UpdateDisplaySelection(c *gin.Context) {
 // default: genericError
 //
 //	200: displayselectionDBResponse
-func DeleteDisplaySelection(c *gin.Context) {
-	db := orm.BackRepo.BackRepoDisplaySelection.GetDB()
+func (controller *Controller) DeleteDisplaySelection(c *gin.Context) {
+
+	values := c.Request.URL.Query()
+	stackPath := ""
+	if len(values) == 1 {
+		value := values["GONG__StackPath"]
+		if len(value) == 1 {
+			stackPath = value[0]
+			log.Println("DeleteDisplaySelection", "GONG__StackPath", stackPath)
+		}
+	}
+	backRepo := controller.Map_BackRepos[stackPath]
+	db := backRepo.BackRepoDisplaySelection.GetDB()
 
 	// Get model if exist
 	var displayselectionDB orm.DisplaySelectionDB
@@ -301,14 +330,14 @@ func DeleteDisplaySelection(c *gin.Context) {
 	displayselectionDB.CopyBasicFieldsToDisplaySelection(displayselectionDeleted)
 
 	// get stage instance from DB instance, and call callback function
-	displayselectionStaged := (*orm.BackRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
+	displayselectionStaged := (*backRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
 	if displayselectionStaged != nil {
-		models.AfterDeleteFromFront(&models.Stage, displayselectionStaged, displayselectionDeleted)
+		models.AfterDeleteFromFront(backRepo.GetStage(), displayselectionStaged, displayselectionDeleted)
 	}
 
 	// a DELETE generates a back repo commit increase
 	// (this will be improved with implementation of unit of work design pattern)
-	orm.BackRepo.IncrementPushFromFrontNb()
+	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }

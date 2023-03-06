@@ -174,13 +174,13 @@ export class XLRowDetailComponent implements OnInit {
 
 		switch (this.state) {
 			case XLRowDetailComponentState.UPDATE_INSTANCE:
-				this.xlrowService.updateXLRow(this.xlrow)
+				this.xlrowService.updateXLRow(this.xlrow, this.GONG__StackPath)
 					.subscribe(xlrow => {
 						this.xlrowService.XLRowServiceChanged.next("update")
 					});
 				break;
 			default:
-				this.xlrowService.postXLRow(this.xlrow).subscribe(xlrow => {
+				this.xlrowService.postXLRow(this.xlrow, this.GONG__StackPath).subscribe(xlrow => {
 					this.xlrowService.XLRowServiceChanged.next("post")
 					this.xlrow = new (XLRowDB) // reset fields
 				});

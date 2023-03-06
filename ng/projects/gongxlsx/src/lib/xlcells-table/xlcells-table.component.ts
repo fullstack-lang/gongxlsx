@@ -191,7 +191,7 @@ export class XLCellsTableComponent implements OnInit {
 
   ngOnInit(): void {
     let stackPath = this.activatedRoute.snapshot.paramMap.get('GONG__StackPath')
-    if ( stackPath != undefined) {
+    if (stackPath != undefined) {
       this.GONG__StackPath = stackPath
     }
 
@@ -227,10 +227,14 @@ export class XLCellsTableComponent implements OnInit {
           let mapOfSourceInstances = this.frontRepo[this.dialogData.SourceStruct + "s" as keyof FrontRepo] as Map<number, XLCellDB>
           let sourceInstance = mapOfSourceInstances.get(this.dialogData.ID)!
 
-          let sourceField = sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance]! as unknown as XLCellDB[]
-          for (let associationInstance of sourceField) {
-            let xlcell = associationInstance[this.dialogData.IntermediateStructField as keyof typeof associationInstance] as unknown as XLCellDB
-            this.initialSelection.push(xlcell)
+          // we associates on sourceInstance of type SourceStruct with a MANY MANY associations to XLCellDB
+          // the field name is sourceField
+          let sourceFieldArray = sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance]! as unknown as XLCellDB[]
+          if (sourceFieldArray != null) {
+            for (let associationInstance of sourceFieldArray) {
+              let xlcell = associationInstance[this.dialogData.IntermediateStructField as keyof typeof associationInstance] as unknown as XLCellDB
+              this.initialSelection.push(xlcell)
+            }
           }
 
           this.selection = new SelectionModel<XLCellDB>(allowMultiSelect, this.initialSelection);
@@ -251,7 +255,7 @@ export class XLCellsTableComponent implements OnInit {
     // list of xlcells is truncated of xlcell before the delete
     this.xlcells = this.xlcells.filter(h => h !== xlcell);
 
-    this.xlcellService.deleteXLCell(xlcellID).subscribe(
+    this.xlcellService.deleteXLCell(xlcellID, this.GONG__StackPath).subscribe(
       xlcell => {
         this.xlcellService.XLCellServiceChanged.next("delete")
       }
@@ -317,7 +321,7 @@ export class XLCellsTableComponent implements OnInit {
 
       // update all xlcell (only update selection & initial selection)
       for (let xlcell of toUpdate) {
-        this.xlcellService.updateXLCell(xlcell)
+        this.xlcellService.updateXLCell(xlcell, this.GONG__StackPath)
           .subscribe(xlcell => {
             this.xlcellService.XLCellServiceChanged.next("update")
           });

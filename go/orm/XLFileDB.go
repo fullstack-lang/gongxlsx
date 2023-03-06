@@ -108,6 +108,13 @@ type BackRepoXLFileStruct struct {
 	Map_XLFileDBID_XLFilePtr *map[uint]*models.XLFile
 
 	db *gorm.DB
+
+	stage *models.StageStruct
+}
+
+func (backRepoXLFile *BackRepoXLFileStruct) GetStage() (stage *models.StageStruct) {
+	stage = backRepoXLFile.stage
+	return
 }
 
 func (backRepoXLFile *BackRepoXLFileStruct) GetDB() *gorm.DB {
@@ -122,7 +129,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) GetXLFileDBFromXLFilePtr(xlfile *mod
 }
 
 // BackRepoXLFile.Init set up the BackRepo of the XLFile
-func (backRepoXLFile *BackRepoXLFileStruct) Init(db *gorm.DB) (Error error) {
+func (backRepoXLFile *BackRepoXLFileStruct) Init(stage *models.StageStruct, db *gorm.DB) (Error error) {
 
 	if backRepoXLFile.Map_XLFileDBID_XLFilePtr != nil {
 		err := errors.New("In Init, backRepoXLFile.Map_XLFileDBID_XLFilePtr should be nil")
@@ -149,6 +156,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) Init(db *gorm.DB) (Error error) {
 	backRepoXLFile.Map_XLFilePtr_XLFileDBID = &tmpID
 
 	backRepoXLFile.db = db
+	backRepoXLFile.stage = stage
 	return
 }
 
@@ -286,7 +294,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOne() (Error error) {
 	// list of instances to be removed
 	// start from the initial map on the stage and remove instances that have been checked out
 	xlfileInstancesToBeRemovedFromTheStage := make(map[*models.XLFile]any)
-	for key, value := range models.Stage.XLFiles {
+	for key, value := range backRepoXLFile.stage.XLFiles {
 		xlfileInstancesToBeRemovedFromTheStage[key] = value
 	}
 
@@ -304,7 +312,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOne() (Error error) {
 
 	// remove from stage and back repo's 3 maps all xlfiles that are not in the checkout
 	for xlfile := range xlfileInstancesToBeRemovedFromTheStage {
-		xlfile.Unstage()
+		xlfile.Unstage(backRepoXLFile.GetStage())
 
 		// remove instance from the back repo 3 maps
 		xlfileID := (*backRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile]
@@ -329,12 +337,12 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOneInstance(xlfileDB *X
 
 		// append model store with the new element
 		xlfile.Name = xlfileDB.Name_Data.String
-		xlfile.Stage()
+		xlfile.Stage(backRepoXLFile.GetStage())
 	}
 	xlfileDB.CopyBasicFieldsToXLFile(xlfile)
 
 	// in some cases, the instance might have been unstaged. It is necessary to stage it again
-	xlfile.Stage()
+	xlfile.Stage(backRepoXLFile.GetStage())
 
 	// preserve pointer to xlfileDB. Otherwise, pointer will is recycled and the map of pointers
 	// Map_XLFileDBID_XLFileDB)[xlfileDB hold variable pointers

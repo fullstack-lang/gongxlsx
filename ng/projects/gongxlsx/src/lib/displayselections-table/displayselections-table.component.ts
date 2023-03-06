@@ -169,7 +169,7 @@ export class DisplaySelectionsTableComponent implements OnInit {
 
   ngOnInit(): void {
     let stackPath = this.activatedRoute.snapshot.paramMap.get('GONG__StackPath')
-    if ( stackPath != undefined) {
+    if (stackPath != undefined) {
       this.GONG__StackPath = stackPath
     }
 
@@ -205,10 +205,14 @@ export class DisplaySelectionsTableComponent implements OnInit {
           let mapOfSourceInstances = this.frontRepo[this.dialogData.SourceStruct + "s" as keyof FrontRepo] as Map<number, DisplaySelectionDB>
           let sourceInstance = mapOfSourceInstances.get(this.dialogData.ID)!
 
-          let sourceField = sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance]! as unknown as DisplaySelectionDB[]
-          for (let associationInstance of sourceField) {
-            let displayselection = associationInstance[this.dialogData.IntermediateStructField as keyof typeof associationInstance] as unknown as DisplaySelectionDB
-            this.initialSelection.push(displayselection)
+          // we associates on sourceInstance of type SourceStruct with a MANY MANY associations to DisplaySelectionDB
+          // the field name is sourceField
+          let sourceFieldArray = sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance]! as unknown as DisplaySelectionDB[]
+          if (sourceFieldArray != null) {
+            for (let associationInstance of sourceFieldArray) {
+              let displayselection = associationInstance[this.dialogData.IntermediateStructField as keyof typeof associationInstance] as unknown as DisplaySelectionDB
+              this.initialSelection.push(displayselection)
+            }
           }
 
           this.selection = new SelectionModel<DisplaySelectionDB>(allowMultiSelect, this.initialSelection);
@@ -229,7 +233,7 @@ export class DisplaySelectionsTableComponent implements OnInit {
     // list of displayselections is truncated of displayselection before the delete
     this.displayselections = this.displayselections.filter(h => h !== displayselection);
 
-    this.displayselectionService.deleteDisplaySelection(displayselectionID).subscribe(
+    this.displayselectionService.deleteDisplaySelection(displayselectionID, this.GONG__StackPath).subscribe(
       displayselection => {
         this.displayselectionService.DisplaySelectionServiceChanged.next("delete")
       }
@@ -295,7 +299,7 @@ export class DisplaySelectionsTableComponent implements OnInit {
 
       // update all displayselection (only update selection & initial selection)
       for (let displayselection of toUpdate) {
-        this.displayselectionService.updateDisplaySelection(displayselection)
+        this.displayselectionService.updateDisplaySelection(displayselection, this.GONG__StackPath)
           .subscribe(displayselection => {
             this.displayselectionService.DisplaySelectionServiceChanged.next("update")
           });

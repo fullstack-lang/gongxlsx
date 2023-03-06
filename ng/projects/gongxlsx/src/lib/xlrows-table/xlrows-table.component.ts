@@ -172,7 +172,7 @@ export class XLRowsTableComponent implements OnInit {
 
   ngOnInit(): void {
     let stackPath = this.activatedRoute.snapshot.paramMap.get('GONG__StackPath')
-    if ( stackPath != undefined) {
+    if (stackPath != undefined) {
       this.GONG__StackPath = stackPath
     }
 
@@ -208,10 +208,14 @@ export class XLRowsTableComponent implements OnInit {
           let mapOfSourceInstances = this.frontRepo[this.dialogData.SourceStruct + "s" as keyof FrontRepo] as Map<number, XLRowDB>
           let sourceInstance = mapOfSourceInstances.get(this.dialogData.ID)!
 
-          let sourceField = sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance]! as unknown as XLRowDB[]
-          for (let associationInstance of sourceField) {
-            let xlrow = associationInstance[this.dialogData.IntermediateStructField as keyof typeof associationInstance] as unknown as XLRowDB
-            this.initialSelection.push(xlrow)
+          // we associates on sourceInstance of type SourceStruct with a MANY MANY associations to XLRowDB
+          // the field name is sourceField
+          let sourceFieldArray = sourceInstance[this.dialogData.SourceField as keyof typeof sourceInstance]! as unknown as XLRowDB[]
+          if (sourceFieldArray != null) {
+            for (let associationInstance of sourceFieldArray) {
+              let xlrow = associationInstance[this.dialogData.IntermediateStructField as keyof typeof associationInstance] as unknown as XLRowDB
+              this.initialSelection.push(xlrow)
+            }
           }
 
           this.selection = new SelectionModel<XLRowDB>(allowMultiSelect, this.initialSelection);
@@ -232,7 +236,7 @@ export class XLRowsTableComponent implements OnInit {
     // list of xlrows is truncated of xlrow before the delete
     this.xlrows = this.xlrows.filter(h => h !== xlrow);
 
-    this.xlrowService.deleteXLRow(xlrowID).subscribe(
+    this.xlrowService.deleteXLRow(xlrowID, this.GONG__StackPath).subscribe(
       xlrow => {
         this.xlrowService.XLRowServiceChanged.next("delete")
       }
@@ -298,7 +302,7 @@ export class XLRowsTableComponent implements OnInit {
 
       // update all xlrow (only update selection & initial selection)
       for (let xlrow of toUpdate) {
-        this.xlrowService.updateXLRow(xlrow)
+        this.xlrowService.updateXLRow(xlrow, this.GONG__StackPath)
           .subscribe(xlrow => {
             this.xlrowService.XLRowServiceChanged.next("update")
           });
