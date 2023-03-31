@@ -19,6 +19,8 @@ import { XLSheetService } from '../xlsheet.service'
 
 // insertion point for additional imports
 
+import { RouteService } from '../route-service';
+
 // TableComponent is initilizaed from different routes
 // TableComponentMode detail different cases 
 enum TableComponentMode {
@@ -135,6 +137,8 @@ export class XLSheetsTableComponent implements OnInit {
 
     private router: Router,
     private activatedRoute: ActivatedRoute,
+
+    private routeService: RouteService,
   ) {
 
     // compute mode
@@ -259,18 +263,15 @@ export class XLSheetsTableComponent implements OnInit {
 
   }
 
-  // display xlsheet in router
-  displayXLSheetInRouter(xlsheetID: number) {
-    this.router.navigate(["github_com_fullstack_lang_gongxlsx_go-" + "xlsheet-display", xlsheetID])
-  }
-
   // set editor outlet
   setEditorRouterOutlet(xlsheetID: number) {
-    this.router.navigate([{
-      outlets: {
-        github_com_fullstack_lang_gongxlsx_go_editor: ["github_com_fullstack_lang_gongxlsx_go-" + "xlsheet-detail", xlsheetID, this.GONG__StackPath]
-      }
-    }]);
+    let outletName = this.routeService.getEditorOutlet(this.GONG__StackPath)
+    let fullPath = this.routeService.getPathRoot() + "-" + "xlsheet" + "-detail"
+
+    let outletConf: any = {}
+    outletConf[outletName] = [fullPath, xlsheetID, this.GONG__StackPath]
+
+    this.router.navigate([{ outlets: outletConf }])
   }
 
   /** Whether the number of selected elements matches the total number of rows. */

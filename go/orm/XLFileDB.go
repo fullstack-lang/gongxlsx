@@ -99,13 +99,13 @@ var XLFile_Fields = []string{
 
 type BackRepoXLFileStruct struct {
 	// stores XLFileDB according to their gorm ID
-	Map_XLFileDBID_XLFileDB *map[uint]*XLFileDB
+	Map_XLFileDBID_XLFileDB map[uint]*XLFileDB
 
 	// stores XLFileDB ID according to XLFile address
-	Map_XLFilePtr_XLFileDBID *map[*models.XLFile]uint
+	Map_XLFilePtr_XLFileDBID map[*models.XLFile]uint
 
 	// stores XLFile according to their gorm ID
-	Map_XLFileDBID_XLFilePtr *map[uint]*models.XLFile
+	Map_XLFileDBID_XLFilePtr map[uint]*models.XLFile
 
 	db *gorm.DB
 
@@ -123,40 +123,8 @@ func (backRepoXLFile *BackRepoXLFileStruct) GetDB() *gorm.DB {
 
 // GetXLFileDBFromXLFilePtr is a handy function to access the back repo instance from the stage instance
 func (backRepoXLFile *BackRepoXLFileStruct) GetXLFileDBFromXLFilePtr(xlfile *models.XLFile) (xlfileDB *XLFileDB) {
-	id := (*backRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile]
-	xlfileDB = (*backRepoXLFile.Map_XLFileDBID_XLFileDB)[id]
-	return
-}
-
-// BackRepoXLFile.Init set up the BackRepo of the XLFile
-func (backRepoXLFile *BackRepoXLFileStruct) Init(stage *models.StageStruct, db *gorm.DB) (Error error) {
-
-	if backRepoXLFile.Map_XLFileDBID_XLFilePtr != nil {
-		err := errors.New("In Init, backRepoXLFile.Map_XLFileDBID_XLFilePtr should be nil")
-		return err
-	}
-
-	if backRepoXLFile.Map_XLFileDBID_XLFileDB != nil {
-		err := errors.New("In Init, backRepoXLFile.Map_XLFileDBID_XLFileDB should be nil")
-		return err
-	}
-
-	if backRepoXLFile.Map_XLFilePtr_XLFileDBID != nil {
-		err := errors.New("In Init, backRepoXLFile.Map_XLFilePtr_XLFileDBID should be nil")
-		return err
-	}
-
-	tmp := make(map[uint]*models.XLFile, 0)
-	backRepoXLFile.Map_XLFileDBID_XLFilePtr = &tmp
-
-	tmpDB := make(map[uint]*XLFileDB, 0)
-	backRepoXLFile.Map_XLFileDBID_XLFileDB = &tmpDB
-
-	tmpID := make(map[*models.XLFile]uint, 0)
-	backRepoXLFile.Map_XLFilePtr_XLFileDBID = &tmpID
-
-	backRepoXLFile.db = db
-	backRepoXLFile.stage = stage
+	id := backRepoXLFile.Map_XLFilePtr_XLFileDBID[xlfile]
+	xlfileDB = backRepoXLFile.Map_XLFileDBID_XLFileDB[id]
 	return
 }
 
@@ -170,7 +138,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseOne(stage *models.StageSt
 
 	// parse all backRepo instance and checks wether some instance have been unstaged
 	// in this case, remove them from the back repo
-	for id, xlfile := range *backRepoXLFile.Map_XLFileDBID_XLFilePtr {
+	for id, xlfile := range backRepoXLFile.Map_XLFileDBID_XLFilePtr {
 		if _, ok := stage.XLFiles[xlfile]; !ok {
 			backRepoXLFile.CommitDeleteInstance(id)
 		}
@@ -182,19 +150,19 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseOne(stage *models.StageSt
 // BackRepoXLFile.CommitDeleteInstance commits deletion of XLFile to the BackRepo
 func (backRepoXLFile *BackRepoXLFileStruct) CommitDeleteInstance(id uint) (Error error) {
 
-	xlfile := (*backRepoXLFile.Map_XLFileDBID_XLFilePtr)[id]
+	xlfile := backRepoXLFile.Map_XLFileDBID_XLFilePtr[id]
 
 	// xlfile is not staged anymore, remove xlfileDB
-	xlfileDB := (*backRepoXLFile.Map_XLFileDBID_XLFileDB)[id]
+	xlfileDB := backRepoXLFile.Map_XLFileDBID_XLFileDB[id]
 	query := backRepoXLFile.db.Unscoped().Delete(&xlfileDB)
 	if query.Error != nil {
 		return query.Error
 	}
 
 	// update stores
-	delete((*backRepoXLFile.Map_XLFilePtr_XLFileDBID), xlfile)
-	delete((*backRepoXLFile.Map_XLFileDBID_XLFilePtr), id)
-	delete((*backRepoXLFile.Map_XLFileDBID_XLFileDB), id)
+	delete(backRepoXLFile.Map_XLFilePtr_XLFileDBID, xlfile)
+	delete(backRepoXLFile.Map_XLFileDBID_XLFilePtr, id)
+	delete(backRepoXLFile.Map_XLFileDBID_XLFileDB, id)
 
 	return
 }
@@ -204,7 +172,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitDeleteInstance(id uint) (Error
 func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseOneInstance(xlfile *models.XLFile) (Error error) {
 
 	// check if the xlfile is not commited yet
-	if _, ok := (*backRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile]; ok {
+	if _, ok := backRepoXLFile.Map_XLFilePtr_XLFileDBID[xlfile]; ok {
 		return
 	}
 
@@ -218,9 +186,9 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseOneInstance(xlfile *model
 	}
 
 	// update stores
-	(*backRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile] = xlfileDB.ID
-	(*backRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID] = xlfile
-	(*backRepoXLFile.Map_XLFileDBID_XLFileDB)[xlfileDB.ID] = &xlfileDB
+	backRepoXLFile.Map_XLFilePtr_XLFileDBID[xlfile] = xlfileDB.ID
+	backRepoXLFile.Map_XLFileDBID_XLFilePtr[xlfileDB.ID] = xlfile
+	backRepoXLFile.Map_XLFileDBID_XLFileDB[xlfileDB.ID] = &xlfileDB
 
 	return
 }
@@ -229,7 +197,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseOneInstance(xlfile *model
 // Phase Two is the update of instance with the field in the database
 func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseTwo(backRepo *BackRepoStruct) (Error error) {
 
-	for idx, xlfile := range *backRepoXLFile.Map_XLFileDBID_XLFilePtr {
+	for idx, xlfile := range backRepoXLFile.Map_XLFileDBID_XLFilePtr {
 		backRepoXLFile.CommitPhaseTwoInstance(backRepo, idx, xlfile)
 	}
 
@@ -241,7 +209,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseTwo(backRepo *BackRepoStr
 func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseTwoInstance(backRepo *BackRepoStruct, idx uint, xlfile *models.XLFile) (Error error) {
 
 	// fetch matching xlfileDB
-	if xlfileDB, ok := (*backRepoXLFile.Map_XLFileDBID_XLFileDB)[idx]; ok {
+	if xlfileDB, ok := backRepoXLFile.Map_XLFileDBID_XLFileDB[idx]; ok {
 
 		xlfileDB.CopyBasicFieldsFromXLFile(xlfile)
 
@@ -304,7 +272,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOne() (Error error) {
 
 		// do not remove this instance from the stage, therefore
 		// remove instance from the list of instances to be be removed from the stage
-		xlfile, ok := (*backRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+		xlfile, ok := backRepoXLFile.Map_XLFileDBID_XLFilePtr[xlfileDB.ID]
 		if ok {
 			delete(xlfileInstancesToBeRemovedFromTheStage, xlfile)
 		}
@@ -315,10 +283,10 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOne() (Error error) {
 		xlfile.Unstage(backRepoXLFile.GetStage())
 
 		// remove instance from the back repo 3 maps
-		xlfileID := (*backRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile]
-		delete((*backRepoXLFile.Map_XLFilePtr_XLFileDBID), xlfile)
-		delete((*backRepoXLFile.Map_XLFileDBID_XLFileDB), xlfileID)
-		delete((*backRepoXLFile.Map_XLFileDBID_XLFilePtr), xlfileID)
+		xlfileID := backRepoXLFile.Map_XLFilePtr_XLFileDBID[xlfile]
+		delete(backRepoXLFile.Map_XLFilePtr_XLFileDBID, xlfile)
+		delete(backRepoXLFile.Map_XLFileDBID_XLFileDB, xlfileID)
+		delete(backRepoXLFile.Map_XLFileDBID_XLFilePtr, xlfileID)
 	}
 
 	return
@@ -328,12 +296,12 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOne() (Error error) {
 // models version of the xlfileDB
 func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOneInstance(xlfileDB *XLFileDB) (Error error) {
 
-	xlfile, ok := (*backRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+	xlfile, ok := backRepoXLFile.Map_XLFileDBID_XLFilePtr[xlfileDB.ID]
 	if !ok {
 		xlfile = new(models.XLFile)
 
-		(*backRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID] = xlfile
-		(*backRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile] = xlfileDB.ID
+		backRepoXLFile.Map_XLFileDBID_XLFilePtr[xlfileDB.ID] = xlfile
+		backRepoXLFile.Map_XLFilePtr_XLFileDBID[xlfile] = xlfileDB.ID
 
 		// append model store with the new element
 		xlfile.Name = xlfileDB.Name_Data.String
@@ -348,7 +316,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOneInstance(xlfileDB *X
 	// Map_XLFileDBID_XLFileDB)[xlfileDB hold variable pointers
 	xlfileDB_Data := *xlfileDB
 	preservedPtrToXLFile := &xlfileDB_Data
-	(*backRepoXLFile.Map_XLFileDBID_XLFileDB)[xlfileDB.ID] = preservedPtrToXLFile
+	backRepoXLFile.Map_XLFileDBID_XLFileDB[xlfileDB.ID] = preservedPtrToXLFile
 
 	return
 }
@@ -358,7 +326,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOneInstance(xlfileDB *X
 func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseTwo(backRepo *BackRepoStruct) (Error error) {
 
 	// parse all DB instance and update all pointer fields of the translated models instance
-	for _, xlfileDB := range *backRepoXLFile.Map_XLFileDBID_XLFileDB {
+	for _, xlfileDB := range backRepoXLFile.Map_XLFileDBID_XLFileDB {
 		backRepoXLFile.CheckoutPhaseTwoInstance(backRepo, xlfileDB)
 	}
 	return
@@ -368,7 +336,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseTwo(backRepo *BackRepoS
 // Phase Two is the update of instance with the field in the database
 func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseTwoInstance(backRepo *BackRepoStruct, xlfileDB *XLFileDB) (Error error) {
 
-	xlfile := (*backRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+	xlfile := backRepoXLFile.Map_XLFileDBID_XLFilePtr[xlfileDB.ID]
 	_ = xlfile // sometimes, there is no code generated. This lines voids the "unused variable" compilation error
 
 	// insertion point for checkout of pointer encoding
@@ -378,11 +346,11 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseTwoInstance(backRepo *B
 	// 1. reset the slice
 	xlfile.Sheets = xlfile.Sheets[:0]
 	// 2. loop all instances in the type in the association end
-	for _, xlsheetDB_AssocEnd := range *backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
+	for _, xlsheetDB_AssocEnd := range backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
 		// 3. Does the ID encoding at the end and the ID at the start matches ?
 		if xlsheetDB_AssocEnd.XLFile_SheetsDBID.Int64 == int64(xlfileDB.ID) {
 			// 4. fetch the associated instance in the stage
-			xlsheet_AssocEnd := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB_AssocEnd.ID]
+			xlsheet_AssocEnd := backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[xlsheetDB_AssocEnd.ID]
 			// 5. append it the association slice
 			xlfile.Sheets = append(xlfile.Sheets, xlsheet_AssocEnd)
 		}
@@ -390,11 +358,11 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseTwoInstance(backRepo *B
 
 	// sort the array according to the order
 	sort.Slice(xlfile.Sheets, func(i, j int) bool {
-		xlsheetDB_i_ID := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlfile.Sheets[i]]
-		xlsheetDB_j_ID := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlfile.Sheets[j]]
+		xlsheetDB_i_ID := backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID[xlfile.Sheets[i]]
+		xlsheetDB_j_ID := backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID[xlfile.Sheets[j]]
 
-		xlsheetDB_i := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB_i_ID]
-		xlsheetDB_j := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB_j_ID]
+		xlsheetDB_i := backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB[xlsheetDB_i_ID]
+		xlsheetDB_j := backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetDB[xlsheetDB_j_ID]
 
 		return xlsheetDB_i.XLFile_SheetsDBID_Index.Int64 < xlsheetDB_j.XLFile_SheetsDBID_Index.Int64
 	})
@@ -405,7 +373,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseTwoInstance(backRepo *B
 // CommitXLFile allows commit of a single xlfile (if already staged)
 func (backRepo *BackRepoStruct) CommitXLFile(xlfile *models.XLFile) {
 	backRepo.BackRepoXLFile.CommitPhaseOneInstance(xlfile)
-	if id, ok := (*backRepo.BackRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile]; ok {
+	if id, ok := backRepo.BackRepoXLFile.Map_XLFilePtr_XLFileDBID[xlfile]; ok {
 		backRepo.BackRepoXLFile.CommitPhaseTwoInstance(backRepo, id, xlfile)
 	}
 	backRepo.CommitFromBackNb = backRepo.CommitFromBackNb + 1
@@ -414,9 +382,9 @@ func (backRepo *BackRepoStruct) CommitXLFile(xlfile *models.XLFile) {
 // CommitXLFile allows checkout of a single xlfile (if already staged and with a BackRepo id)
 func (backRepo *BackRepoStruct) CheckoutXLFile(xlfile *models.XLFile) {
 	// check if the xlfile is staged
-	if _, ok := (*backRepo.BackRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile]; ok {
+	if _, ok := backRepo.BackRepoXLFile.Map_XLFilePtr_XLFileDBID[xlfile]; ok {
 
-		if id, ok := (*backRepo.BackRepoXLFile.Map_XLFilePtr_XLFileDBID)[xlfile]; ok {
+		if id, ok := backRepo.BackRepoXLFile.Map_XLFilePtr_XLFileDBID[xlfile]; ok {
 			var xlfileDB XLFileDB
 			xlfileDB.ID = id
 
@@ -474,7 +442,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) Backup(dirPath string) {
 	// organize the map into an array with increasing IDs, in order to have repoductible
 	// backup file
 	forBackup := make([]*XLFileDB, 0)
-	for _, xlfileDB := range *backRepoXLFile.Map_XLFileDBID_XLFileDB {
+	for _, xlfileDB := range backRepoXLFile.Map_XLFileDBID_XLFileDB {
 		forBackup = append(forBackup, xlfileDB)
 	}
 
@@ -500,7 +468,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) BackupXL(file *xlsx.File) {
 	// organize the map into an array with increasing IDs, in order to have repoductible
 	// backup file
 	forBackup := make([]*XLFileDB, 0)
-	for _, xlfileDB := range *backRepoXLFile.Map_XLFileDBID_XLFileDB {
+	for _, xlfileDB := range backRepoXLFile.Map_XLFileDBID_XLFileDB {
 		forBackup = append(forBackup, xlfileDB)
 	}
 
@@ -565,7 +533,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) rowVisitorXLFile(row *xlsx.Row) erro
 		if query.Error != nil {
 			log.Panic(query.Error)
 		}
-		(*backRepoXLFile.Map_XLFileDBID_XLFileDB)[xlfileDB.ID] = xlfileDB
+		backRepoXLFile.Map_XLFileDBID_XLFileDB[xlfileDB.ID] = xlfileDB
 		BackRepoXLFileid_atBckpTime_newID[xlfileDB_ID_atBackupTime] = xlfileDB.ID
 	}
 	return nil
@@ -602,7 +570,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) RestorePhaseOne(dirPath string) {
 		if query.Error != nil {
 			log.Panic(query.Error)
 		}
-		(*backRepoXLFile.Map_XLFileDBID_XLFileDB)[xlfileDB.ID] = xlfileDB
+		backRepoXLFile.Map_XLFileDBID_XLFileDB[xlfileDB.ID] = xlfileDB
 		BackRepoXLFileid_atBckpTime_newID[xlfileDB_ID_atBackupTime] = xlfileDB.ID
 	}
 
@@ -615,7 +583,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) RestorePhaseOne(dirPath string) {
 // to compute new index
 func (backRepoXLFile *BackRepoXLFileStruct) RestorePhaseTwo() {
 
-	for _, xlfileDB := range *backRepoXLFile.Map_XLFileDBID_XLFileDB {
+	for _, xlfileDB := range backRepoXLFile.Map_XLFileDBID_XLFileDB {
 
 		// next line of code is to avert unused variable compilation error
 		_ = xlfileDB

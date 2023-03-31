@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	gong_models "github.com/fullstack-lang/gong/go/models"
 	gongdoc_models "github.com/fullstack-lang/gongdoc/go/models"
 )
 
@@ -53,7 +52,7 @@ func (nodeCb *NodeCB) OnAfterUpdate(
 
 	if stagedNode.Impl != nil {
 		stagedNode.Impl.OnAfterUpdate(stage, stagedNode, frontNode)
-		nodeCb.updateNodesStates(stage)
+		nodeCb.computeNodesConfiguration(stage)
 	}
 
 }
@@ -76,7 +75,7 @@ func (nodeCb *NodeCB) OnAfterCreate(
 	for index == 0 || hasNameCollision {
 		index++
 		hasNameCollision = false
-		for classdiagram := range *gongdoc_models.GetGongstructInstancesSet[gongdoc_models.Classdiagram]() {
+		for classdiagram := range *gongdoc_models.GetGongstructInstancesSet[gongdoc_models.Classdiagram](gongdocStage) {
 			if classdiagram.Name == node.Name {
 				hasNameCollision = true
 			}
@@ -114,7 +113,7 @@ func (nodeCb *NodeCB) OnAfterCreate(
 	// save the diagram
 	// checkout in order to get the latest version of the diagram before
 	// modifying it updated by the front
-	nodeCb.updateNodesStates(gongdocStage)
+	nodeCb.computeNodesConfiguration(gongdocStage)
 	gongdocStage.Commit()
 
 	// now save the diagram
@@ -122,7 +121,7 @@ func (nodeCb *NodeCB) OnAfterCreate(
 	gongdocStage.Unstage()
 	gongdoc_models.StageBranch(gongdocStage, classdiagramImpl.classdiagram)
 
-	gongdoc_models.SetupMapDocLinkRenamingNew(gongdocStage, nodeCb.diagramPackage)
+	gongdoc_models.SetupMapDocLinkRenaming(nodeCb.diagramPackage.ModelPkg.Stage_, gongdocStage)
 
 	gongdocStage.Marshall(file, "github.com/fullstack-lang/gongdoc/go/models", "diagrams")
 
@@ -144,7 +143,7 @@ func (nodeCb *NodeCB) OnAfterDelete(
 		impl.OnAfterDelete(stage, stagedNode, frontNode)
 	}
 
-	nodeCb.updateNodesStates(stage)
+	nodeCb.computeNodesConfiguration(stage)
 }
 
 func (nodeCb *NodeCB) FillUpDiagramNodeTree(diagramPackage *gongdoc_models.DiagramPackage) {
@@ -155,11 +154,10 @@ func (nodeCb *NodeCB) FillUpDiagramNodeTree(diagramPackage *gongdoc_models.Diagr
 	// add the root of class diagrams
 	diagramPackageNode := (&gongdoc_models.Node{Name: "class diagrams"}).Stage(nodeCb.diagramPackage.Stage_)
 	diagramPackageNode.IsExpanded = true
-	diagramPackageNode.HasAddChildButton = diagramPackage.IsEditable
 	gongdocTree.RootNodes = append(gongdocTree.RootNodes, diagramPackageNode)
 
 	// add one node per class diagram
-	for classdiagram := range *gongdoc_models.GetGongstructInstancesSet[gongdoc_models.Classdiagram]() {
+	for classdiagram := range *gongdoc_models.GetGongstructInstancesSet[gongdoc_models.Classdiagram](nodeCb.diagramPackage.Stage_) {
 		node := (&gongdoc_models.Node{Name: classdiagram.Name}).Stage(nodeCb.diagramPackage.Stage_)
 
 		node.HasCheckboxButton = true
@@ -179,32 +177,28 @@ func (nodeCb *NodeCB) FillUpDiagramNodeTree(diagramPackage *gongdoc_models.Diagr
 	nodeCb.diagramPackageNode = diagramPackageNode
 }
 
-func SetNodeBackPointer[T1 gong_models.Gongstruct](gong_instance *T1, backPointer gongdoc_models.NodeImplInterface) {
-	gong_models.SetBackPointer(&gong_models.Stage, gong_instance, backPointer)
-}
-func GetNodeBackPointer[T1 gong_models.Gongstruct](gong_instance *T1) (backPointer gongdoc_models.NodeImplInterface) {
-	tmp := gong_models.GetBackPointer(&gong_models.Stage, gong_instance)
+// computeNodesConfiguration computes both trees
+func (nodeCb *NodeCB) computeNodesConfiguration(gongdocStage *gongdoc_models.StageStruct) {
 
-	if tmp == nil {
-		log.Fatal("backPointer is nil", gong_instance)
-	}
-
-	backPointer = tmp.(gongdoc_models.NodeImplInterface)
-
-	return
-}
-
-func (nodeCb *NodeCB) updateNodesStates(gongdocStage *gongdoc_models.StageStruct) {
-
-	nodeCb.updateDiagramsNodes(gongdocStage)
+	nodeCb.computeDiagramNodesConfigurations(gongdocStage)
 
 	// now manage object nodes accordign to the selected diagram
 
 	// get the the selected diagram
 	classdiagram := nodeCb.diagramPackage.SelectedClassdiagram
 
+	// if no diagram is selected, all gong nodes are to be disabled
+	isCheckboxDisabled := true
+
+	// is the classdiagram is not in drawing mode, all gong nodes are to be disabled
+	// otherwise gong nodes are enabled by default
+	if classdiagram != nil {
+		isCheckboxDisabled = !classdiagram.IsInDrawMode
+	}
+
+	// now, compute wether each gong node to be checked / disabled
 	for _, _node := range nodeCb.treeOfGongObjects.RootNodes {
-		UncheckAndDisable(_node, classdiagram)
+		applyGongNodesConfiguration(_node, isCheckboxDisabled, false)
 	}
 
 	// no selected diagram yet
@@ -213,7 +207,7 @@ func (nodeCb *NodeCB) updateNodesStates(gongdocStage *gongdoc_models.StageStruct
 		return
 	}
 
-	nodeCb.updateGongObjectsNodes(gongdocStage, classdiagram)
+	nodeCb.computeGongNodesConfiguration(gongdocStage, classdiagram)
 
 	// log.Println("UpdateNodeStates, before commit, nb ", stage.BackRepo.GetLastCommitFromBackNb())
 	gongdocStage.Commit()
@@ -221,7 +215,7 @@ func (nodeCb *NodeCB) updateNodesStates(gongdocStage *gongdoc_models.StageStruct
 
 }
 
-func (nodesCb *NodeCB) updateDiagramsNodes(stage *gongdoc_models.StageStruct) {
+func (nodesCb *NodeCB) computeDiagramNodesConfigurations(stage *gongdoc_models.StageStruct) {
 
 	// compute wether one of the diagrams is in draw/edit mode
 	// if so, all diagram check need to be disabled
@@ -231,6 +225,8 @@ func (nodesCb *NodeCB) updateDiagramsNodes(stage *gongdoc_models.StageStruct) {
 			inModificationMode = true
 		}
 	}
+
+	nodesCb.diagramPackageNode.HasAddChildButton = !inModificationMode && nodesCb.diagramPackage.IsEditable
 
 	// get the selected diagram and collect what are its referenced
 	// gongstructs

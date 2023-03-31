@@ -39,11 +39,6 @@ export class FrontRepo { // insertion point sub template
   XLSheets_batch = new Map<number, XLSheetDB>(); // same but only in last GET (for finding repo instances to delete)
 }
 
-//
-// Store of all instances of the stack
-//
-export const FrontRepoSingloton = new (FrontRepo)
-
 // the table component is called in different ways
 //
 // DISPLAY or ASSOCIATION MODE
@@ -96,6 +91,11 @@ export class FrontRepoService {
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };
+
+  //
+  // Store of all instances of the stack
+  //
+  frontRepo = new (FrontRepo)
 
   constructor(
     private http: HttpClient, // insertion point sub template 
@@ -194,29 +194,29 @@ export class FrontRepoService {
             // First Step: init map of instances
             // insertion point sub template for init 
             // init the array
-            FrontRepoSingloton.DisplaySelections_array = displayselections
+            this.frontRepo.DisplaySelections_array = displayselections
 
             // clear the map that counts DisplaySelection in the GET
-            FrontRepoSingloton.DisplaySelections_batch.clear()
+            this.frontRepo.DisplaySelections_batch.clear()
 
             displayselections.forEach(
               displayselection => {
-                FrontRepoSingloton.DisplaySelections.set(displayselection.ID, displayselection)
-                FrontRepoSingloton.DisplaySelections_batch.set(displayselection.ID, displayselection)
+                this.frontRepo.DisplaySelections.set(displayselection.ID, displayselection)
+                this.frontRepo.DisplaySelections_batch.set(displayselection.ID, displayselection)
               }
             )
 
             // clear displayselections that are absent from the batch
-            FrontRepoSingloton.DisplaySelections.forEach(
+            this.frontRepo.DisplaySelections.forEach(
               displayselection => {
-                if (FrontRepoSingloton.DisplaySelections_batch.get(displayselection.ID) == undefined) {
-                  FrontRepoSingloton.DisplaySelections.delete(displayselection.ID)
+                if (this.frontRepo.DisplaySelections_batch.get(displayselection.ID) == undefined) {
+                  this.frontRepo.DisplaySelections.delete(displayselection.ID)
                 }
               }
             )
 
             // sort DisplaySelections_array array
-            FrontRepoSingloton.DisplaySelections_array.sort((t1, t2) => {
+            this.frontRepo.DisplaySelections_array.sort((t1, t2) => {
               if (t1.Name > t2.Name) {
                 return 1;
               }
@@ -227,29 +227,29 @@ export class FrontRepoService {
             });
 
             // init the array
-            FrontRepoSingloton.XLCells_array = xlcells
+            this.frontRepo.XLCells_array = xlcells
 
             // clear the map that counts XLCell in the GET
-            FrontRepoSingloton.XLCells_batch.clear()
+            this.frontRepo.XLCells_batch.clear()
 
             xlcells.forEach(
               xlcell => {
-                FrontRepoSingloton.XLCells.set(xlcell.ID, xlcell)
-                FrontRepoSingloton.XLCells_batch.set(xlcell.ID, xlcell)
+                this.frontRepo.XLCells.set(xlcell.ID, xlcell)
+                this.frontRepo.XLCells_batch.set(xlcell.ID, xlcell)
               }
             )
 
             // clear xlcells that are absent from the batch
-            FrontRepoSingloton.XLCells.forEach(
+            this.frontRepo.XLCells.forEach(
               xlcell => {
-                if (FrontRepoSingloton.XLCells_batch.get(xlcell.ID) == undefined) {
-                  FrontRepoSingloton.XLCells.delete(xlcell.ID)
+                if (this.frontRepo.XLCells_batch.get(xlcell.ID) == undefined) {
+                  this.frontRepo.XLCells.delete(xlcell.ID)
                 }
               }
             )
 
             // sort XLCells_array array
-            FrontRepoSingloton.XLCells_array.sort((t1, t2) => {
+            this.frontRepo.XLCells_array.sort((t1, t2) => {
               if (t1.Name > t2.Name) {
                 return 1;
               }
@@ -260,29 +260,29 @@ export class FrontRepoService {
             });
 
             // init the array
-            FrontRepoSingloton.XLFiles_array = xlfiles
+            this.frontRepo.XLFiles_array = xlfiles
 
             // clear the map that counts XLFile in the GET
-            FrontRepoSingloton.XLFiles_batch.clear()
+            this.frontRepo.XLFiles_batch.clear()
 
             xlfiles.forEach(
               xlfile => {
-                FrontRepoSingloton.XLFiles.set(xlfile.ID, xlfile)
-                FrontRepoSingloton.XLFiles_batch.set(xlfile.ID, xlfile)
+                this.frontRepo.XLFiles.set(xlfile.ID, xlfile)
+                this.frontRepo.XLFiles_batch.set(xlfile.ID, xlfile)
               }
             )
 
             // clear xlfiles that are absent from the batch
-            FrontRepoSingloton.XLFiles.forEach(
+            this.frontRepo.XLFiles.forEach(
               xlfile => {
-                if (FrontRepoSingloton.XLFiles_batch.get(xlfile.ID) == undefined) {
-                  FrontRepoSingloton.XLFiles.delete(xlfile.ID)
+                if (this.frontRepo.XLFiles_batch.get(xlfile.ID) == undefined) {
+                  this.frontRepo.XLFiles.delete(xlfile.ID)
                 }
               }
             )
 
             // sort XLFiles_array array
-            FrontRepoSingloton.XLFiles_array.sort((t1, t2) => {
+            this.frontRepo.XLFiles_array.sort((t1, t2) => {
               if (t1.Name > t2.Name) {
                 return 1;
               }
@@ -293,29 +293,29 @@ export class FrontRepoService {
             });
 
             // init the array
-            FrontRepoSingloton.XLRows_array = xlrows
+            this.frontRepo.XLRows_array = xlrows
 
             // clear the map that counts XLRow in the GET
-            FrontRepoSingloton.XLRows_batch.clear()
+            this.frontRepo.XLRows_batch.clear()
 
             xlrows.forEach(
               xlrow => {
-                FrontRepoSingloton.XLRows.set(xlrow.ID, xlrow)
-                FrontRepoSingloton.XLRows_batch.set(xlrow.ID, xlrow)
+                this.frontRepo.XLRows.set(xlrow.ID, xlrow)
+                this.frontRepo.XLRows_batch.set(xlrow.ID, xlrow)
               }
             )
 
             // clear xlrows that are absent from the batch
-            FrontRepoSingloton.XLRows.forEach(
+            this.frontRepo.XLRows.forEach(
               xlrow => {
-                if (FrontRepoSingloton.XLRows_batch.get(xlrow.ID) == undefined) {
-                  FrontRepoSingloton.XLRows.delete(xlrow.ID)
+                if (this.frontRepo.XLRows_batch.get(xlrow.ID) == undefined) {
+                  this.frontRepo.XLRows.delete(xlrow.ID)
                 }
               }
             )
 
             // sort XLRows_array array
-            FrontRepoSingloton.XLRows_array.sort((t1, t2) => {
+            this.frontRepo.XLRows_array.sort((t1, t2) => {
               if (t1.Name > t2.Name) {
                 return 1;
               }
@@ -326,29 +326,29 @@ export class FrontRepoService {
             });
 
             // init the array
-            FrontRepoSingloton.XLSheets_array = xlsheets
+            this.frontRepo.XLSheets_array = xlsheets
 
             // clear the map that counts XLSheet in the GET
-            FrontRepoSingloton.XLSheets_batch.clear()
+            this.frontRepo.XLSheets_batch.clear()
 
             xlsheets.forEach(
               xlsheet => {
-                FrontRepoSingloton.XLSheets.set(xlsheet.ID, xlsheet)
-                FrontRepoSingloton.XLSheets_batch.set(xlsheet.ID, xlsheet)
+                this.frontRepo.XLSheets.set(xlsheet.ID, xlsheet)
+                this.frontRepo.XLSheets_batch.set(xlsheet.ID, xlsheet)
               }
             )
 
             // clear xlsheets that are absent from the batch
-            FrontRepoSingloton.XLSheets.forEach(
+            this.frontRepo.XLSheets.forEach(
               xlsheet => {
-                if (FrontRepoSingloton.XLSheets_batch.get(xlsheet.ID) == undefined) {
-                  FrontRepoSingloton.XLSheets.delete(xlsheet.ID)
+                if (this.frontRepo.XLSheets_batch.get(xlsheet.ID) == undefined) {
+                  this.frontRepo.XLSheets.delete(xlsheet.ID)
                 }
               }
             )
 
             // sort XLSheets_array array
-            FrontRepoSingloton.XLSheets_array.sort((t1, t2) => {
+            this.frontRepo.XLSheets_array.sort((t1, t2) => {
               if (t1.Name > t2.Name) {
                 return 1;
               }
@@ -367,14 +367,14 @@ export class FrontRepoService {
                 // insertion point sub sub template for ONE-/ZERO-ONE associations pointers redeeming
                 // insertion point for pointer field XLFile redeeming
                 {
-                  let _xlfile = FrontRepoSingloton.XLFiles.get(displayselection.XLFileID.Int64)
+                  let _xlfile = this.frontRepo.XLFiles.get(displayselection.XLFileID.Int64)
                   if (_xlfile) {
                     displayselection.XLFile = _xlfile
                   }
                 }
                 // insertion point for pointer field XLSheet redeeming
                 {
-                  let _xlsheet = FrontRepoSingloton.XLSheets.get(displayselection.XLSheetID.Int64)
+                  let _xlsheet = this.frontRepo.XLSheets.get(displayselection.XLSheetID.Int64)
                   if (_xlsheet) {
                     displayselection.XLSheet = _xlsheet
                   }
@@ -390,7 +390,7 @@ export class FrontRepoService {
                 // insertion point for redeeming ONE-MANY associations
                 // insertion point for slice of pointer field XLRow.Cells redeeming
                 {
-                  let _xlrow = FrontRepoSingloton.XLRows.get(xlcell.XLRow_CellsDBID.Int64)
+                  let _xlrow = this.frontRepo.XLRows.get(xlcell.XLRow_CellsDBID.Int64)
                   if (_xlrow) {
                     if (_xlrow.Cells == undefined) {
                       _xlrow.Cells = new Array<XLCellDB>()
@@ -403,7 +403,7 @@ export class FrontRepoService {
                 }
                 // insertion point for slice of pointer field XLSheet.SheetCells redeeming
                 {
-                  let _xlsheet = FrontRepoSingloton.XLSheets.get(xlcell.XLSheet_SheetCellsDBID.Int64)
+                  let _xlsheet = this.frontRepo.XLSheets.get(xlcell.XLSheet_SheetCellsDBID.Int64)
                   if (_xlsheet) {
                     if (_xlsheet.SheetCells == undefined) {
                       _xlsheet.SheetCells = new Array<XLCellDB>()
@@ -430,7 +430,7 @@ export class FrontRepoService {
                 // insertion point for redeeming ONE-MANY associations
                 // insertion point for slice of pointer field XLSheet.Rows redeeming
                 {
-                  let _xlsheet = FrontRepoSingloton.XLSheets.get(xlrow.XLSheet_RowsDBID.Int64)
+                  let _xlsheet = this.frontRepo.XLSheets.get(xlrow.XLSheet_RowsDBID.Int64)
                   if (_xlsheet) {
                     if (_xlsheet.Rows == undefined) {
                       _xlsheet.Rows = new Array<XLRowDB>()
@@ -450,7 +450,7 @@ export class FrontRepoService {
                 // insertion point for redeeming ONE-MANY associations
                 // insertion point for slice of pointer field XLFile.Sheets redeeming
                 {
-                  let _xlfile = FrontRepoSingloton.XLFiles.get(xlsheet.XLFile_SheetsDBID.Int64)
+                  let _xlfile = this.frontRepo.XLFiles.get(xlsheet.XLFile_SheetsDBID.Int64)
                   if (_xlfile) {
                     if (_xlfile.Sheets == undefined) {
                       _xlfile.Sheets = new Array<XLSheetDB>()
@@ -465,7 +465,7 @@ export class FrontRepoService {
             )
 
             // hand over control flow to observer
-            observer.next(FrontRepoSingloton)
+            observer.next(this.frontRepo)
           }
         )
       }
@@ -485,30 +485,30 @@ export class FrontRepoService {
             displayselections,
           ]) => {
             // init the array
-            FrontRepoSingloton.DisplaySelections_array = displayselections
+            this.frontRepo.DisplaySelections_array = displayselections
 
             // clear the map that counts DisplaySelection in the GET
-            FrontRepoSingloton.DisplaySelections_batch.clear()
+            this.frontRepo.DisplaySelections_batch.clear()
 
             // 
             // First Step: init map of instances
             // insertion point sub template 
             displayselections.forEach(
               displayselection => {
-                FrontRepoSingloton.DisplaySelections.set(displayselection.ID, displayselection)
-                FrontRepoSingloton.DisplaySelections_batch.set(displayselection.ID, displayselection)
+                this.frontRepo.DisplaySelections.set(displayselection.ID, displayselection)
+                this.frontRepo.DisplaySelections_batch.set(displayselection.ID, displayselection)
 
                 // insertion point for redeeming ONE/ZERO-ONE associations
                 // insertion point for pointer field XLFile redeeming
                 {
-                  let _xlfile = FrontRepoSingloton.XLFiles.get(displayselection.XLFileID.Int64)
+                  let _xlfile = this.frontRepo.XLFiles.get(displayselection.XLFileID.Int64)
                   if (_xlfile) {
                     displayselection.XLFile = _xlfile
                   }
                 }
                 // insertion point for pointer field XLSheet redeeming
                 {
-                  let _xlsheet = FrontRepoSingloton.XLSheets.get(displayselection.XLSheetID.Int64)
+                  let _xlsheet = this.frontRepo.XLSheets.get(displayselection.XLSheetID.Int64)
                   if (_xlsheet) {
                     displayselection.XLSheet = _xlsheet
                   }
@@ -519,10 +519,10 @@ export class FrontRepoService {
             )
 
             // clear displayselections that are absent from the GET
-            FrontRepoSingloton.DisplaySelections.forEach(
+            this.frontRepo.DisplaySelections.forEach(
               displayselection => {
-                if (FrontRepoSingloton.DisplaySelections_batch.get(displayselection.ID) == undefined) {
-                  FrontRepoSingloton.DisplaySelections.delete(displayselection.ID)
+                if (this.frontRepo.DisplaySelections_batch.get(displayselection.ID) == undefined) {
+                  this.frontRepo.DisplaySelections.delete(displayselection.ID)
                 }
               }
             )
@@ -532,7 +532,7 @@ export class FrontRepoService {
             // insertion point sub template 
 
             // hand over control flow to observer
-            observer.next(FrontRepoSingloton)
+            observer.next(this.frontRepo)
           }
         )
       }
@@ -550,25 +550,25 @@ export class FrontRepoService {
             xlcells,
           ]) => {
             // init the array
-            FrontRepoSingloton.XLCells_array = xlcells
+            this.frontRepo.XLCells_array = xlcells
 
             // clear the map that counts XLCell in the GET
-            FrontRepoSingloton.XLCells_batch.clear()
+            this.frontRepo.XLCells_batch.clear()
 
             // 
             // First Step: init map of instances
             // insertion point sub template 
             xlcells.forEach(
               xlcell => {
-                FrontRepoSingloton.XLCells.set(xlcell.ID, xlcell)
-                FrontRepoSingloton.XLCells_batch.set(xlcell.ID, xlcell)
+                this.frontRepo.XLCells.set(xlcell.ID, xlcell)
+                this.frontRepo.XLCells_batch.set(xlcell.ID, xlcell)
 
                 // insertion point for redeeming ONE/ZERO-ONE associations
 
                 // insertion point for redeeming ONE-MANY associations
                 // insertion point for slice of pointer field XLRow.Cells redeeming
                 {
-                  let _xlrow = FrontRepoSingloton.XLRows.get(xlcell.XLRow_CellsDBID.Int64)
+                  let _xlrow = this.frontRepo.XLRows.get(xlcell.XLRow_CellsDBID.Int64)
                   if (_xlrow) {
                     if (_xlrow.Cells == undefined) {
                       _xlrow.Cells = new Array<XLCellDB>()
@@ -581,7 +581,7 @@ export class FrontRepoService {
                 }
                 // insertion point for slice of pointer field XLSheet.SheetCells redeeming
                 {
-                  let _xlsheet = FrontRepoSingloton.XLSheets.get(xlcell.XLSheet_SheetCellsDBID.Int64)
+                  let _xlsheet = this.frontRepo.XLSheets.get(xlcell.XLSheet_SheetCellsDBID.Int64)
                   if (_xlsheet) {
                     if (_xlsheet.SheetCells == undefined) {
                       _xlsheet.SheetCells = new Array<XLCellDB>()
@@ -596,10 +596,10 @@ export class FrontRepoService {
             )
 
             // clear xlcells that are absent from the GET
-            FrontRepoSingloton.XLCells.forEach(
+            this.frontRepo.XLCells.forEach(
               xlcell => {
-                if (FrontRepoSingloton.XLCells_batch.get(xlcell.ID) == undefined) {
-                  FrontRepoSingloton.XLCells.delete(xlcell.ID)
+                if (this.frontRepo.XLCells_batch.get(xlcell.ID) == undefined) {
+                  this.frontRepo.XLCells.delete(xlcell.ID)
                 }
               }
             )
@@ -609,7 +609,7 @@ export class FrontRepoService {
             // insertion point sub template 
 
             // hand over control flow to observer
-            observer.next(FrontRepoSingloton)
+            observer.next(this.frontRepo)
           }
         )
       }
@@ -627,18 +627,18 @@ export class FrontRepoService {
             xlfiles,
           ]) => {
             // init the array
-            FrontRepoSingloton.XLFiles_array = xlfiles
+            this.frontRepo.XLFiles_array = xlfiles
 
             // clear the map that counts XLFile in the GET
-            FrontRepoSingloton.XLFiles_batch.clear()
+            this.frontRepo.XLFiles_batch.clear()
 
             // 
             // First Step: init map of instances
             // insertion point sub template 
             xlfiles.forEach(
               xlfile => {
-                FrontRepoSingloton.XLFiles.set(xlfile.ID, xlfile)
-                FrontRepoSingloton.XLFiles_batch.set(xlfile.ID, xlfile)
+                this.frontRepo.XLFiles.set(xlfile.ID, xlfile)
+                this.frontRepo.XLFiles_batch.set(xlfile.ID, xlfile)
 
                 // insertion point for redeeming ONE/ZERO-ONE associations
 
@@ -647,10 +647,10 @@ export class FrontRepoService {
             )
 
             // clear xlfiles that are absent from the GET
-            FrontRepoSingloton.XLFiles.forEach(
+            this.frontRepo.XLFiles.forEach(
               xlfile => {
-                if (FrontRepoSingloton.XLFiles_batch.get(xlfile.ID) == undefined) {
-                  FrontRepoSingloton.XLFiles.delete(xlfile.ID)
+                if (this.frontRepo.XLFiles_batch.get(xlfile.ID) == undefined) {
+                  this.frontRepo.XLFiles.delete(xlfile.ID)
                 }
               }
             )
@@ -660,7 +660,7 @@ export class FrontRepoService {
             // insertion point sub template 
 
             // hand over control flow to observer
-            observer.next(FrontRepoSingloton)
+            observer.next(this.frontRepo)
           }
         )
       }
@@ -678,25 +678,25 @@ export class FrontRepoService {
             xlrows,
           ]) => {
             // init the array
-            FrontRepoSingloton.XLRows_array = xlrows
+            this.frontRepo.XLRows_array = xlrows
 
             // clear the map that counts XLRow in the GET
-            FrontRepoSingloton.XLRows_batch.clear()
+            this.frontRepo.XLRows_batch.clear()
 
             // 
             // First Step: init map of instances
             // insertion point sub template 
             xlrows.forEach(
               xlrow => {
-                FrontRepoSingloton.XLRows.set(xlrow.ID, xlrow)
-                FrontRepoSingloton.XLRows_batch.set(xlrow.ID, xlrow)
+                this.frontRepo.XLRows.set(xlrow.ID, xlrow)
+                this.frontRepo.XLRows_batch.set(xlrow.ID, xlrow)
 
                 // insertion point for redeeming ONE/ZERO-ONE associations
 
                 // insertion point for redeeming ONE-MANY associations
                 // insertion point for slice of pointer field XLSheet.Rows redeeming
                 {
-                  let _xlsheet = FrontRepoSingloton.XLSheets.get(xlrow.XLSheet_RowsDBID.Int64)
+                  let _xlsheet = this.frontRepo.XLSheets.get(xlrow.XLSheet_RowsDBID.Int64)
                   if (_xlsheet) {
                     if (_xlsheet.Rows == undefined) {
                       _xlsheet.Rows = new Array<XLRowDB>()
@@ -711,10 +711,10 @@ export class FrontRepoService {
             )
 
             // clear xlrows that are absent from the GET
-            FrontRepoSingloton.XLRows.forEach(
+            this.frontRepo.XLRows.forEach(
               xlrow => {
-                if (FrontRepoSingloton.XLRows_batch.get(xlrow.ID) == undefined) {
-                  FrontRepoSingloton.XLRows.delete(xlrow.ID)
+                if (this.frontRepo.XLRows_batch.get(xlrow.ID) == undefined) {
+                  this.frontRepo.XLRows.delete(xlrow.ID)
                 }
               }
             )
@@ -724,7 +724,7 @@ export class FrontRepoService {
             // insertion point sub template 
 
             // hand over control flow to observer
-            observer.next(FrontRepoSingloton)
+            observer.next(this.frontRepo)
           }
         )
       }
@@ -742,25 +742,25 @@ export class FrontRepoService {
             xlsheets,
           ]) => {
             // init the array
-            FrontRepoSingloton.XLSheets_array = xlsheets
+            this.frontRepo.XLSheets_array = xlsheets
 
             // clear the map that counts XLSheet in the GET
-            FrontRepoSingloton.XLSheets_batch.clear()
+            this.frontRepo.XLSheets_batch.clear()
 
             // 
             // First Step: init map of instances
             // insertion point sub template 
             xlsheets.forEach(
               xlsheet => {
-                FrontRepoSingloton.XLSheets.set(xlsheet.ID, xlsheet)
-                FrontRepoSingloton.XLSheets_batch.set(xlsheet.ID, xlsheet)
+                this.frontRepo.XLSheets.set(xlsheet.ID, xlsheet)
+                this.frontRepo.XLSheets_batch.set(xlsheet.ID, xlsheet)
 
                 // insertion point for redeeming ONE/ZERO-ONE associations
 
                 // insertion point for redeeming ONE-MANY associations
                 // insertion point for slice of pointer field XLFile.Sheets redeeming
                 {
-                  let _xlfile = FrontRepoSingloton.XLFiles.get(xlsheet.XLFile_SheetsDBID.Int64)
+                  let _xlfile = this.frontRepo.XLFiles.get(xlsheet.XLFile_SheetsDBID.Int64)
                   if (_xlfile) {
                     if (_xlfile.Sheets == undefined) {
                       _xlfile.Sheets = new Array<XLSheetDB>()
@@ -775,10 +775,10 @@ export class FrontRepoService {
             )
 
             // clear xlsheets that are absent from the GET
-            FrontRepoSingloton.XLSheets.forEach(
+            this.frontRepo.XLSheets.forEach(
               xlsheet => {
-                if (FrontRepoSingloton.XLSheets_batch.get(xlsheet.ID) == undefined) {
-                  FrontRepoSingloton.XLSheets.delete(xlsheet.ID)
+                if (this.frontRepo.XLSheets_batch.get(xlsheet.ID) == undefined) {
+                  this.frontRepo.XLSheets.delete(xlsheet.ID)
                 }
               }
             )
@@ -788,7 +788,7 @@ export class FrontRepoService {
             // insertion point sub template 
 
             // hand over control flow to observer
-            observer.next(FrontRepoSingloton)
+            observer.next(this.frontRepo)
           }
         )
       }

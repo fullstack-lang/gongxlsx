@@ -1,25 +1,18 @@
 package main
 
 import (
-	"embed"
 	"flag"
 	"fmt"
-	"io/fs"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/static"
-	"github.com/gin-gonic/gin"
-
-	"github.com/fullstack-lang/gongxlsx/go/fullstack"
-	"github.com/fullstack-lang/gongxlsx/go/models"
+	gongxlsx_go "github.com/fullstack-lang/gongxlsx/go"
+	gongxlsx_fullstack "github.com/fullstack-lang/gongxlsx/go/fullstack"
+	gongxlsx_models "github.com/fullstack-lang/gongxlsx/go/models"
+	gongxlsx_static "github.com/fullstack-lang/gongxlsx/go/static"
 
 	gongdoc_load "github.com/fullstack-lang/gongdoc/go/load"
-
-	gongxlsx "github.com/fullstack-lang/gongxlsx"
 )
 
 var (
@@ -46,7 +39,7 @@ var InjectionGateway = make(map[string](func()))
 type BeforeCommitImplementation struct {
 }
 
-func (impl *BeforeCommitImplementation) BeforeCommit(stage *models.StageStruct) {
+func (impl *BeforeCommitImplementation) BeforeCommit(stage *gongxlsx_models.StageStruct) {
 	file, err := os.Create(fmt.Sprintf("./%s.go", *marshallOnCommit))
 	if err != nil {
 		log.Fatal(err.Error())
@@ -65,20 +58,17 @@ func main() {
 	// parse program arguments
 	flag.Parse()
 
-	// setup controlers
-	if !*logGINFlag {
-		myfile, _ := os.Create("/tmp/server.log")
-		gin.DefaultWriter = myfile
-	}
-	r := gin.Default()
-	r.Use(cors.Default())
+	// setup the static file server and get the controller
+	r := gongxlsx_static.ServeStaticFiles(*logGINFlag)
 
 	// setup stack
-	var stage *models.StageStruct
+	var stage *gongxlsx_models.StageStruct
 	if *marshallOnCommit != "" {
-		stage, _ = fullstack.NewStackInstance(r, "")
+		// persistence in a SQLite file on disk in memory
+		stage = gongxlsx_fullstack.NewStackInstance(r, "github.com/fullstack-lang/gongxlsx/go/models")
 	} else {
-		stage, _ = fullstack.NewStackInstance(r, "")
+		// persistence in a SQLite file on disk
+		stage = gongxlsx_fullstack.NewStackInstance(r, "github.com/fullstack-lang/gongxlsx/go/models", "./test.db")
 	}
 
 	// generate injection code from the stage
@@ -120,7 +110,7 @@ func main() {
 		stage.Checkout()
 		stage.Reset()
 		stage.Commit()
-		err := models.ParseAstFile(stage, *unmarshallFromCode)
+		err := gongxlsx_models.ParseAstFile(stage, *unmarshallFromCode)
 
 		// if the application is run with -unmarshallFromCode=xxx.go -marshallOnCommit
 		// xxx.go might be absent the first time. However, this shall not be a show stopper.
@@ -143,62 +133,33 @@ func main() {
 	gongdoc_load.Load(
 		"gongxlsx",
 		"github.com/fullstack-lang/gongxlsx/go/models",
-		gongxlsx.GoDir,
+		gongxlsx_go.GoModelsDir,
+		gongxlsx_go.GoDiagramsDir,
 		r,
 		*embeddedDiagrams,
 		&stage.Map_GongStructName_InstancesNb)
-
-	// insertion point for serving the static file
-	// provide the static route for the angular pages
-	r.Use(static.Serve("/", EmbedFolder(gongxlsx.NgDistNg, "ng/dist/ng")))
-	r.NoRoute(func(c *gin.Context) {
-		fmt.Println(c.Request.URL.Path, "doesn't exists, redirect on /")
-		c.Redirect(http.StatusMovedPermanently, "/")
-		c.Abort()
-	})
-
 	nbArgs := flag.Args()
 	if len(nbArgs) < 1 {
 		log.Panic("there should be at least one file argument")
 	}
 
-	sampleXLFile := new(models.XLFile).Stage(stage)
+	sampleXLFile := new(gongxlsx_models.XLFile).Stage(stage)
 	sampleXLFile.Open(stage, flag.Arg(0))
 
 	if len(nbArgs) > 1 {
-		sampleXLFile2 := new(models.XLFile).Stage(stage)
+		sampleXLFile2 := new(gongxlsx_models.XLFile).Stage(stage)
 		sampleXLFile2.Open(stage, flag.Arg(1))
 	}
 
 	if *compareFlag == "sampleFile" {
 		log.Println("no file to compare")
 	} else {
-		fileToCompare := new(models.XLFile).Stage(stage)
+		fileToCompare := new(gongxlsx_models.XLFile).Stage(stage)
 		fileToCompare.Open(stage, *compareFlag)
 
 	}
 
 	stage.Commit()
-
 	log.Printf("Server ready serve on localhost:8080")
 	r.Run()
-}
-
-type embedFileSystem struct {
-	http.FileSystem
-}
-
-func (e embedFileSystem) Exists(prefix string, path string) bool {
-	_, err := e.Open(path)
-	return err == nil
-}
-
-func EmbedFolder(fsEmbed embed.FS, targetPath string) static.ServeFileSystem {
-	fsys, err := fs.Sub(fsEmbed, targetPath)
-	if err != nil {
-		panic(err)
-	}
-	return embedFileSystem{
-		FileSystem: http.FS(fsys),
-	}
 }

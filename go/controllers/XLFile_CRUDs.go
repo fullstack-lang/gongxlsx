@@ -151,7 +151,7 @@ func (controller *Controller) PostXLFile(c *gin.Context) {
 
 	// get an instance (not staged) from DB instance, and call callback function
 	backRepo.BackRepoXLFile.CheckoutPhaseOneInstance(&xlfileDB)
-	xlfile := (*backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+	xlfile := backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr[xlfileDB.ID]
 
 	if xlfile != nil {
 		models.AfterCreateFromFront(backRepo.GetStage(), xlfile)
@@ -273,7 +273,7 @@ func (controller *Controller) UpdateXLFile(c *gin.Context) {
 	xlfileDB.CopyBasicFieldsToXLFile(xlfileNew)
 
 	// get stage instance from DB instance, and call callback function
-	xlfileOld := (*backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+	xlfileOld := backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr[xlfileDB.ID]
 	if xlfileOld != nil {
 		models.AfterUpdateFromFront(backRepo.GetStage(), xlfileOld, xlfileNew)
 	}
@@ -330,7 +330,7 @@ func (controller *Controller) DeleteXLFile(c *gin.Context) {
 	xlfileDB.CopyBasicFieldsToXLFile(xlfileDeleted)
 
 	// get stage instance from DB instance, and call callback function
-	xlfileStaged := (*backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr)[xlfileDB.ID]
+	xlfileStaged := backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr[xlfileDB.ID]
 	if xlfileStaged != nil {
 		models.AfterDeleteFromFront(backRepo.GetStage(), xlfileStaged, xlfileDeleted)
 	}

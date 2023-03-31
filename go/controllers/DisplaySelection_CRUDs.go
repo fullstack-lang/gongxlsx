@@ -151,7 +151,7 @@ func (controller *Controller) PostDisplaySelection(c *gin.Context) {
 
 	// get an instance (not staged) from DB instance, and call callback function
 	backRepo.BackRepoDisplaySelection.CheckoutPhaseOneInstance(&displayselectionDB)
-	displayselection := (*backRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
+	displayselection := backRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr[displayselectionDB.ID]
 
 	if displayselection != nil {
 		models.AfterCreateFromFront(backRepo.GetStage(), displayselection)
@@ -273,7 +273,7 @@ func (controller *Controller) UpdateDisplaySelection(c *gin.Context) {
 	displayselectionDB.CopyBasicFieldsToDisplaySelection(displayselectionNew)
 
 	// get stage instance from DB instance, and call callback function
-	displayselectionOld := (*backRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
+	displayselectionOld := backRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr[displayselectionDB.ID]
 	if displayselectionOld != nil {
 		models.AfterUpdateFromFront(backRepo.GetStage(), displayselectionOld, displayselectionNew)
 	}
@@ -330,7 +330,7 @@ func (controller *Controller) DeleteDisplaySelection(c *gin.Context) {
 	displayselectionDB.CopyBasicFieldsToDisplaySelection(displayselectionDeleted)
 
 	// get stage instance from DB instance, and call callback function
-	displayselectionStaged := (*backRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
+	displayselectionStaged := backRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr[displayselectionDB.ID]
 	if displayselectionStaged != nil {
 		models.AfterDeleteFromFront(backRepo.GetStage(), displayselectionStaged, displayselectionDeleted)
 	}

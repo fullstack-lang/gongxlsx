@@ -117,13 +117,13 @@ var XLSheet_Fields = []string{
 
 type BackRepoXLSheetStruct struct {
 	// stores XLSheetDB according to their gorm ID
-	Map_XLSheetDBID_XLSheetDB *map[uint]*XLSheetDB
+	Map_XLSheetDBID_XLSheetDB map[uint]*XLSheetDB
 
 	// stores XLSheetDB ID according to XLSheet address
-	Map_XLSheetPtr_XLSheetDBID *map[*models.XLSheet]uint
+	Map_XLSheetPtr_XLSheetDBID map[*models.XLSheet]uint
 
 	// stores XLSheet according to their gorm ID
-	Map_XLSheetDBID_XLSheetPtr *map[uint]*models.XLSheet
+	Map_XLSheetDBID_XLSheetPtr map[uint]*models.XLSheet
 
 	db *gorm.DB
 
@@ -141,40 +141,8 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) GetDB() *gorm.DB {
 
 // GetXLSheetDBFromXLSheetPtr is a handy function to access the back repo instance from the stage instance
 func (backRepoXLSheet *BackRepoXLSheetStruct) GetXLSheetDBFromXLSheetPtr(xlsheet *models.XLSheet) (xlsheetDB *XLSheetDB) {
-	id := (*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet]
-	xlsheetDB = (*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[id]
-	return
-}
-
-// BackRepoXLSheet.Init set up the BackRepo of the XLSheet
-func (backRepoXLSheet *BackRepoXLSheetStruct) Init(stage *models.StageStruct, db *gorm.DB) (Error error) {
-
-	if backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr != nil {
-		err := errors.New("In Init, backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr should be nil")
-		return err
-	}
-
-	if backRepoXLSheet.Map_XLSheetDBID_XLSheetDB != nil {
-		err := errors.New("In Init, backRepoXLSheet.Map_XLSheetDBID_XLSheetDB should be nil")
-		return err
-	}
-
-	if backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID != nil {
-		err := errors.New("In Init, backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID should be nil")
-		return err
-	}
-
-	tmp := make(map[uint]*models.XLSheet, 0)
-	backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr = &tmp
-
-	tmpDB := make(map[uint]*XLSheetDB, 0)
-	backRepoXLSheet.Map_XLSheetDBID_XLSheetDB = &tmpDB
-
-	tmpID := make(map[*models.XLSheet]uint, 0)
-	backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID = &tmpID
-
-	backRepoXLSheet.db = db
-	backRepoXLSheet.stage = stage
+	id := backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID[xlsheet]
+	xlsheetDB = backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[id]
 	return
 }
 
@@ -188,7 +156,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseOne(stage *models.Stage
 
 	// parse all backRepo instance and checks wether some instance have been unstaged
 	// in this case, remove them from the back repo
-	for id, xlsheet := range *backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr {
+	for id, xlsheet := range backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr {
 		if _, ok := stage.XLSheets[xlsheet]; !ok {
 			backRepoXLSheet.CommitDeleteInstance(id)
 		}
@@ -200,19 +168,19 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseOne(stage *models.Stage
 // BackRepoXLSheet.CommitDeleteInstance commits deletion of XLSheet to the BackRepo
 func (backRepoXLSheet *BackRepoXLSheetStruct) CommitDeleteInstance(id uint) (Error error) {
 
-	xlsheet := (*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[id]
+	xlsheet := backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[id]
 
 	// xlsheet is not staged anymore, remove xlsheetDB
-	xlsheetDB := (*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[id]
+	xlsheetDB := backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[id]
 	query := backRepoXLSheet.db.Unscoped().Delete(&xlsheetDB)
 	if query.Error != nil {
 		return query.Error
 	}
 
 	// update stores
-	delete((*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID), xlsheet)
-	delete((*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr), id)
-	delete((*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB), id)
+	delete(backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID, xlsheet)
+	delete(backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr, id)
+	delete(backRepoXLSheet.Map_XLSheetDBID_XLSheetDB, id)
 
 	return
 }
@@ -222,7 +190,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitDeleteInstance(id uint) (Err
 func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseOneInstance(xlsheet *models.XLSheet) (Error error) {
 
 	// check if the xlsheet is not commited yet
-	if _, ok := (*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet]; ok {
+	if _, ok := backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID[xlsheet]; ok {
 		return
 	}
 
@@ -236,9 +204,9 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseOneInstance(xlsheet *mo
 	}
 
 	// update stores
-	(*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet] = xlsheetDB.ID
-	(*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID] = xlsheet
-	(*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB.ID] = &xlsheetDB
+	backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID[xlsheet] = xlsheetDB.ID
+	backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[xlsheetDB.ID] = xlsheet
+	backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[xlsheetDB.ID] = &xlsheetDB
 
 	return
 }
@@ -247,7 +215,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseOneInstance(xlsheet *mo
 // Phase Two is the update of instance with the field in the database
 func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwo(backRepo *BackRepoStruct) (Error error) {
 
-	for idx, xlsheet := range *backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr {
+	for idx, xlsheet := range backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr {
 		backRepoXLSheet.CommitPhaseTwoInstance(backRepo, idx, xlsheet)
 	}
 
@@ -259,7 +227,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwo(backRepo *BackRepoS
 func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *BackRepoStruct, idx uint, xlsheet *models.XLSheet) (Error error) {
 
 	// fetch matching xlsheetDB
-	if xlsheetDB, ok := (*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[idx]; ok {
+	if xlsheetDB, ok := backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[idx]; ok {
 
 		xlsheetDB.CopyBasicFieldsFromXLSheet(xlsheet)
 
@@ -341,7 +309,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOne() (Error error) {
 
 		// do not remove this instance from the stage, therefore
 		// remove instance from the list of instances to be be removed from the stage
-		xlsheet, ok := (*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+		xlsheet, ok := backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[xlsheetDB.ID]
 		if ok {
 			delete(xlsheetInstancesToBeRemovedFromTheStage, xlsheet)
 		}
@@ -352,10 +320,10 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOne() (Error error) {
 		xlsheet.Unstage(backRepoXLSheet.GetStage())
 
 		// remove instance from the back repo 3 maps
-		xlsheetID := (*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet]
-		delete((*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID), xlsheet)
-		delete((*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB), xlsheetID)
-		delete((*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr), xlsheetID)
+		xlsheetID := backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID[xlsheet]
+		delete(backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID, xlsheet)
+		delete(backRepoXLSheet.Map_XLSheetDBID_XLSheetDB, xlsheetID)
+		delete(backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr, xlsheetID)
 	}
 
 	return
@@ -365,12 +333,12 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOne() (Error error) {
 // models version of the xlsheetDB
 func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOneInstance(xlsheetDB *XLSheetDB) (Error error) {
 
-	xlsheet, ok := (*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+	xlsheet, ok := backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[xlsheetDB.ID]
 	if !ok {
 		xlsheet = new(models.XLSheet)
 
-		(*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID] = xlsheet
-		(*backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet] = xlsheetDB.ID
+		backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[xlsheetDB.ID] = xlsheet
+		backRepoXLSheet.Map_XLSheetPtr_XLSheetDBID[xlsheet] = xlsheetDB.ID
 
 		// append model store with the new element
 		xlsheet.Name = xlsheetDB.Name_Data.String
@@ -385,7 +353,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOneInstance(xlsheetDB
 	// Map_XLSheetDBID_XLSheetDB)[xlsheetDB hold variable pointers
 	xlsheetDB_Data := *xlsheetDB
 	preservedPtrToXLSheet := &xlsheetDB_Data
-	(*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB.ID] = preservedPtrToXLSheet
+	backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[xlsheetDB.ID] = preservedPtrToXLSheet
 
 	return
 }
@@ -395,7 +363,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOneInstance(xlsheetDB
 func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseTwo(backRepo *BackRepoStruct) (Error error) {
 
 	// parse all DB instance and update all pointer fields of the translated models instance
-	for _, xlsheetDB := range *backRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
+	for _, xlsheetDB := range backRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
 		backRepoXLSheet.CheckoutPhaseTwoInstance(backRepo, xlsheetDB)
 	}
 	return
@@ -405,7 +373,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseTwo(backRepo *BackRep
 // Phase Two is the update of instance with the field in the database
 func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseTwoInstance(backRepo *BackRepoStruct, xlsheetDB *XLSheetDB) (Error error) {
 
-	xlsheet := (*backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+	xlsheet := backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[xlsheetDB.ID]
 	_ = xlsheet // sometimes, there is no code generated. This lines voids the "unused variable" compilation error
 
 	// insertion point for checkout of pointer encoding
@@ -415,11 +383,11 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseTwoInstance(backRepo 
 	// 1. reset the slice
 	xlsheet.Rows = xlsheet.Rows[:0]
 	// 2. loop all instances in the type in the association end
-	for _, xlrowDB_AssocEnd := range *backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB {
+	for _, xlrowDB_AssocEnd := range backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB {
 		// 3. Does the ID encoding at the end and the ID at the start matches ?
 		if xlrowDB_AssocEnd.XLSheet_RowsDBID.Int64 == int64(xlsheetDB.ID) {
 			// 4. fetch the associated instance in the stage
-			xlrow_AssocEnd := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB_AssocEnd.ID]
+			xlrow_AssocEnd := backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr[xlrowDB_AssocEnd.ID]
 			// 5. append it the association slice
 			xlsheet.Rows = append(xlsheet.Rows, xlrow_AssocEnd)
 		}
@@ -427,11 +395,11 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseTwoInstance(backRepo 
 
 	// sort the array according to the order
 	sort.Slice(xlsheet.Rows, func(i, j int) bool {
-		xlrowDB_i_ID := (*backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlsheet.Rows[i]]
-		xlrowDB_j_ID := (*backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID)[xlsheet.Rows[j]]
+		xlrowDB_i_ID := backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID[xlsheet.Rows[i]]
+		xlrowDB_j_ID := backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID[xlsheet.Rows[j]]
 
-		xlrowDB_i := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB)[xlrowDB_i_ID]
-		xlrowDB_j := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB)[xlrowDB_j_ID]
+		xlrowDB_i := backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB[xlrowDB_i_ID]
+		xlrowDB_j := backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB[xlrowDB_j_ID]
 
 		return xlrowDB_i.XLSheet_RowsDBID_Index.Int64 < xlrowDB_j.XLSheet_RowsDBID_Index.Int64
 	})
@@ -442,11 +410,11 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseTwoInstance(backRepo 
 	// 1. reset the slice
 	xlsheet.SheetCells = xlsheet.SheetCells[:0]
 	// 2. loop all instances in the type in the association end
-	for _, xlcellDB_AssocEnd := range *backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB {
+	for _, xlcellDB_AssocEnd := range backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB {
 		// 3. Does the ID encoding at the end and the ID at the start matches ?
 		if xlcellDB_AssocEnd.XLSheet_SheetCellsDBID.Int64 == int64(xlsheetDB.ID) {
 			// 4. fetch the associated instance in the stage
-			xlcell_AssocEnd := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB_AssocEnd.ID]
+			xlcell_AssocEnd := backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr[xlcellDB_AssocEnd.ID]
 			// 5. append it the association slice
 			xlsheet.SheetCells = append(xlsheet.SheetCells, xlcell_AssocEnd)
 		}
@@ -454,11 +422,11 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseTwoInstance(backRepo 
 
 	// sort the array according to the order
 	sort.Slice(xlsheet.SheetCells, func(i, j int) bool {
-		xlcellDB_i_ID := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlsheet.SheetCells[i]]
-		xlcellDB_j_ID := (*backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID)[xlsheet.SheetCells[j]]
+		xlcellDB_i_ID := backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID[xlsheet.SheetCells[i]]
+		xlcellDB_j_ID := backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID[xlsheet.SheetCells[j]]
 
-		xlcellDB_i := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB_i_ID]
-		xlcellDB_j := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB)[xlcellDB_j_ID]
+		xlcellDB_i := backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB[xlcellDB_i_ID]
+		xlcellDB_j := backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB[xlcellDB_j_ID]
 
 		return xlcellDB_i.XLSheet_SheetCellsDBID_Index.Int64 < xlcellDB_j.XLSheet_SheetCellsDBID_Index.Int64
 	})
@@ -469,7 +437,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseTwoInstance(backRepo 
 // CommitXLSheet allows commit of a single xlsheet (if already staged)
 func (backRepo *BackRepoStruct) CommitXLSheet(xlsheet *models.XLSheet) {
 	backRepo.BackRepoXLSheet.CommitPhaseOneInstance(xlsheet)
-	if id, ok := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet]; ok {
+	if id, ok := backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID[xlsheet]; ok {
 		backRepo.BackRepoXLSheet.CommitPhaseTwoInstance(backRepo, id, xlsheet)
 	}
 	backRepo.CommitFromBackNb = backRepo.CommitFromBackNb + 1
@@ -478,9 +446,9 @@ func (backRepo *BackRepoStruct) CommitXLSheet(xlsheet *models.XLSheet) {
 // CommitXLSheet allows checkout of a single xlsheet (if already staged and with a BackRepo id)
 func (backRepo *BackRepoStruct) CheckoutXLSheet(xlsheet *models.XLSheet) {
 	// check if the xlsheet is staged
-	if _, ok := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet]; ok {
+	if _, ok := backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID[xlsheet]; ok {
 
-		if id, ok := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[xlsheet]; ok {
+		if id, ok := backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID[xlsheet]; ok {
 			var xlsheetDB XLSheetDB
 			xlsheetDB.ID = id
 
@@ -554,7 +522,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) Backup(dirPath string) {
 	// organize the map into an array with increasing IDs, in order to have repoductible
 	// backup file
 	forBackup := make([]*XLSheetDB, 0)
-	for _, xlsheetDB := range *backRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
+	for _, xlsheetDB := range backRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
 		forBackup = append(forBackup, xlsheetDB)
 	}
 
@@ -580,7 +548,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) BackupXL(file *xlsx.File) {
 	// organize the map into an array with increasing IDs, in order to have repoductible
 	// backup file
 	forBackup := make([]*XLSheetDB, 0)
-	for _, xlsheetDB := range *backRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
+	for _, xlsheetDB := range backRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
 		forBackup = append(forBackup, xlsheetDB)
 	}
 
@@ -645,7 +613,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) rowVisitorXLSheet(row *xlsx.Row) e
 		if query.Error != nil {
 			log.Panic(query.Error)
 		}
-		(*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB.ID] = xlsheetDB
+		backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[xlsheetDB.ID] = xlsheetDB
 		BackRepoXLSheetid_atBckpTime_newID[xlsheetDB_ID_atBackupTime] = xlsheetDB.ID
 	}
 	return nil
@@ -682,7 +650,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseOne(dirPath string) {
 		if query.Error != nil {
 			log.Panic(query.Error)
 		}
-		(*backRepoXLSheet.Map_XLSheetDBID_XLSheetDB)[xlsheetDB.ID] = xlsheetDB
+		backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[xlsheetDB.ID] = xlsheetDB
 		BackRepoXLSheetid_atBckpTime_newID[xlsheetDB_ID_atBackupTime] = xlsheetDB.ID
 	}
 
@@ -695,7 +663,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseOne(dirPath string) {
 // to compute new index
 func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseTwo() {
 
-	for _, xlsheetDB := range *backRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
+	for _, xlsheetDB := range backRepoXLSheet.Map_XLSheetDBID_XLSheetDB {
 
 		// next line of code is to avert unused variable compilation error
 		_ = xlsheetDB

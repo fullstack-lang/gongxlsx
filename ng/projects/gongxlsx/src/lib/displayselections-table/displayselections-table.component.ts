@@ -19,6 +19,8 @@ import { DisplaySelectionService } from '../displayselection.service'
 
 // insertion point for additional imports
 
+import { RouteService } from '../route-service';
+
 // TableComponent is initilizaed from different routes
 // TableComponentMode detail different cases 
 enum TableComponentMode {
@@ -124,6 +126,8 @@ export class DisplaySelectionsTableComponent implements OnInit {
 
     private router: Router,
     private activatedRoute: ActivatedRoute,
+
+    private routeService: RouteService,
   ) {
 
     // compute mode
@@ -244,18 +248,15 @@ export class DisplaySelectionsTableComponent implements OnInit {
 
   }
 
-  // display displayselection in router
-  displayDisplaySelectionInRouter(displayselectionID: number) {
-    this.router.navigate(["github_com_fullstack_lang_gongxlsx_go-" + "displayselection-display", displayselectionID])
-  }
-
   // set editor outlet
   setEditorRouterOutlet(displayselectionID: number) {
-    this.router.navigate([{
-      outlets: {
-        github_com_fullstack_lang_gongxlsx_go_editor: ["github_com_fullstack_lang_gongxlsx_go-" + "displayselection-detail", displayselectionID, this.GONG__StackPath]
-      }
-    }]);
+    let outletName = this.routeService.getEditorOutlet(this.GONG__StackPath)
+    let fullPath = this.routeService.getPathRoot() + "-" + "displayselection" + "-detail"
+
+    let outletConf: any = {}
+    outletConf[outletName] = [fullPath, displayselectionID, this.GONG__StackPath]
+
+    this.router.navigate([{ outlets: outletConf }])
   }
 
   /** Whether the number of selected elements matches the total number of rows. */

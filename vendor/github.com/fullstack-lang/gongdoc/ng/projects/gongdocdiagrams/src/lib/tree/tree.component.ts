@@ -39,6 +39,7 @@ interface FlatNode {
 export class TreeComponent implements OnInit {
 
   @Input() name: string = ""
+  @Input() GONG__StackPath: string = ""
 
   // the package can be editable or not
   editable: boolean = false
@@ -88,75 +89,50 @@ export class TreeComponent implements OnInit {
   // 
   // the checkCommitNbFromBackTimer polls the commit number of the back repo
   // if the commit number has increased, it pulls the front repo and redraw the diagram
-
-  checkCommitNbFromBackTimer: Observable<number> | undefined // = timer(1000);
+  private commutNbFromBackSubscription: Subscription = new Subscription
   lastCommitNbFromBack = -1
   lastPushFromFrontNb = -1
   currTime: number = 0
   dateOfLastTimerEmission: Date = new Date
 
-  subscribeInProgress: boolean = false
-
-    // Since this component is not reused when a new diagram is selected, there can be many
-  // instances of the diagram and each instance will stay alive. For instance,
-  // the instance will be in the control flow if an observable the component subscribes to emits an event.
-  // Therefore, it is mandatory to manage subscriptions in order to unscribe them on the ngOnDestroy hook
-  checkGongdocCommitNbFromBackTimerSubscription: Subscription = new Subscription
-  gongdocCommitNbFromBackService_getCommitNbFromBack: Subscription = new Subscription
-
-  ngOnDestroy() {
-    // console.log("on destroy")
-    this.checkGongdocCommitNbFromBackTimerSubscription.unsubscribe()
-    this.gongdocCommitNbFromBackService_getCommitNbFromBack.unsubscribe()
+  ngOnInit(): void {
+    console.log("TreeComponent->name : ", this.name)
+    console.log("TreeComponent->GONG__StackPath : ", this.GONG__StackPath)
+    this.startAutoRefresh(500); // Refresh every 500 ms (half second)
   }
 
-  ngOnInit(): void {
+  ngOnDestroy(): void {
+    this.stopAutoRefresh();
+  }
 
-    this.checkCommitNbFromBackTimer = timer(500, 500);
 
-    this.checkGongdocCommitNbFromBackTimerSubscription = this.checkCommitNbFromBackTimer?.subscribe(
-      currTime => {
-        this.currTime = currTime
-        this.dateOfLastTimerEmission = new Date
-        // console.log("Timer emission " + this.name + " " + " currTime "+ currTime + " " + 
-        // this.dateOfLastTimerEmission.toLocaleString() + `.${this.dateOfLastTimerEmission.getMilliseconds()}`)
+  stopAutoRefresh(): void {
+    if (this.commutNbFromBackSubscription) {
+      this.commutNbFromBackSubscription.unsubscribe();
+    }
+  }
 
-        // see above for the explanation
-        this.subscribeInProgress = true
-        this.gongdocCommitNbFromBackService.getCommitNbFromBack()
-          .subscribe(
-            commitNbFromBack => {
-              this.subscribeInProgress = false
-              // console.log("TreeComponent, last commit nb " + this.lastCommitNbFromBack + " new: " + commitNbFromBack)
 
-              if (this.lastCommitNbFromBack < commitNbFromBack) {
-                const d = new Date()
-                console.log("TreeComponent, " + d.toLocaleTimeString() + `.${d.getMilliseconds()}` +
-                  ", last commit increased nb " + this.lastCommitNbFromBack + " new: " + commitNbFromBack + " " + this.name)
-                this.lastCommitNbFromBack = commitNbFromBack
-                this.refresh()
-              }
-            }
-          )
+  startAutoRefresh(intervalMs: number): void {
+    this.commutNbFromBackSubscription = this.gongdocCommitNbFromBackService
+      .getCommitNbFromBack(intervalMs, this.GONG__StackPath)
+      .subscribe((commitNbFromBack: number) => {
+        // console.log("TreeComponent, last commit nb " + this.lastCommitNbFromBack + " new: " + commitNbFromBack)
 
-        // see above for the explanation
-        // this.gongdocPushFromFrontNbService.getPushFromFrontNb().subscribe(
-        //   pushFromFrontNb => {
-        //     if (this.lastPushFromFrontNb < pushFromFrontNb) {
-
-        //       console.log("last commit nb " + this.lastPushFromFrontNb + " new: " + pushFromFrontNb)
-        //       this.refresh()
-        //       this.lastPushFromFrontNb = pushFromFrontNb
-        //     }
-        //   }
-        // )
+        if (this.lastCommitNbFromBack < commitNbFromBack) {
+          const d = new Date()
+          console.log("TreeComponent, ", this.GONG__StackPath, " name ", this.name + d.toLocaleTimeString() + `.${d.getMilliseconds()}` +
+            ", last commit increased nb " + this.lastCommitNbFromBack + " new: " + commitNbFromBack)
+          this.lastCommitNbFromBack = commitNbFromBack
+          this.refresh()
+        }
       }
-    )
+      )
   }
 
   refresh(): void {
 
-    this.gongdocFrontRepoService.pull().subscribe(
+    this.gongdocFrontRepoService.pull(this.GONG__StackPath).subscribe(
       gongdocsFrontRepo => {
         this.gongdocFrontRepo = gongdocsFrontRepo
 
@@ -226,7 +202,7 @@ export class TreeComponent implements OnInit {
 
     node.gongNode.IsExpanded = !node.gongNode.IsExpanded
 
-    this.gongdocNodeService.updateNode(node.gongNode, "").subscribe(
+    this.gongdocNodeService.updateNode(node.gongNode, this.GONG__StackPath).subscribe(
       gongdocNode => {
         console.log("toggleNodeExpansion: updated node")
       }
@@ -237,9 +213,9 @@ export class TreeComponent implements OnInit {
   toggleNodeCheckbox(node: FlatNode): void {
 
     const d = new Date()
-    console.log("TreeComponent, toggleNodeCheckbox, " + d.toLocaleTimeString() + `.${d.getMilliseconds()}` + " " + this.name)
+    console.log("TreeComponent ", this.GONG__StackPath, " name ", this.name, " toggleNodeCheckbox, " + d.toLocaleTimeString() + `.${d.getMilliseconds()}` + " " + this.name)
     node.gongNode.IsChecked = !node.gongNode.IsChecked
-    this.gongdocNodeService.updateNode(node.gongNode, "").subscribe(
+    this.gongdocNodeService.updateNode(node.gongNode, this.GONG__StackPath).subscribe(
       gongdocNode => {
         const d = new Date()
         console.log("toggleNodeCheckbox: updated node " + d.toLocaleTimeString() + `.${d.getMilliseconds()}` + " " + this.name)
@@ -250,19 +226,23 @@ export class TreeComponent implements OnInit {
   addNewItem(node: FlatNode) {
 
     var gongNode: gongdoc.NodeDB = new (gongdoc.NodeDB)
+
+    const d = new Date()
+    console.log("TreeComponent ", this.GONG__StackPath, " name ", this.name, " addNewItem, " + d.toLocaleTimeString() + `.${d.getMilliseconds()}` + " " + this.name)
+
     gongNode.Name = "NewDiagram"
     gongNode.HasEditButton = true
     gongNode.IsInEditMode = true
     gongNode.Node_ChildrenDBID.Valid = true
     gongNode.Node_ChildrenDBID.Int64 = node.gongNode.ID
-    this.gongdocNodeService.postNode(gongNode, "").subscribe(
+    this.gongdocNodeService.postNode(gongNode, this.GONG__StackPath).subscribe(
       gongdocNode => {
         console.log("post node")
       }
     )
 
     node.gongNode.IsExpanded = true
-    this.gongdocNodeService.updateNode(node.gongNode, "").subscribe(
+    this.gongdocNodeService.updateNode(node.gongNode, this.GONG__StackPath).subscribe(
       gongdocNode => {
         console.log("node.gongNode.IsExpanded updated node")
       }
@@ -273,7 +253,7 @@ export class TreeComponent implements OnInit {
 
   setInEditMode(node: FlatNode) {
     node.gongNode.IsInEditMode = true
-    this.gongdocNodeService.updateNode(node.gongNode, "").subscribe(
+    this.gongdocNodeService.updateNode(node.gongNode, this.GONG__StackPath).subscribe(
       gongdocNode => {
         console.log("node.gongNode.IsInEditMode = true, updated node")
       }
@@ -282,7 +262,7 @@ export class TreeComponent implements OnInit {
 
   update(node: FlatNode) {
     node.gongNode.IsInEditMode = false
-    this.gongdocNodeService.updateNode(node.gongNode, "").subscribe(
+    this.gongdocNodeService.updateNode(node.gongNode, this.GONG__StackPath).subscribe(
       gongdocNode => {
         console.log("node.gongNode.IsInEditMode = false, updated node")
       }
@@ -299,7 +279,7 @@ export class TreeComponent implements OnInit {
 
         // and set the edit mode
         node.gongNode.IsInEditMode = false
-        this.gongdocNodeService.updateNode(node.gongNode, "").subscribe(
+        this.gongdocNodeService.updateNode(node.gongNode, this.GONG__StackPath).subscribe(
           gongdocNode => {
             console.log("node.gongNode.IsInEditMode = false, updated node")
           }
@@ -316,7 +296,7 @@ export class TreeComponent implements OnInit {
     // and set the edit mode
     node.gongNode.IsInDrawMode = false
     node.gongNode.IsSaved = false
-    this.gongdocNodeService.updateNode(node.gongNode, "").subscribe(
+    this.gongdocNodeService.updateNode(node.gongNode, this.GONG__StackPath).subscribe(
       gongdocNode => {
         console.log("node.gongNode.IsInDrawMode = false, updated node")
       }
@@ -327,14 +307,14 @@ export class TreeComponent implements OnInit {
   updateDiagram(node: FlatNode) {
 
     node.gongNode.IsSaved = true
-    this.gongdocNodeService.updateNode(node.gongNode, "").subscribe(
+    this.gongdocNodeService.updateNode(node.gongNode, this.GONG__StackPath).subscribe(
       gongdocNode => {
         console.log("node.gongNode.IsSaved = true, updated node")
 
         if (gongdocNode.IsSaved) {
           // and set the edit mode
           node.gongNode.IsInDrawMode = false
-          this.gongdocNodeService.updateNode(node.gongNode, "").subscribe(
+          this.gongdocNodeService.updateNode(node.gongNode, this.GONG__StackPath).subscribe(
             gongdocNode => {
               console.log("gongdocNode.IsSaved, updated node")
             }
@@ -347,7 +327,7 @@ export class TreeComponent implements OnInit {
   }
 
   deleteNode(node: FlatNode) {
-    this.gongdocNodeService.deleteNode(node.gongNode, "").subscribe(
+    this.gongdocNodeService.deleteNode(node.gongNode, this.GONG__StackPath).subscribe(
       gongdocNode => {
         console.log("delete node")
       }
@@ -356,7 +336,7 @@ export class TreeComponent implements OnInit {
 
   setInDrawMode(node: FlatNode) {
     node.gongNode.IsInDrawMode = true
-    this.gongdocNodeService.updateNode(node.gongNode, "").subscribe(
+    this.gongdocNodeService.updateNode(node.gongNode, this.GONG__StackPath).subscribe(
       gongdocNode => {
         console.log("setInDrawMode, updated node")
       }

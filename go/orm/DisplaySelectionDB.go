@@ -101,13 +101,13 @@ var DisplaySelection_Fields = []string{
 
 type BackRepoDisplaySelectionStruct struct {
 	// stores DisplaySelectionDB according to their gorm ID
-	Map_DisplaySelectionDBID_DisplaySelectionDB *map[uint]*DisplaySelectionDB
+	Map_DisplaySelectionDBID_DisplaySelectionDB map[uint]*DisplaySelectionDB
 
 	// stores DisplaySelectionDB ID according to DisplaySelection address
-	Map_DisplaySelectionPtr_DisplaySelectionDBID *map[*models.DisplaySelection]uint
+	Map_DisplaySelectionPtr_DisplaySelectionDBID map[*models.DisplaySelection]uint
 
 	// stores DisplaySelection according to their gorm ID
-	Map_DisplaySelectionDBID_DisplaySelectionPtr *map[uint]*models.DisplaySelection
+	Map_DisplaySelectionDBID_DisplaySelectionPtr map[uint]*models.DisplaySelection
 
 	db *gorm.DB
 
@@ -125,40 +125,8 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) GetDB() *gorm.DB
 
 // GetDisplaySelectionDBFromDisplaySelectionPtr is a handy function to access the back repo instance from the stage instance
 func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) GetDisplaySelectionDBFromDisplaySelectionPtr(displayselection *models.DisplaySelection) (displayselectionDB *DisplaySelectionDB) {
-	id := (*backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID)[displayselection]
-	displayselectionDB = (*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB)[id]
-	return
-}
-
-// BackRepoDisplaySelection.Init set up the BackRepo of the DisplaySelection
-func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) Init(stage *models.StageStruct, db *gorm.DB) (Error error) {
-
-	if backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr != nil {
-		err := errors.New("In Init, backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr should be nil")
-		return err
-	}
-
-	if backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB != nil {
-		err := errors.New("In Init, backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB should be nil")
-		return err
-	}
-
-	if backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID != nil {
-		err := errors.New("In Init, backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID should be nil")
-		return err
-	}
-
-	tmp := make(map[uint]*models.DisplaySelection, 0)
-	backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr = &tmp
-
-	tmpDB := make(map[uint]*DisplaySelectionDB, 0)
-	backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB = &tmpDB
-
-	tmpID := make(map[*models.DisplaySelection]uint, 0)
-	backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID = &tmpID
-
-	backRepoDisplaySelection.db = db
-	backRepoDisplaySelection.stage = stage
+	id := backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID[displayselection]
+	displayselectionDB = backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[id]
 	return
 }
 
@@ -172,7 +140,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseOne(s
 
 	// parse all backRepo instance and checks wether some instance have been unstaged
 	// in this case, remove them from the back repo
-	for id, displayselection := range *backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr {
+	for id, displayselection := range backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr {
 		if _, ok := stage.DisplaySelections[displayselection]; !ok {
 			backRepoDisplaySelection.CommitDeleteInstance(id)
 		}
@@ -184,19 +152,19 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseOne(s
 // BackRepoDisplaySelection.CommitDeleteInstance commits deletion of DisplaySelection to the BackRepo
 func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitDeleteInstance(id uint) (Error error) {
 
-	displayselection := (*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[id]
+	displayselection := backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr[id]
 
 	// displayselection is not staged anymore, remove displayselectionDB
-	displayselectionDB := (*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB)[id]
+	displayselectionDB := backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[id]
 	query := backRepoDisplaySelection.db.Unscoped().Delete(&displayselectionDB)
 	if query.Error != nil {
 		return query.Error
 	}
 
 	// update stores
-	delete((*backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID), displayselection)
-	delete((*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr), id)
-	delete((*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB), id)
+	delete(backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID, displayselection)
+	delete(backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr, id)
+	delete(backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB, id)
 
 	return
 }
@@ -206,7 +174,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitDeleteInst
 func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseOneInstance(displayselection *models.DisplaySelection) (Error error) {
 
 	// check if the displayselection is not commited yet
-	if _, ok := (*backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID)[displayselection]; ok {
+	if _, ok := backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID[displayselection]; ok {
 		return
 	}
 
@@ -220,9 +188,9 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseOneIn
 	}
 
 	// update stores
-	(*backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID)[displayselection] = displayselectionDB.ID
-	(*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID] = displayselection
-	(*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB)[displayselectionDB.ID] = &displayselectionDB
+	backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID[displayselection] = displayselectionDB.ID
+	backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr[displayselectionDB.ID] = displayselection
+	backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[displayselectionDB.ID] = &displayselectionDB
 
 	return
 }
@@ -231,7 +199,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseOneIn
 // Phase Two is the update of instance with the field in the database
 func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseTwo(backRepo *BackRepoStruct) (Error error) {
 
-	for idx, displayselection := range *backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr {
+	for idx, displayselection := range backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr {
 		backRepoDisplaySelection.CommitPhaseTwoInstance(backRepo, idx, displayselection)
 	}
 
@@ -243,7 +211,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseTwo(b
 func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseTwoInstance(backRepo *BackRepoStruct, idx uint, displayselection *models.DisplaySelection) (Error error) {
 
 	// fetch matching displayselectionDB
-	if displayselectionDB, ok := (*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB)[idx]; ok {
+	if displayselectionDB, ok := backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[idx]; ok {
 
 		displayselectionDB.CopyBasicFieldsFromDisplaySelection(displayselection)
 
@@ -251,7 +219,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseTwoIn
 		// commit pointer value displayselection.XLFile translates to updating the displayselection.XLFileID
 		displayselectionDB.XLFileID.Valid = true // allow for a 0 value (nil association)
 		if displayselection.XLFile != nil {
-			if XLFileId, ok := (*backRepo.BackRepoXLFile.Map_XLFilePtr_XLFileDBID)[displayselection.XLFile]; ok {
+			if XLFileId, ok := backRepo.BackRepoXLFile.Map_XLFilePtr_XLFileDBID[displayselection.XLFile]; ok {
 				displayselectionDB.XLFileID.Int64 = int64(XLFileId)
 				displayselectionDB.XLFileID.Valid = true
 			}
@@ -260,7 +228,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseTwoIn
 		// commit pointer value displayselection.XLSheet translates to updating the displayselection.XLSheetID
 		displayselectionDB.XLSheetID.Valid = true // allow for a 0 value (nil association)
 		if displayselection.XLSheet != nil {
-			if XLSheetId, ok := (*backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID)[displayselection.XLSheet]; ok {
+			if XLSheetId, ok := backRepo.BackRepoXLSheet.Map_XLSheetPtr_XLSheetDBID[displayselection.XLSheet]; ok {
 				displayselectionDB.XLSheetID.Int64 = int64(XLSheetId)
 				displayselectionDB.XLSheetID.Valid = true
 			}
@@ -305,7 +273,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseOne
 
 		// do not remove this instance from the stage, therefore
 		// remove instance from the list of instances to be be removed from the stage
-		displayselection, ok := (*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
+		displayselection, ok := backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr[displayselectionDB.ID]
 		if ok {
 			delete(displayselectionInstancesToBeRemovedFromTheStage, displayselection)
 		}
@@ -316,10 +284,10 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseOne
 		displayselection.Unstage(backRepoDisplaySelection.GetStage())
 
 		// remove instance from the back repo 3 maps
-		displayselectionID := (*backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID)[displayselection]
-		delete((*backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID), displayselection)
-		delete((*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB), displayselectionID)
-		delete((*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr), displayselectionID)
+		displayselectionID := backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID[displayselection]
+		delete(backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID, displayselection)
+		delete(backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB, displayselectionID)
+		delete(backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr, displayselectionID)
 	}
 
 	return
@@ -329,12 +297,12 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseOne
 // models version of the displayselectionDB
 func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseOneInstance(displayselectionDB *DisplaySelectionDB) (Error error) {
 
-	displayselection, ok := (*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
+	displayselection, ok := backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr[displayselectionDB.ID]
 	if !ok {
 		displayselection = new(models.DisplaySelection)
 
-		(*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID] = displayselection
-		(*backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID)[displayselection] = displayselectionDB.ID
+		backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr[displayselectionDB.ID] = displayselection
+		backRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID[displayselection] = displayselectionDB.ID
 
 		// append model store with the new element
 		displayselection.Name = displayselectionDB.Name_Data.String
@@ -349,7 +317,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseOne
 	// Map_DisplaySelectionDBID_DisplaySelectionDB)[displayselectionDB hold variable pointers
 	displayselectionDB_Data := *displayselectionDB
 	preservedPtrToDisplaySelection := &displayselectionDB_Data
-	(*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB)[displayselectionDB.ID] = preservedPtrToDisplaySelection
+	backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[displayselectionDB.ID] = preservedPtrToDisplaySelection
 
 	return
 }
@@ -359,7 +327,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseOne
 func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseTwo(backRepo *BackRepoStruct) (Error error) {
 
 	// parse all DB instance and update all pointer fields of the translated models instance
-	for _, displayselectionDB := range *backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB {
+	for _, displayselectionDB := range backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB {
 		backRepoDisplaySelection.CheckoutPhaseTwoInstance(backRepo, displayselectionDB)
 	}
 	return
@@ -369,17 +337,17 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseTwo
 // Phase Two is the update of instance with the field in the database
 func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseTwoInstance(backRepo *BackRepoStruct, displayselectionDB *DisplaySelectionDB) (Error error) {
 
-	displayselection := (*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr)[displayselectionDB.ID]
+	displayselection := backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr[displayselectionDB.ID]
 	_ = displayselection // sometimes, there is no code generated. This lines voids the "unused variable" compilation error
 
 	// insertion point for checkout of pointer encoding
 	// XLFile field
 	if displayselectionDB.XLFileID.Int64 != 0 {
-		displayselection.XLFile = (*backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr)[uint(displayselectionDB.XLFileID.Int64)]
+		displayselection.XLFile = backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr[uint(displayselectionDB.XLFileID.Int64)]
 	}
 	// XLSheet field
 	if displayselectionDB.XLSheetID.Int64 != 0 {
-		displayselection.XLSheet = (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[uint(displayselectionDB.XLSheetID.Int64)]
+		displayselection.XLSheet = backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[uint(displayselectionDB.XLSheetID.Int64)]
 	}
 	return
 }
@@ -387,7 +355,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseTwo
 // CommitDisplaySelection allows commit of a single displayselection (if already staged)
 func (backRepo *BackRepoStruct) CommitDisplaySelection(displayselection *models.DisplaySelection) {
 	backRepo.BackRepoDisplaySelection.CommitPhaseOneInstance(displayselection)
-	if id, ok := (*backRepo.BackRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID)[displayselection]; ok {
+	if id, ok := backRepo.BackRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID[displayselection]; ok {
 		backRepo.BackRepoDisplaySelection.CommitPhaseTwoInstance(backRepo, id, displayselection)
 	}
 	backRepo.CommitFromBackNb = backRepo.CommitFromBackNb + 1
@@ -396,9 +364,9 @@ func (backRepo *BackRepoStruct) CommitDisplaySelection(displayselection *models.
 // CommitDisplaySelection allows checkout of a single displayselection (if already staged and with a BackRepo id)
 func (backRepo *BackRepoStruct) CheckoutDisplaySelection(displayselection *models.DisplaySelection) {
 	// check if the displayselection is staged
-	if _, ok := (*backRepo.BackRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID)[displayselection]; ok {
+	if _, ok := backRepo.BackRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID[displayselection]; ok {
 
-		if id, ok := (*backRepo.BackRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID)[displayselection]; ok {
+		if id, ok := backRepo.BackRepoDisplaySelection.Map_DisplaySelectionPtr_DisplaySelectionDBID[displayselection]; ok {
 			var displayselectionDB DisplaySelectionDB
 			displayselectionDB.ID = id
 
@@ -448,7 +416,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) Backup(dirPath s
 	// organize the map into an array with increasing IDs, in order to have repoductible
 	// backup file
 	forBackup := make([]*DisplaySelectionDB, 0)
-	for _, displayselectionDB := range *backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB {
+	for _, displayselectionDB := range backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB {
 		forBackup = append(forBackup, displayselectionDB)
 	}
 
@@ -474,7 +442,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) BackupXL(file *x
 	// organize the map into an array with increasing IDs, in order to have repoductible
 	// backup file
 	forBackup := make([]*DisplaySelectionDB, 0)
-	for _, displayselectionDB := range *backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB {
+	for _, displayselectionDB := range backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB {
 		forBackup = append(forBackup, displayselectionDB)
 	}
 
@@ -539,7 +507,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) rowVisitorDispla
 		if query.Error != nil {
 			log.Panic(query.Error)
 		}
-		(*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB)[displayselectionDB.ID] = displayselectionDB
+		backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[displayselectionDB.ID] = displayselectionDB
 		BackRepoDisplaySelectionid_atBckpTime_newID[displayselectionDB_ID_atBackupTime] = displayselectionDB.ID
 	}
 	return nil
@@ -576,7 +544,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) RestorePhaseOne(
 		if query.Error != nil {
 			log.Panic(query.Error)
 		}
-		(*backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB)[displayselectionDB.ID] = displayselectionDB
+		backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[displayselectionDB.ID] = displayselectionDB
 		BackRepoDisplaySelectionid_atBckpTime_newID[displayselectionDB_ID_atBackupTime] = displayselectionDB.ID
 	}
 
@@ -589,7 +557,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) RestorePhaseOne(
 // to compute new index
 func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) RestorePhaseTwo() {
 
-	for _, displayselectionDB := range *backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB {
+	for _, displayselectionDB := range backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB {
 
 		// next line of code is to avert unused variable compilation error
 		_ = displayselectionDB

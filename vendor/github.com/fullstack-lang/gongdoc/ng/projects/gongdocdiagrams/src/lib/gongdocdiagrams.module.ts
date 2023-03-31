@@ -23,28 +23,27 @@ import { MatToolbarModule } from '@angular/material/toolbar'
 import { MatListModule } from '@angular/material/list'
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTreeModule } from '@angular/material/tree';
+import { MatRadioModule } from '@angular/material/radio';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { AngularSplitModule } from 'angular-split';
 
 import { GongdocdiagramsComponent } from './gongdocdiagrams.component';
-import { UmlscDiagramComponent } from './umlsc-diagram/umlsc-diagram.component';
 import { ClassDiagramComponent } from './class-diagram/class-diagram.component';
 import { PkgeltDocsComponent } from './pkgelt-docs/pkgelt-docs.component';
-import { UmlscSimpleTableComponent } from './umlsc-simple/umlsc-simple.component';
 
 import { ClassdiagramDetailComponent } from './classdiagram-detail/classdiagram-detail.component';
-import { TreeComponent } from './tree/tree.component'
+import { TreeComponent } from './tree/tree.component';
+import { PanelComponent } from './panel/panel.component'
 
 @NgModule({
   declarations: [
     GongdocdiagramsComponent,
-    UmlscDiagramComponent,
     ClassDiagramComponent,
     PkgeltDocsComponent,
-    UmlscSimpleTableComponent,
     ClassdiagramDetailComponent,
-    TreeComponent
+    TreeComponent,
+    PanelComponent
   ],
   imports: [
 
@@ -68,6 +67,7 @@ import { TreeComponent } from './tree/tree.component'
     MatToolbarModule,
     MatExpansionModule,
     MatListModule,
+    MatRadioModule,
     MatTreeModule,
     DragDropModule,
 
@@ -80,9 +80,9 @@ import { TreeComponent } from './tree/tree.component'
   ],
   exports: [
     PkgeltDocsComponent,
-    UmlscDiagramComponent,
     ClassDiagramComponent,
-    ClassdiagramDetailComponent
+    ClassdiagramDetailComponent,
+    PanelComponent
   ],
 })
 export class GongdocdiagramsModule { }

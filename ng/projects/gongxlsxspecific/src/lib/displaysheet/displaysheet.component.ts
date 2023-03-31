@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 
 import * as gongxlsx from 'gongxlsx'
 
@@ -19,6 +19,8 @@ const json2Instance = (source: string, destinationConstructor: Constructor) =>
   styleUrls: ['./displaysheet.component.css']
 })
 export class DisplaysheetComponent implements OnInit {
+
+  @Input() GONG__StackPath: string = ""
 
   // tabs to select the xl file
   tabsForFile = new Array<string>();
@@ -56,28 +58,13 @@ export class DisplaysheetComponent implements OnInit {
   ngOnInit(): void {
     this.displaySelectedSheet()
 
-    // timer to refresh the sheet if something has changed in the back
-    this.obsTimer.subscribe(
-      () => {
-        this.commitNbService.getCommitNbFromBack().subscribe(
-          commitFromBackNb => {
-            // console.log("commit nb in the back " + commitFromBackNb + " local commit nb " + this.commitFromBackNb)
-            if (commitFromBackNb > this.commitFromBackNb) {
-              this.displaySelectedSheet()
-              this.commitFromBackNb = commitFromBackNb
-            }
-          }
-        )
-
-        this.pushFromFrontService.getPushFromFrontNb().subscribe(
-          commitFromFrontNb => {
-            // console.log("commit nb from the front " + commitFromFrontNb + " local commit nb " + this.commitFromFrontNb)
-            if (commitFromFrontNb > this.commitFromFrontNb) {
-              this.displaySelectedSheet()
-              this.commitFromFrontNb = commitFromFrontNb
-            }
-          }
-        )
+    this.commitNbService.getCommitNbFromBack(500, this.GONG__StackPath).subscribe(
+      commitFromBackNb => {
+        // console.log("commit nb in the back " + commitFromBackNb + " local commit nb " + this.commitFromBackNb)
+        if (commitFromBackNb > this.commitFromBackNb) {
+          this.displaySelectedSheet()
+          this.commitFromBackNb = commitFromBackNb
+        }
       }
     )
   }

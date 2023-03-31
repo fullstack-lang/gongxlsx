@@ -45,11 +45,12 @@ export class XLSheetService {
   /** GET xlsheets from the server */
   getXLSheets(GONG__StackPath: string = ""): Observable<XLSheetDB[]> {
 
-	let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
     return this.http.get<XLSheetDB[]>(this.xlsheetsUrl, { params: params })
       .pipe(
-        tap(_ => this.log('fetched xlsheets')),
+        tap(),
+		// tap(_ => this.log('fetched xlsheets')),
         catchError(this.handleError<XLSheetDB[]>('getXLSheets', []))
       );
   }
@@ -78,7 +79,7 @@ export class XLSheetService {
       params: params
     }
 
-	return this.http.post<XLSheetDB>(this.xlsheetsUrl, xlsheetdb, httpOptions).pipe(
+    return this.http.post<XLSheetDB>(this.xlsheetsUrl, xlsheetdb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
         xlsheetdb.XLFile_Sheets_reverse = _XLFile_Sheets_reverse
@@ -138,11 +139,11 @@ export class XLSheetService {
    * @param operation - name of the operation that failed
    * @param result - optional value to return as the observable result
    */
-  private handleError<T>(operation = 'operation', result?: T) {
+  private handleError<T>(operation = 'operation in XLSheetService', result?: T) {
     return (error: any): Observable<T> => {
 
       // TODO: send the error to remote logging infrastructure
-      console.error(error); // log to console instead
+      console.error("XLSheetService" + error); // log to console instead
 
       // TODO: better job of transforming error for user consumption
       this.log(`${operation} failed: ${error.message}`);
@@ -153,6 +154,6 @@ export class XLSheetService {
   }
 
   private log(message: string) {
-
+      console.log(message)
   }
 }

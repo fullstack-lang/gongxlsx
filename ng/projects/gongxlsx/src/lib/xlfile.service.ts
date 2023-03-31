@@ -44,11 +44,12 @@ export class XLFileService {
   /** GET xlfiles from the server */
   getXLFiles(GONG__StackPath: string = ""): Observable<XLFileDB[]> {
 
-	let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
     return this.http.get<XLFileDB[]>(this.xlfilesUrl, { params: params })
       .pipe(
-        tap(_ => this.log('fetched xlfiles')),
+        tap(),
+		// tap(_ => this.log('fetched xlfiles')),
         catchError(this.handleError<XLFileDB[]>('getXLFiles', []))
       );
   }
@@ -74,7 +75,7 @@ export class XLFileService {
       params: params
     }
 
-	return this.http.post<XLFileDB>(this.xlfilesUrl, xlfiledb, httpOptions).pipe(
+    return this.http.post<XLFileDB>(this.xlfilesUrl, xlfiledb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
         this.log(`posted xlfiledb id=${xlfiledb.ID}`)
@@ -129,11 +130,11 @@ export class XLFileService {
    * @param operation - name of the operation that failed
    * @param result - optional value to return as the observable result
    */
-  private handleError<T>(operation = 'operation', result?: T) {
+  private handleError<T>(operation = 'operation in XLFileService', result?: T) {
     return (error: any): Observable<T> => {
 
       // TODO: send the error to remote logging infrastructure
-      console.error(error); // log to console instead
+      console.error("XLFileService" + error); // log to console instead
 
       // TODO: better job of transforming error for user consumption
       this.log(`${operation} failed: ${error.message}`);
@@ -144,6 +145,6 @@ export class XLFileService {
   }
 
   private log(message: string) {
-
+      console.log(message)
   }
 }
