@@ -151,7 +151,7 @@ func (controller *Controller) PostXLSheet(c *gin.Context) {
 
 	// get an instance (not staged) from DB instance, and call callback function
 	backRepo.BackRepoXLSheet.CheckoutPhaseOneInstance(&xlsheetDB)
-	xlsheet := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+	xlsheet := backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[xlsheetDB.ID]
 
 	if xlsheet != nil {
 		models.AfterCreateFromFront(backRepo.GetStage(), xlsheet)
@@ -273,7 +273,7 @@ func (controller *Controller) UpdateXLSheet(c *gin.Context) {
 	xlsheetDB.CopyBasicFieldsToXLSheet(xlsheetNew)
 
 	// get stage instance from DB instance, and call callback function
-	xlsheetOld := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+	xlsheetOld := backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[xlsheetDB.ID]
 	if xlsheetOld != nil {
 		models.AfterUpdateFromFront(backRepo.GetStage(), xlsheetOld, xlsheetNew)
 	}
@@ -330,7 +330,7 @@ func (controller *Controller) DeleteXLSheet(c *gin.Context) {
 	xlsheetDB.CopyBasicFieldsToXLSheet(xlsheetDeleted)
 
 	// get stage instance from DB instance, and call callback function
-	xlsheetStaged := (*backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr)[xlsheetDB.ID]
+	xlsheetStaged := backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[xlsheetDB.ID]
 	if xlsheetStaged != nil {
 		models.AfterDeleteFromFront(backRepo.GetStage(), xlsheetStaged, xlsheetDeleted)
 	}

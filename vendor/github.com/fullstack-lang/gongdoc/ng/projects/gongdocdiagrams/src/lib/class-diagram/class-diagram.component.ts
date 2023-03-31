@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Observable, Subscription, timer } from 'rxjs';
 
 import * as joint from 'jointjs';
@@ -26,6 +26,7 @@ import { IdentifierToReceiverAndFieldName, IdentifierToStructname } from './iden
 })
 export class ClassDiagramComponent implements OnInit, OnDestroy {
 
+  @Input() GONG__StackPath: string = ""
 
   /**
    * the class diagram component is refreshed both by direct input when the user moves vertices or positions
@@ -34,7 +35,7 @@ export class ClassDiagramComponent implements OnInit, OnDestroy {
    * the checkCommitNbFromBackTimer polls the commit number of the back repo
    * if the commit number has increased, it pulls the front repo and redraw the diagram
    */
-  checkGongdocCommitNbFromBackTimer: Observable<number> = timer(500, 500);
+  private commutNbFromBackSubscription: Subscription = new Subscription
   lastCommitNbFromBack = -1
   currTime: number = 0
 
@@ -71,53 +72,54 @@ export class ClassDiagramComponent implements OnInit, OnDestroy {
     private gongdocFrontRepoService: gongdoc.FrontRepoService,
     private gongdocCommitNbFromBackService: gongdoc.CommitNbFromBackService,
   ) {
-  }
-
-  // Since this component is not reused when a new diagram is selected, there can be many
-  // instances of the diagram and each instance will stay alive. For instance,
-  // the instance will be in the control flow if an observable the component subscribes to emits an event.
-  // Therefore, it is mandatory to manage subscriptions in order to unscribe them on the ngOnDestroy hook
-  checkGongdocCommitNbFromBackTimerSubscription: Subscription = new Subscription
-  gongdocCommitNbFromBackService_getCommitNbFromBack: Subscription = new Subscription
-
-  // neccessary to unsubscribe
-  ngOnDestroy() {
-    // console.log("on destroy")
-    this.checkGongdocCommitNbFromBackTimerSubscription.unsubscribe()
-    this.gongdocCommitNbFromBackService_getCommitNbFromBack.unsubscribe()
+    console.log('ClassDiagramComponent instantiated');
   }
 
   ngOnInit(): void {
 
-    // check loop for refresh from the back repo
-    this.checkGongdocCommitNbFromBackTimerSubscription = this.checkGongdocCommitNbFromBackTimer.subscribe(
-      currTime => {
-        this.currTime = currTime
+    let stackPath = this.activatedRoute.snapshot.paramMap.get('GONG__StackPath')
+    if (stackPath != undefined) {
+      this.GONG__StackPath = stackPath
+    }
 
-        this.gongdocCommitNbFromBackService_getCommitNbFromBack = this.gongdocCommitNbFromBackService.getCommitNbFromBack().subscribe(
-          commitNbFromBack => {
+    console.log("Class Diagram Component: GONG_StackPath is ", this.GONG__StackPath)
 
-            console.log("last commit nb " + this.lastCommitNbFromBack + " new: " + commitNbFromBack)
-            // condition for refresh
-            if (this.lastCommitNbFromBack < commitNbFromBack) {
+    this.startAutoRefresh(500); // Refresh every 500 ms (half second)
+  }
 
-              // console.log("last commit nb " + this.lastCommitNbFromBack + " new: " + commitNbFromBack)
-              // console.log("last diagram id " + this.lastDiagramId + " new: " + id)
-              // console.log("last drawn diagram id " + this.idOfDrawnClassDiagram + " new: " + id)
-              this.pullGongdocAndDrawDiagram()
-              this.lastCommitNbFromBack = commitNbFromBack
-            }
-          }
-        )
+  ngOnDestroy(): void {
+    this.stopAutoRefresh();
+  }
+
+
+  stopAutoRefresh(): void {
+    if (this.commutNbFromBackSubscription) {
+      this.commutNbFromBackSubscription.unsubscribe();
+    }
+  }
+
+  startAutoRefresh(intervalMs: number): void {
+    this.commutNbFromBackSubscription = this.gongdocCommitNbFromBackService
+      .getCommitNbFromBack(intervalMs, this.GONG__StackPath)
+      .subscribe((commitNbFromBack: number) => {
+
+        // console.log("last commit nb " + this.lastCommitNbFromBack + " new: " + commitNbFromBack)
+        // condition for refresh
+        if (this.lastCommitNbFromBack < commitNbFromBack) {
+
+          console.log("ClassDiagramComponent", this.GONG__StackPath, "last commit nb " + this.lastCommitNbFromBack + " new: " + commitNbFromBack)
+          this.pullGongdocAndDrawDiagram()
+          this.lastCommitNbFromBack = commitNbFromBack
+        }
       }
-    )
+      )
   }
 
   /**
    * pullGongdocAndDrawDiagram refresh the front repo and calls redraw
    */
   pullGongdocAndDrawDiagram() {
-    this.gongdocFrontRepoService.pull().subscribe(
+    this.gongdocFrontRepoService.pull(this.GONG__StackPath).subscribe(
       frontRepo => {
         this.gongdocFrontRepo = frontRepo
         console.log("gongdoc front repo pull returned")
@@ -141,7 +143,11 @@ export class ClassDiagramComponent implements OnInit, OnDestroy {
   //
   addGongStructShapeToGraph(gongStructShape: gongdoc.GongStructShapeDB): joint.shapes.uml.Class {
 
-    let umlClassShape = newUmlClassShapeFromGongStructShape(gongStructShape, this.positionService, this.gongStructShapeService)
+    let umlClassShape = newUmlClassShapeFromGongStructShape(
+      gongStructShape,
+      this.positionService,
+      this.gongStructShapeService,
+      this.GONG__StackPath)
     umlClassShape.addTo(this.graph!);
 
     // add a backbone event handler to update the position
@@ -156,7 +162,11 @@ export class ClassDiagramComponent implements OnInit, OnDestroy {
 
   addGongEnumShapeToGraph(gongEnumShape: gongdoc.GongEnumShapeDB): joint.shapes.uml.Class {
 
-    let umlClassShape = newUmlClassShapeFromGongEnumShape(gongEnumShape, this.positionService, this.gongEnumShapeService)
+    let umlClassShape = newUmlClassShapeFromGongEnumShape(
+      gongEnumShape,
+      this.positionService,
+      this.gongEnumShapeService,
+      this.GONG__StackPath)
     umlClassShape.addTo(this.graph!);
 
     // add a backbone event handler to update the position
@@ -174,7 +184,7 @@ export class ClassDiagramComponent implements OnInit, OnDestroy {
   //
   addNoteToGraph(note: gongdoc.NoteShapeDB): joint.shapes.basic.Rect {
 
-    let umlNote = newUmlNote(note, this.noteService)
+    let umlNote = newUmlNote(note, this.noteService, this.GONG__StackPath)
     umlNote.addTo(this.graph!);
     return umlNote
   }
@@ -207,7 +217,7 @@ export class ClassDiagramComponent implements OnInit, OnDestroy {
     );
 
     let paperOptions: joint.dia.Paper.Options = {}
-    paperOptions.el = document.getElementById('jointjs-holder')!
+    paperOptions.el = document.getElementById(this.GONG__StackPath)!
     paperOptions.model = this.graph
     paperOptions.width = diagramWidth
     paperOptions.height = 1000
@@ -252,7 +262,7 @@ export class ClassDiagramComponent implements OnInit, OnDestroy {
             id = IdentifierToReceiverAndFieldName(linkDB.Identifier)
             var fromShape = this.Map_GongStructName_JointjsUMLClassShape.get(id.receiver)
 
-            let toShapeName = IdentifierToStructname( linkDB.Fieldtypename)
+            let toShapeName = IdentifierToStructname(linkDB.Fieldtypename)
             var toShape = this.Map_GongStructName_JointjsUMLClassShape.get(toShapeName)
 
             var strockWidth = 2
@@ -328,6 +338,7 @@ export class ClassDiagramComponent implements OnInit, OnDestroy {
                 // store relevant attributes for working when callback are invoked
                 middleVertice: linkDB.Middlevertice,
                 verticeService: this.verticeService,
+                GONG__StackPath: this.GONG__StackPath,
               })
 
               // add a backbone event handler to update the position

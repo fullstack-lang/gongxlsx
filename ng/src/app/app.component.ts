@@ -1,17 +1,29 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+
+import { Observable, combineLatest, timer } from 'rxjs'
+
+import * as gongdoc from 'gongdoc'
+import * as gongxlsx from 'gongxlsx'
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
-  view = 'Default view'
-  default = 'Default view'
-  diagrams = 'Diagrams view'
-  meta = 'Meta view'
-  xlsx = 'xlsx view'
+  xl_display = 'xl_display'
+  default = 'Gongxlsx Data/Model'
+  view = this.xl_display
 
-  views: string[] = [this.default, this.diagrams, this.meta, this.xlsx];
+  views: string[] = [this.xl_display, this.default];
+
+  GONG__StackPath = "github.com/fullstack-lang/gongxlsx/go/models"
+
+  constructor(
+  ) {
+
+  }
+
+  ngOnInit(): void {
+  }
 }

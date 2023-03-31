@@ -151,7 +151,7 @@ func (controller *Controller) PostXLCell(c *gin.Context) {
 
 	// get an instance (not staged) from DB instance, and call callback function
 	backRepo.BackRepoXLCell.CheckoutPhaseOneInstance(&xlcellDB)
-	xlcell := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
+	xlcell := backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr[xlcellDB.ID]
 
 	if xlcell != nil {
 		models.AfterCreateFromFront(backRepo.GetStage(), xlcell)
@@ -273,7 +273,7 @@ func (controller *Controller) UpdateXLCell(c *gin.Context) {
 	xlcellDB.CopyBasicFieldsToXLCell(xlcellNew)
 
 	// get stage instance from DB instance, and call callback function
-	xlcellOld := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
+	xlcellOld := backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr[xlcellDB.ID]
 	if xlcellOld != nil {
 		models.AfterUpdateFromFront(backRepo.GetStage(), xlcellOld, xlcellNew)
 	}
@@ -330,7 +330,7 @@ func (controller *Controller) DeleteXLCell(c *gin.Context) {
 	xlcellDB.CopyBasicFieldsToXLCell(xlcellDeleted)
 
 	// get stage instance from DB instance, and call callback function
-	xlcellStaged := (*backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr)[xlcellDB.ID]
+	xlcellStaged := backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr[xlcellDB.ID]
 	if xlcellStaged != nil {
 		models.AfterDeleteFromFront(backRepo.GetStage(), xlcellStaged, xlcellDeleted)
 	}

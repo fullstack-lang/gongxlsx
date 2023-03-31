@@ -24,18 +24,20 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 import { FormsModule } from '@angular/forms';
 
+// to split the screen
+import { AngularSplitModule } from 'angular-split';
+
 import { GongdocModule } from 'gongdoc'
 import { GongdocdiagramsModule } from 'gongdocdiagrams'
 
 import { GongModule } from 'gong'
 
-
 import { GongxlsxModule } from 'gongxlsx'
 import { GongxlsxspecificModule } from 'gongxlsxspecific'
+import { GongstructSelectionService } from 'gongxlsx'
 
 // mandatory
 import { HttpClientModule } from '@angular/common/http';
-import { AngularSplitModule } from 'angular-split';
 
 @NgModule({
   declarations: [
@@ -45,9 +47,8 @@ import { AngularSplitModule } from 'angular-split';
     BrowserModule,
     BrowserAnimationsModule,
 
-    AngularSplitModule,
+    HttpClientModule,
 
-    
     MatSliderModule,
     MatSelectModule,
     MatFormFieldModule,
@@ -64,19 +65,21 @@ import { AngularSplitModule } from 'angular-split';
     MatSlideToggleModule,
     FormsModule,
 
-      // gong stack (for analysis of gong code in the current stack)
-      GongModule,
+    AngularSplitModule,
 
-      // gongdoc stack (for displaying UML diagrams of the gong code in the current stack)
-      GongdocModule,
-      GongdocdiagramsModule,
-    
+    // gong stack (for analysis of gong code in the current stack)
+    GongModule,
 
-    HttpClientModule,
+    // gongdoc stack (for displaying UML diagrams of the gong code in the current stack)
+    GongdocModule,
+    GongdocdiagramsModule,
+
     GongxlsxModule,
-    GongxlsxspecificModule
+    GongxlsxspecificModule,
   ],
-  providers: [],
+  providers: [
+    GongstructSelectionService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

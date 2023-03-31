@@ -151,7 +151,7 @@ func (controller *Controller) PostXLRow(c *gin.Context) {
 
 	// get an instance (not staged) from DB instance, and call callback function
 	backRepo.BackRepoXLRow.CheckoutPhaseOneInstance(&xlrowDB)
-	xlrow := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB.ID]
+	xlrow := backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr[xlrowDB.ID]
 
 	if xlrow != nil {
 		models.AfterCreateFromFront(backRepo.GetStage(), xlrow)
@@ -273,7 +273,7 @@ func (controller *Controller) UpdateXLRow(c *gin.Context) {
 	xlrowDB.CopyBasicFieldsToXLRow(xlrowNew)
 
 	// get stage instance from DB instance, and call callback function
-	xlrowOld := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB.ID]
+	xlrowOld := backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr[xlrowDB.ID]
 	if xlrowOld != nil {
 		models.AfterUpdateFromFront(backRepo.GetStage(), xlrowOld, xlrowNew)
 	}
@@ -330,7 +330,7 @@ func (controller *Controller) DeleteXLRow(c *gin.Context) {
 	xlrowDB.CopyBasicFieldsToXLRow(xlrowDeleted)
 
 	// get stage instance from DB instance, and call callback function
-	xlrowStaged := (*backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr)[xlrowDB.ID]
+	xlrowStaged := backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr[xlrowDB.ID]
 	if xlrowStaged != nil {
 		models.AfterDeleteFromFront(backRepo.GetStage(), xlrowStaged, xlrowDeleted)
 	}
