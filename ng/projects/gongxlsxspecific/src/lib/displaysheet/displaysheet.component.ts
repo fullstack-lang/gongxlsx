@@ -70,7 +70,7 @@ export class DisplaysheetComponent implements OnInit {
   }
 
   displaySelectedSheet() {
-    this.gongxlsxFrontRepoService.pull().subscribe(
+    this.gongxlsxFrontRepoService.pull(this.GONG__StackPath).subscribe(
       gongxlsxsFrontRepo => {
 
         // reset tabs and create one tab per XL file
@@ -134,6 +134,11 @@ export class DisplaysheetComponent implements OnInit {
         }
 
         // cells are provided in random order. on need to order them in the correct order
+        if (gongXLSheet == undefined) {
+          console.log("No selected sheet")
+          gongXLSheet = gongXLFile.Sheets![0]
+        }
+
         let contentArray = new Array<string[]>(gongXLSheet.NbRows)
 
         for (let rowNb = 0; rowNb < gongXLSheet.NbRows; rowNb++) {

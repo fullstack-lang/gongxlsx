@@ -62,14 +62,7 @@ func main() {
 	r := gongxlsx_static.ServeStaticFiles(*logGINFlag)
 
 	// setup stack
-	var stage *gongxlsx_models.StageStruct
-	if *marshallOnCommit != "" {
-		// persistence in a SQLite file on disk in memory
-		stage = gongxlsx_fullstack.NewStackInstance(r, "github.com/fullstack-lang/gongxlsx/go/models")
-	} else {
-		// persistence in a SQLite file on disk
-		stage = gongxlsx_fullstack.NewStackInstance(r, "github.com/fullstack-lang/gongxlsx/go/models", "./test.db")
-	}
+	stage := gongxlsx_fullstack.NewStackInstance(r, "github.com/fullstack-lang/gongxlsx/go/models")
 
 	// generate injection code from the stage
 	if *marshallOnStartup != "" {

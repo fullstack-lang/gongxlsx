@@ -4,10 +4,18 @@
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
-    "sourceMap": true,
-    "declaration": false,
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "noImplicitOverride": true,
     "paths": {
+
+      // 
+      // https://angular.io/guide/creating-libraries#use-typescript-path-mapping-for-peer-dependencies
+      //
+      // Angular libraries should list any @angular/* 
+      // dependencies the library depends on as peer dependencies. This ensures that when modules ask for Angular, 
+      // they all get the exact same module. If a library lists @angular/core in dependencies instead of peerDependencies, 
+      // it might get a different Angular module instead, which would cause your application to break.
       "@angular/*": [
         "./node_modules/@angular/*"
       ],
@@ -35,54 +43,61 @@
       "lodash": [
         "./node_modules/lodash"
       ],
-      "gongd3specific": [
-        "projects/gongd3specific/src/public-api.ts"
-      ],
       "@types/loash": [
         "./node_modules/@types/loash"
       ],
       "jointjs": [
         "./node_modules/jointjs"
       ],
+      "gongxlsxspecific": [
+        "projects/gongxlsxspecific/src/public-api.ts",
+        "dist/gongxlsxspecific"
+      ],
       "@angular-material-components/datetime-picker": [
         "./node_modules/@angular-material-components/datetime-picker"
+      ],
+      "angular-split": [
+        "./node_modules/angular-split"
       ],
       "tslib": [
         "./node_modules/tslib"
       ],
       "gong": [
-        "../vendor/github.com/fullstack-lang/gong/ng/projects/gong/src/public-api.ts"
+      "../vendor/github.com/fullstack-lang/gong/ng/projects/gong/src/public-api.ts"
       ],
       "gongdoc": [
-        "../vendor/github.com/fullstack-lang/gongdoc/ng/projects/gongdoc/src/public-api.ts"
+      "../vendor/github.com/fullstack-lang/gongdoc/ng/projects/gongdoc/src/public-api.ts"
       ],
       "gongdocdiagrams": [
-        "../vendor/github.com/fullstack-lang/gongdoc/ng/projects/gongdocdiagrams/src/public-api.ts"
+      "../vendor/github.com/fullstack-lang/gongdoc/ng/projects/gongdocdiagrams/src/public-api.ts"
       ],
+
       "gongxlsx": [
-        "projects/gongxlsx/src/public-api.ts"
-      ],
-      "gongxlsxspecific": [
-        "projects/gongxlsxspecific/src/public-api.ts"
-      ],
-      "angular-split": [
-        "./node_modules/angular-split"
+        "projects/gongxlsx/src/public-api.ts",
+        "dist/gongxlsx"
       ]
     },
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "sourceMap": true,
+    "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
     "target": "ES2022",
-    "module": "es2020",
+    "module": "ES2022",
+    "useDefineForClassFields": false,
     "lib": [
-      "es2018",
+      "ES2022",
       "dom"
-    ],
-    "skipLibCheck": true,
-    "useDefineForClassFields": false
-  },
+    ]
+  ,"skipLibCheck":true},
   "angularCompilerOptions": {
-    "enableI18nLegacyMessageIdFormat": false
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
   }
 }
