@@ -11,8 +11,21 @@ import (
 	gongdoc_fullstack "github.com/fullstack-lang/gongdoc/go/fullstack"
 	gongdoc_models "github.com/fullstack-lang/gongdoc/go/models"
 
+	"github.com/fullstack-lang/gongdoc/go/doc2svg"
+	gongsvg_fullstack "github.com/fullstack-lang/gongsvg/go/fullstack"
+	gongtree_fullstack "github.com/fullstack-lang/gongtree/go/fullstack"
+
 	"github.com/gin-gonic/gin"
 )
+
+type BeforeCommitImplementation struct {
+	// for generating SVG
+	docSVGMapper *doc2svg.DocSVGMapper
+}
+
+func (beforeCommitImplementation *BeforeCommitImplementation) BeforeCommit(gongdocStage *gongdoc_models.StageStruct) {
+	beforeCommitImplementation.docSVGMapper.GenerateSvg(gongdocStage)
+}
 
 // Load have gongdoc init itself and the gong stack as well
 // then parse the model source code in [goSourceDirectories]
@@ -34,7 +47,25 @@ func Load(
 
 	gongStage := gong_fullstack.NewStackInstance(r, pkgPath)
 	gongdocStage := gongdoc_fullstack.NewStackInstance(r, pkgPath)
+	gongsvgStage := gongsvg_fullstack.NewStackInstance(r, pkgPath)
+	gongtreeStage := gongtree_fullstack.NewStackInstance(r, pkgPath)
+	_ = gongtreeStage
+
+	beforeCommitImplementation := new(BeforeCommitImplementation)
+
+	docSVGMapper := doc2svg.NewDocSVGMapper(gongtreeStage, gongsvgStage)
+
+	beforeCommitImplementation.docSVGMapper = docSVGMapper
+
+	gongdocStage.OnInitCommitFromFrontCallback = beforeCommitImplementation
+	gongdocStage.OnInitCommitFromBackCallback = beforeCommitImplementation
+
+	diagramPackageCallbackSingloton := new(DiagramPackageCallbacksSingloton)
+	diagramPackageCallbackSingloton.gongtreeStage = gongtreeStage
+	gongdocStage.OnAfterDiagramPackageUpdateCallback = diagramPackageCallbackSingloton
+
 	modelPackage, _ := gong_models.LoadEmbedded(gongStage, goModelsDir)
+
 	modelPackage.Name = stackName
 	modelPackage.PkgPath = pkgPath
 
@@ -46,9 +77,9 @@ func Load(
 	gongdocStage.MetaPackageImportPath = pkgPath
 
 	if embeddedDiagrams {
-		diagramPackage, _ = LoadEmbeddedDiagramPackage(gongdocStage, goDiagramsDir, modelPackage)
+		diagramPackage, _ = LoadEmbeddedDiagramPackage(gongdocStage, gongtreeStage, goDiagramsDir, modelPackage)
 	} else {
-		diagramPackage, _ = LoadDiagramPackage(gongdocStage, filepath.Join("../../diagrams"), modelPackage, true)
+		diagramPackage, _ = LoadDiagramPackage(gongdocStage, gongtreeStage, filepath.Join("../../diagrams"), modelPackage, true)
 	}
 	diagramPackage.GongModelPath = pkgPath
 

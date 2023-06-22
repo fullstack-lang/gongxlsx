@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -91,13 +90,6 @@ func registerControllers(r *gin.Engine) {
 		v1.PUT("/v1/links/:id", GetController().UpdateLink)
 		v1.DELETE("/v1/links/:id", GetController().DeleteLink)
 
-		v1.GET("/v1/nodes", GetController().GetNodes)
-		v1.GET("/v1/nodes/:id", GetController().GetNode)
-		v1.POST("/v1/nodes", GetController().PostNode)
-		v1.PATCH("/v1/nodes/:id", GetController().UpdateNode)
-		v1.PUT("/v1/nodes/:id", GetController().UpdateNode)
-		v1.DELETE("/v1/nodes/:id", GetController().DeleteNode)
-
 		v1.GET("/v1/noteshapes", GetController().GetNoteShapes)
 		v1.GET("/v1/noteshapes/:id", GetController().GetNoteShape)
 		v1.POST("/v1/noteshapes", GetController().PostNoteShape)
@@ -118,13 +110,6 @@ func registerControllers(r *gin.Engine) {
 		v1.PATCH("/v1/positions/:id", GetController().UpdatePosition)
 		v1.PUT("/v1/positions/:id", GetController().UpdatePosition)
 		v1.DELETE("/v1/positions/:id", GetController().DeletePosition)
-
-		v1.GET("/v1/trees", GetController().GetTrees)
-		v1.GET("/v1/trees/:id", GetController().GetTree)
-		v1.POST("/v1/trees", GetController().PostTree)
-		v1.PATCH("/v1/trees/:id", GetController().UpdateTree)
-		v1.PUT("/v1/trees/:id", GetController().UpdateTree)
-		v1.DELETE("/v1/trees/:id", GetController().DeleteTree)
 
 		v1.GET("/v1/umlstates", GetController().GetUmlStates)
 		v1.GET("/v1/umlstates/:id", GetController().GetUmlState)
@@ -160,7 +145,7 @@ func (controller *Controller) GetLastCommitFromBackNb(c *gin.Context) {
 		value := values["GONG__StackPath"]
 		if len(value) == 1 {
 			stackPath = value[0]
-			log.Println("GetLastCommitFromBackNb", "GONG__StackPath", stackPath)
+			// log.Println("GetLastCommitFromBackNb", "GONG__StackPath", stackPath)
 		}
 	}
 	backRepo := controller.Map_BackRepos[stackPath]
@@ -177,7 +162,7 @@ func (controller *Controller) GetLastPushFromFrontNb(c *gin.Context) {
 		value := values["GONG__StackPath"]
 		if len(value) == 1 {
 			stackPath = value[0]
-			log.Println("GetLastPushFromFrontNb", "GONG__StackPath", stackPath)
+			// log.Println("GetLastPushFromFrontNb", "GONG__StackPath", stackPath)
 		}
 	}
 	backRepo := controller.Map_BackRepos[stackPath]

@@ -23,9 +23,6 @@ import { GongStructShapeDetailComponent } from './gongstructshape-detail/gongstr
 import { LinksTableComponent } from './links-table/links-table.component'
 import { LinkDetailComponent } from './link-detail/link-detail.component'
 
-import { NodesTableComponent } from './nodes-table/nodes-table.component'
-import { NodeDetailComponent } from './node-detail/node-detail.component'
-
 import { NoteShapesTableComponent } from './noteshapes-table/noteshapes-table.component'
 import { NoteShapeDetailComponent } from './noteshape-detail/noteshape-detail.component'
 
@@ -34,9 +31,6 @@ import { NoteShapeLinkDetailComponent } from './noteshapelink-detail/noteshapeli
 
 import { PositionsTableComponent } from './positions-table/positions-table.component'
 import { PositionDetailComponent } from './position-detail/position-detail.component'
-
-import { TreesTableComponent } from './trees-table/trees-table.component'
-import { TreeDetailComponent } from './tree-detail/tree-detail.component'
 
 import { UmlStatesTableComponent } from './umlstates-table/umlstates-table.component'
 import { UmlStateDetailComponent } from './umlstate-detail/umlstate-detail.component'
@@ -309,39 +303,6 @@ export class RouteService {
         return route
     }
 
-    getNodeTablePath(): string {
-        return this.getPathRoot() + '-nodes/:GONG__StackPath'
-    }
-    getNodeTableRoute(stackPath: string): Route {
-        let route: Route =
-            { path: this.getNodeTablePath(), component: NodesTableComponent, outlet: this.getTableOutlet(stackPath) }
-        return route
-    }
-    getNodeAdderPath(): string {
-        return this.getPathRoot() + '-node-adder/:GONG__StackPath'
-    }
-    getNodeAdderRoute(stackPath: string): Route {
-        let route: Route =
-            { path: this.getNodeAdderPath(), component: NodeDetailComponent, outlet: this.getEditorOutlet(stackPath) }
-        return route
-    }
-    getNodeAdderForUsePath(): string {
-        return this.getPathRoot() + '-node-adder/:id/:originStruct/:originStructFieldName/:GONG__StackPath'
-    }
-    getNodeAdderForUseRoute(stackPath: string): Route {
-        let route: Route =
-            { path: this.getNodeAdderForUsePath(), component: NodeDetailComponent, outlet: this.getEditorOutlet(stackPath) }
-        return route
-    }
-    getNodeDetailPath(): string {
-        return this.getPathRoot() + '-node-detail/:id/:GONG__StackPath'
-    }
-    getNodeDetailRoute(stackPath: string): Route {
-        let route: Route =
-            { path: this.getNodeDetailPath(), component: NodeDetailComponent, outlet: this.getEditorOutlet(stackPath) }
-        return route
-    }
-
     getNoteShapeTablePath(): string {
         return this.getPathRoot() + '-noteshapes/:GONG__StackPath'
     }
@@ -438,39 +399,6 @@ export class RouteService {
     getPositionDetailRoute(stackPath: string): Route {
         let route: Route =
             { path: this.getPositionDetailPath(), component: PositionDetailComponent, outlet: this.getEditorOutlet(stackPath) }
-        return route
-    }
-
-    getTreeTablePath(): string {
-        return this.getPathRoot() + '-trees/:GONG__StackPath'
-    }
-    getTreeTableRoute(stackPath: string): Route {
-        let route: Route =
-            { path: this.getTreeTablePath(), component: TreesTableComponent, outlet: this.getTableOutlet(stackPath) }
-        return route
-    }
-    getTreeAdderPath(): string {
-        return this.getPathRoot() + '-tree-adder/:GONG__StackPath'
-    }
-    getTreeAdderRoute(stackPath: string): Route {
-        let route: Route =
-            { path: this.getTreeAdderPath(), component: TreeDetailComponent, outlet: this.getEditorOutlet(stackPath) }
-        return route
-    }
-    getTreeAdderForUsePath(): string {
-        return this.getPathRoot() + '-tree-adder/:id/:originStruct/:originStructFieldName/:GONG__StackPath'
-    }
-    getTreeAdderForUseRoute(stackPath: string): Route {
-        let route: Route =
-            { path: this.getTreeAdderForUsePath(), component: TreeDetailComponent, outlet: this.getEditorOutlet(stackPath) }
-        return route
-    }
-    getTreeDetailPath(): string {
-        return this.getPathRoot() + '-tree-detail/:id/:GONG__StackPath'
-    }
-    getTreeDetailRoute(stackPath: string): Route {
-        let route: Route =
-            { path: this.getTreeDetailPath(), component: TreeDetailComponent, outlet: this.getEditorOutlet(stackPath) }
         return route
     }
 
@@ -614,11 +542,6 @@ export class RouteService {
             this.getLinkAdderForUseRoute(stackPath),
             this.getLinkDetailRoute(stackPath),
 
-            this.getNodeTableRoute(stackPath),
-            this.getNodeAdderRoute(stackPath),
-            this.getNodeAdderForUseRoute(stackPath),
-            this.getNodeDetailRoute(stackPath),
-
             this.getNoteShapeTableRoute(stackPath),
             this.getNoteShapeAdderRoute(stackPath),
             this.getNoteShapeAdderForUseRoute(stackPath),
@@ -633,11 +556,6 @@ export class RouteService {
             this.getPositionAdderRoute(stackPath),
             this.getPositionAdderForUseRoute(stackPath),
             this.getPositionDetailRoute(stackPath),
-
-            this.getTreeTableRoute(stackPath),
-            this.getTreeAdderRoute(stackPath),
-            this.getTreeAdderForUseRoute(stackPath),
-            this.getTreeDetailRoute(stackPath),
 
             this.getUmlStateTableRoute(stackPath),
             this.getUmlStateAdderRoute(stackPath),

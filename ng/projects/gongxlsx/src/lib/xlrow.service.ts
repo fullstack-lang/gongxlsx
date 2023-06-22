@@ -43,7 +43,7 @@ export class XLRowService {
   }
 
   /** GET xlrows from the server */
-  getXLRows(GONG__StackPath: string = ""): Observable<XLRowDB[]> {
+  getXLRows(GONG__StackPath: string): Observable<XLRowDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -56,10 +56,13 @@ export class XLRowService {
   }
 
   /** GET xlrow by id. Will 404 if id not found */
-  getXLRow(id: number): Observable<XLRowDB> {
+  getXLRow(id: number, GONG__StackPath: string): Observable<XLRowDB> {
+
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+
     const url = `${this.xlrowsUrl}/${id}`;
-    return this.http.get<XLRowDB>(url).pipe(
-      tap(_ => this.log(`fetched xlrow id=${id}`)),
+    return this.http.get<XLRowDB>(url, { params: params }).pipe(
+      // tap(_ => this.log(`fetched xlrow id=${id}`)),
       catchError(this.handleError<XLRowDB>(`getXLRow id=${id}`))
     );
   }
@@ -82,7 +85,7 @@ export class XLRowService {
       tap(_ => {
         // insertion point for restoration of reverse pointers
         xlrowdb.XLSheet_Rows_reverse = _XLSheet_Rows_reverse
-        this.log(`posted xlrowdb id=${xlrowdb.ID}`)
+        // this.log(`posted xlrowdb id=${xlrowdb.ID}`)
       }),
       catchError(this.handleError<XLRowDB>('postXLRow'))
     );
@@ -125,7 +128,7 @@ export class XLRowService {
       tap(_ => {
         // insertion point for restoration of reverse pointers
         xlrowdb.XLSheet_Rows_reverse = _XLSheet_Rows_reverse
-        this.log(`updated xlrowdb id=${xlrowdb.ID}`)
+        // this.log(`updated xlrowdb id=${xlrowdb.ID}`)
       }),
       catchError(this.handleError<XLRowDB>('updateXLRow'))
     );

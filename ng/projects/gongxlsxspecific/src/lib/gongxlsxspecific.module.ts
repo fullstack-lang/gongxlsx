@@ -1,11 +1,9 @@
 import { NgModule } from '@angular/core';
 
 import { GongxlsxspecificComponent } from './gongxlsxspecific.component';
-import { DataModelPanelComponent } from './data-model-panel/data-model-panel.component';
 import { DisplaysheetComponent } from './displaysheet/displaysheet.component';
 
 import { GongdocModule } from 'gongdoc'
-import { GongdocdiagramsModule } from 'gongdocdiagrams'
 
 import { GongxlsxModule } from 'gongxlsx'
 
@@ -19,12 +17,10 @@ import { MatTabsModule } from '@angular/material/tabs';
 @NgModule({
   declarations: [
     GongxlsxspecificComponent,
-    DataModelPanelComponent,
     DisplaysheetComponent
   ],
   imports: [
     GongdocModule,
-    GongdocdiagramsModule,
 
     MatTableModule,
     MatTabsModule,
@@ -38,7 +34,6 @@ import { MatTabsModule } from '@angular/material/tabs';
   ],
   exports: [
     GongxlsxspecificComponent,
-    DataModelPanelComponent,
     DisplaysheetComponent
   ]
 })

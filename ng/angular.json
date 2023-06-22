@@ -168,6 +168,39 @@
           }
         }
       }
+    },
+    "gongxlsxdatamodel": {
+      "projectType": "library",
+      "root": "projects/gongxlsxdatamodel",
+      "sourceRoot": "projects/gongxlsxdatamodel/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/gongxlsxdatamodel/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/gongxlsxdatamodel/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/gongxlsxdatamodel/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/gongxlsxdatamodel/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
+        }
+      }
     }
   },
   "version": 1

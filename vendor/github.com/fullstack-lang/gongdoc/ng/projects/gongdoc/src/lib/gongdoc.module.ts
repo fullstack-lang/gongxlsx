@@ -67,10 +67,6 @@ import { LinksTableComponent } from './links-table/links-table.component'
 import { LinkSortingComponent } from './link-sorting/link-sorting.component'
 import { LinkDetailComponent } from './link-detail/link-detail.component'
 
-import { NodesTableComponent } from './nodes-table/nodes-table.component'
-import { NodeSortingComponent } from './node-sorting/node-sorting.component'
-import { NodeDetailComponent } from './node-detail/node-detail.component'
-
 import { NoteShapesTableComponent } from './noteshapes-table/noteshapes-table.component'
 import { NoteShapeSortingComponent } from './noteshape-sorting/noteshape-sorting.component'
 import { NoteShapeDetailComponent } from './noteshape-detail/noteshape-detail.component'
@@ -82,10 +78,6 @@ import { NoteShapeLinkDetailComponent } from './noteshapelink-detail/noteshapeli
 import { PositionsTableComponent } from './positions-table/positions-table.component'
 import { PositionSortingComponent } from './position-sorting/position-sorting.component'
 import { PositionDetailComponent } from './position-detail/position-detail.component'
-
-import { TreesTableComponent } from './trees-table/trees-table.component'
-import { TreeSortingComponent } from './tree-sorting/tree-sorting.component'
-import { TreeDetailComponent } from './tree-detail/tree-detail.component'
 
 import { UmlStatesTableComponent } from './umlstates-table/umlstates-table.component'
 import { UmlStateSortingComponent } from './umlstate-sorting/umlstate-sorting.component'
@@ -131,10 +123,6 @@ import { VerticeDetailComponent } from './vertice-detail/vertice-detail.componen
 		LinkSortingComponent,
 		LinkDetailComponent,
 
-		NodesTableComponent,
-		NodeSortingComponent,
-		NodeDetailComponent,
-
 		NoteShapesTableComponent,
 		NoteShapeSortingComponent,
 		NoteShapeDetailComponent,
@@ -146,10 +134,6 @@ import { VerticeDetailComponent } from './vertice-detail/vertice-detail.componen
 		PositionsTableComponent,
 		PositionSortingComponent,
 		PositionDetailComponent,
-
-		TreesTableComponent,
-		TreeSortingComponent,
-		TreeDetailComponent,
 
 		UmlStatesTableComponent,
 		UmlStateSortingComponent,
@@ -230,10 +214,6 @@ import { VerticeDetailComponent } from './vertice-detail/vertice-detail.componen
 		LinkSortingComponent,
 		LinkDetailComponent,
 
-		NodesTableComponent,
-		NodeSortingComponent,
-		NodeDetailComponent,
-
 		NoteShapesTableComponent,
 		NoteShapeSortingComponent,
 		NoteShapeDetailComponent,
@@ -245,10 +225,6 @@ import { VerticeDetailComponent } from './vertice-detail/vertice-detail.componen
 		PositionsTableComponent,
 		PositionSortingComponent,
 		PositionDetailComponent,
-
-		TreesTableComponent,
-		TreeSortingComponent,
-		TreeDetailComponent,
 
 		UmlStatesTableComponent,
 		UmlStateSortingComponent,

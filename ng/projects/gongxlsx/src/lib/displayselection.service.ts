@@ -44,7 +44,7 @@ export class DisplaySelectionService {
   }
 
   /** GET displayselections from the server */
-  getDisplaySelections(GONG__StackPath: string = ""): Observable<DisplaySelectionDB[]> {
+  getDisplaySelections(GONG__StackPath: string): Observable<DisplaySelectionDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -57,10 +57,13 @@ export class DisplaySelectionService {
   }
 
   /** GET displayselection by id. Will 404 if id not found */
-  getDisplaySelection(id: number): Observable<DisplaySelectionDB> {
+  getDisplaySelection(id: number, GONG__StackPath: string): Observable<DisplaySelectionDB> {
+
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+
     const url = `${this.displayselectionsUrl}/${id}`;
-    return this.http.get<DisplaySelectionDB>(url).pipe(
-      tap(_ => this.log(`fetched displayselection id=${id}`)),
+    return this.http.get<DisplaySelectionDB>(url, { params: params }).pipe(
+      // tap(_ => this.log(`fetched displayselection id=${id}`)),
       catchError(this.handleError<DisplaySelectionDB>(`getDisplaySelection id=${id}`))
     );
   }
@@ -81,7 +84,7 @@ export class DisplaySelectionService {
     return this.http.post<DisplaySelectionDB>(this.displayselectionsUrl, displayselectiondb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
-        this.log(`posted displayselectiondb id=${displayselectiondb.ID}`)
+        // this.log(`posted displayselectiondb id=${displayselectiondb.ID}`)
       }),
       catchError(this.handleError<DisplaySelectionDB>('postDisplaySelection'))
     );
@@ -122,7 +125,7 @@ export class DisplaySelectionService {
     return this.http.put<DisplaySelectionDB>(url, displayselectiondb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
-        this.log(`updated displayselectiondb id=${displayselectiondb.ID}`)
+        // this.log(`updated displayselectiondb id=${displayselectiondb.ID}`)
       }),
       catchError(this.handleError<DisplaySelectionDB>('updateDisplaySelection'))
     );

@@ -30,9 +30,6 @@ const (
 // ParseAstFile Parse pathToFile and stages all instances
 // declared in the file
 func ParseAstFile(stage *StageStruct, pathToFile string) error {
-	// map to store renaming docLink
-	// to be removed after fix of [issue](https://github.com/golang/go/issues/57559)
-	stage.Map_DocLink_Renaming = make(map[string]GONG__Identifier, 0)
 
 	fileOfInterest, err := filepath.Abs(pathToFile)
 	if err != nil {
@@ -755,9 +752,22 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 					}
 				}
 			}
-		case *ast.BasicLit:
-			// assignment to string field
-			basicLit := expr
+		case *ast.BasicLit, *ast.UnaryExpr:
+
+			var basicLit *ast.BasicLit
+			var exprSign = 1.0
+			_ = exprSign // in case this is not used
+
+			if bl, ok := expr.(*ast.BasicLit); ok {
+				// expression is  for instance ... = 18.000
+				basicLit = bl
+			} else if ue, ok := expr.(*ast.UnaryExpr); ok {
+				// expression is  for instance ... = -18.000
+				// we want to extract a *ast.BasicLit from the *ast.UnaryExpr
+				basicLit = ue.X.(*ast.BasicLit)
+				exprSign = -1
+			}
+
 			// astCoordinate := astCoordinate + "\tBasicLit" + "." + basicLit.Value
 			// log.Println(astCoordinate)
 			var ok bool
@@ -798,7 +808,7 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 					if err != nil {
 						log.Fatalln(err)
 					}
-					__gong__map_GongBasicField[identifier].Index = int(fielValue)
+					__gong__map_GongBasicField[identifier].Index = int(exprSign) * int(fielValue)
 				}
 			case "GongEnum":
 				switch fieldName {
@@ -873,7 +883,7 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 					if err != nil {
 						log.Fatalln(err)
 					}
-					__gong__map_GongTimeField[identifier].Index = int(fielValue)
+					__gong__map_GongTimeField[identifier].Index = int(exprSign) * int(fielValue)
 				case "CompositeStructName":
 					// remove first and last char
 					fielValue := basicLit.Value[1 : len(basicLit.Value)-1]
@@ -924,7 +934,7 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 					if err != nil {
 						log.Fatalln(err)
 					}
-					__gong__map_PointerToGongStructField[identifier].Index = int(fielValue)
+					__gong__map_PointerToGongStructField[identifier].Index = int(exprSign) * int(fielValue)
 				case "CompositeStructName":
 					// remove first and last char
 					fielValue := basicLit.Value[1 : len(basicLit.Value)-1]
@@ -943,7 +953,7 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 					if err != nil {
 						log.Fatalln(err)
 					}
-					__gong__map_SliceOfPointerToGongStructField[identifier].Index = int(fielValue)
+					__gong__map_SliceOfPointerToGongStructField[identifier].Index = int(exprSign) * int(fielValue)
 				case "CompositeStructName":
 					// remove first and last char
 					fielValue := basicLit.Value[1 : len(basicLit.Value)-1]
@@ -996,6 +1006,13 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 			case "GongStruct":
 				switch fieldName {
 				// insertion point for field dependant code
+				case "HasOnAfterUpdateSignature":
+					// convert string to boolean
+					fielValue, err := strconv.ParseBool(ident.Name)
+					if err != nil {
+						log.Fatalln(err)
+					}
+					__gong__map_GongStruct[identifier].HasOnAfterUpdateSignature = fielValue
 				}
 			case "GongTimeField":
 				switch fieldName {

@@ -643,9 +643,22 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 					}
 				}
 			}
-		case *ast.BasicLit:
-			// assignment to string field
-			basicLit := expr
+		case *ast.BasicLit, *ast.UnaryExpr:
+
+			var basicLit *ast.BasicLit
+			var exprSign = 1.0
+			_ = exprSign // in case this is not used
+
+			if bl, ok := expr.(*ast.BasicLit); ok {
+				// expression is  for instance ... = 18.000
+				basicLit = bl
+			} else if ue, ok := expr.(*ast.UnaryExpr); ok {
+				// expression is  for instance ... = -18.000
+				// we want to extract a *ast.BasicLit from the *ast.UnaryExpr
+				basicLit = ue.X.(*ast.BasicLit)
+				exprSign = -1
+			}
+
 			// astCoordinate := astCoordinate + "\tBasicLit" + "." + basicLit.Value
 			// log.Println(astCoordinate)
 			var ok bool
@@ -682,14 +695,14 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 					if err != nil {
 						log.Fatalln(err)
 					}
-					__gong__map_XLCell[identifier].X = int(fielValue)
+					__gong__map_XLCell[identifier].X = int(exprSign) * int(fielValue)
 				case "Y":
 					// convert string to int
 					fielValue, err := strconv.ParseInt(basicLit.Value, 10, 64)
 					if err != nil {
 						log.Fatalln(err)
 					}
-					__gong__map_XLCell[identifier].Y = int(fielValue)
+					__gong__map_XLCell[identifier].Y = int(exprSign) * int(fielValue)
 				}
 			case "XLFile":
 				switch fieldName {
@@ -704,7 +717,7 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 					if err != nil {
 						log.Fatalln(err)
 					}
-					__gong__map_XLFile[identifier].NbSheets = int(fielValue)
+					__gong__map_XLFile[identifier].NbSheets = int(exprSign) * int(fielValue)
 				}
 			case "XLRow":
 				switch fieldName {
@@ -719,7 +732,7 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 					if err != nil {
 						log.Fatalln(err)
 					}
-					__gong__map_XLRow[identifier].RowIndex = int(fielValue)
+					__gong__map_XLRow[identifier].RowIndex = int(exprSign) * int(fielValue)
 				}
 			case "XLSheet":
 				switch fieldName {
@@ -734,21 +747,21 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 					if err != nil {
 						log.Fatalln(err)
 					}
-					__gong__map_XLSheet[identifier].MaxRow = int(fielValue)
+					__gong__map_XLSheet[identifier].MaxRow = int(exprSign) * int(fielValue)
 				case "MaxCol":
 					// convert string to int
 					fielValue, err := strconv.ParseInt(basicLit.Value, 10, 64)
 					if err != nil {
 						log.Fatalln(err)
 					}
-					__gong__map_XLSheet[identifier].MaxCol = int(fielValue)
+					__gong__map_XLSheet[identifier].MaxCol = int(exprSign) * int(fielValue)
 				case "NbRows":
 					// convert string to int
 					fielValue, err := strconv.ParseInt(basicLit.Value, 10, 64)
 					if err != nil {
 						log.Fatalln(err)
 					}
-					__gong__map_XLSheet[identifier].NbRows = int(fielValue)
+					__gong__map_XLSheet[identifier].NbRows = int(exprSign) * int(fielValue)
 				}
 			}
 		case *ast.Ident:

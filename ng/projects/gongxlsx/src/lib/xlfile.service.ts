@@ -42,7 +42,7 @@ export class XLFileService {
   }
 
   /** GET xlfiles from the server */
-  getXLFiles(GONG__StackPath: string = ""): Observable<XLFileDB[]> {
+  getXLFiles(GONG__StackPath: string): Observable<XLFileDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -55,10 +55,13 @@ export class XLFileService {
   }
 
   /** GET xlfile by id. Will 404 if id not found */
-  getXLFile(id: number): Observable<XLFileDB> {
+  getXLFile(id: number, GONG__StackPath: string): Observable<XLFileDB> {
+
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+
     const url = `${this.xlfilesUrl}/${id}`;
-    return this.http.get<XLFileDB>(url).pipe(
-      tap(_ => this.log(`fetched xlfile id=${id}`)),
+    return this.http.get<XLFileDB>(url, { params: params }).pipe(
+      // tap(_ => this.log(`fetched xlfile id=${id}`)),
       catchError(this.handleError<XLFileDB>(`getXLFile id=${id}`))
     );
   }
@@ -78,7 +81,7 @@ export class XLFileService {
     return this.http.post<XLFileDB>(this.xlfilesUrl, xlfiledb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
-        this.log(`posted xlfiledb id=${xlfiledb.ID}`)
+        // this.log(`posted xlfiledb id=${xlfiledb.ID}`)
       }),
       catchError(this.handleError<XLFileDB>('postXLFile'))
     );
@@ -118,7 +121,7 @@ export class XLFileService {
     return this.http.put<XLFileDB>(url, xlfiledb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
-        this.log(`updated xlfiledb id=${xlfiledb.ID}`)
+        // this.log(`updated xlfiledb id=${xlfiledb.ID}`)
       }),
       catchError(this.handleError<XLFileDB>('updateXLFile'))
     );

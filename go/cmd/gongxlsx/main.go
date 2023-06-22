@@ -62,7 +62,7 @@ func main() {
 	r := gongxlsx_static.ServeStaticFiles(*logGINFlag)
 
 	// setup stack
-	stage := gongxlsx_fullstack.NewStackInstance(r, "github.com/fullstack-lang/gongxlsx/go/models")
+	stage := gongxlsx_fullstack.NewStackInstance(r, "gongxlsx")
 
 	// generate injection code from the stage
 	if *marshallOnStartup != "" {
@@ -123,14 +123,6 @@ func main() {
 		stage.OnInitCommitFromFrontCallback = hook
 	}
 
-	gongdoc_load.Load(
-		"gongxlsx",
-		"github.com/fullstack-lang/gongxlsx/go/models",
-		gongxlsx_go.GoModelsDir,
-		gongxlsx_go.GoDiagramsDir,
-		r,
-		*embeddedDiagrams,
-		&stage.Map_GongStructName_InstancesNb)
 	nbArgs := flag.Args()
 	if len(nbArgs) < 1 {
 		log.Panic("there should be at least one file argument")
@@ -153,6 +145,16 @@ func main() {
 	}
 
 	stage.Commit()
+
+	gongdoc_load.Load(
+		"gongxlsx",
+		"github.com/fullstack-lang/gongxlsx/go/models",
+		gongxlsx_go.GoModelsDir,
+		gongxlsx_go.GoDiagramsDir,
+		r,
+		*embeddedDiagrams,
+		&stage.Map_GongStructName_InstancesNb)
+
 	log.Printf("Server ready serve on localhost:8080")
 	r.Run()
 }

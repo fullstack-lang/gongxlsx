@@ -25,34 +25,6 @@
       "rxjs": [
         "./node_modules/rxjs"
       ],
-      "@types/leaflet": [
-        "./node_modules/@types/leaflet"
-      ],
-      "@types/node": [
-        "./node_modules/@types/node"
-      ],
-      "@asymmetrik/ngx-leaflet": [
-        "./node_modules/@asymmetrik/ngx-leaflet"
-      ],
-      "leaflet": [
-        "./node_modules/leaflet"
-      ],
-      "leaflet-rotatedmarker": [
-        "./node_modules/leaflet-rotatedmarker"
-      ],
-      "lodash": [
-        "./node_modules/lodash"
-      ],
-      "@types/loash": [
-        "./node_modules/@types/loash"
-      ],
-      "jointjs": [
-        "./node_modules/jointjs"
-      ],
-      "gongxlsxspecific": [
-        "projects/gongxlsxspecific/src/public-api.ts",
-        "dist/gongxlsxspecific"
-      ],
       "@angular-material-components/datetime-picker": [
         "./node_modules/@angular-material-components/datetime-picker"
       ],
@@ -68,8 +40,34 @@
       "gongdoc": [
       "../vendor/github.com/fullstack-lang/gongdoc/ng/projects/gongdoc/src/public-api.ts"
       ],
-      "gongdocdiagrams": [
-      "../vendor/github.com/fullstack-lang/gongdoc/ng/projects/gongdocdiagrams/src/public-api.ts"
+      "gongdocspecific": [
+      "../vendor/github.com/fullstack-lang/gongdoc/ng/projects/gongdocspecific/src/public-api.ts"
+      ],
+      "gongsvg": [
+        "../vendor/github.com/fullstack-lang/gongsvg/ng/projects/gongsvg/src/public-api.ts"
+      ],
+      "gongsvgdatamodel": [
+        "../vendor/github.com/fullstack-lang/gongsvg/ng/projects/gongsvgdatamodel/src/public-api.ts"
+      ],
+      "gongsvgspecific": [
+        "../vendor/github.com/fullstack-lang/gongsvg/ng/projects/gongsvgspecific/src/public-api.ts"
+      ],
+      "gongtree": [
+        "../vendor/github.com/fullstack-lang/gongtree/ng/projects/gongtree/src/public-api.ts"
+      ],
+      "gongxlsxdatamodel": [
+        "projects/gongxlsxdatamodel/src/public-api.ts",
+        "dist/gongxlsxdatamodel"
+      ],
+      "gongxlsxspecific": [
+        "projects/gongxlsxspecific/src/public-api.ts",
+        "dist/gongxlsxspecific"
+      ],
+      "gongtreedatamodel": [
+        "../vendor/github.com/fullstack-lang/gongtree/ng/projects/gongtreedatamodel/src/public-api.ts"
+      ],
+      "gongtreespecific": [
+        "../vendor/github.com/fullstack-lang/gongtree/ng/projects/gongtreespecific/src/public-api.ts"
       ],
 
       "gongxlsx": [
@@ -93,7 +91,7 @@
       "ES2022",
       "dom"
     ]
-  ,"skipLibCheck":true},
+  },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,

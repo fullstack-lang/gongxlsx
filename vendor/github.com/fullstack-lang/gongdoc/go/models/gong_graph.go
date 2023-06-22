@@ -26,9 +26,6 @@ func IsStaged[Type Gongstruct](stage *StageStruct, instance *Type) (ok bool) {
 	case *Link:
 		ok = stage.IsStagedLink(target)
 
-	case *Node:
-		ok = stage.IsStagedNode(target)
-
 	case *NoteShape:
 		ok = stage.IsStagedNoteShape(target)
 
@@ -37,9 +34,6 @@ func IsStaged[Type Gongstruct](stage *StageStruct, instance *Type) (ok bool) {
 
 	case *Position:
 		ok = stage.IsStagedPosition(target)
-
-	case *Tree:
-		ok = stage.IsStagedTree(target)
 
 	case *UmlState:
 		ok = stage.IsStagedUmlState(target)
@@ -106,13 +100,6 @@ func IsStaged[Type Gongstruct](stage *StageStruct, instance *Type) (ok bool) {
 		return
 	}
 
-	func (stage *StageStruct) IsStagedNode(node *Node) (ok bool) {
-
-		_, ok = stage.Nodes[node]
-	
-		return
-	}
-
 	func (stage *StageStruct) IsStagedNoteShape(noteshape *NoteShape) (ok bool) {
 
 		_, ok = stage.NoteShapes[noteshape]
@@ -130,13 +117,6 @@ func IsStaged[Type Gongstruct](stage *StageStruct, instance *Type) (ok bool) {
 	func (stage *StageStruct) IsStagedPosition(position *Position) (ok bool) {
 
 		_, ok = stage.Positions[position]
-	
-		return
-	}
-
-	func (stage *StageStruct) IsStagedTree(tree *Tree) (ok bool) {
-
-		_, ok = stage.Trees[tree]
 	
 		return
 	}
@@ -192,9 +172,6 @@ func StageBranch[Type Gongstruct](stage *StageStruct, instance *Type) {
 	case *Link:
 		stage.StageBranchLink(target)
 
-	case *Node:
-		stage.StageBranchNode(target)
-
 	case *NoteShape:
 		stage.StageBranchNoteShape(target)
 
@@ -203,9 +180,6 @@ func StageBranch[Type Gongstruct](stage *StageStruct, instance *Type) {
 
 	case *Position:
 		stage.StageBranchPosition(target)
-
-	case *Tree:
-		stage.StageBranchTree(target)
 
 	case *UmlState:
 		stage.StageBranchUmlState(target)
@@ -363,24 +337,6 @@ func (stage *StageStruct) StageBranchLink(link *Link) {
 
 }
 
-func (stage *StageStruct) StageBranchNode(node *Node) {
-
-	// check if instance is already staged
-	if IsStaged(stage, node) {
-		return
-	}
-
-	node.Stage(stage)
-
-	//insertion point for the staging of instances referenced by pointers
-
-	//insertion point for the staging of instances referenced by slice of pointers
-	for _, _node := range node.Children {
-		StageBranch(stage, _node)
-	}
-
-}
-
 func (stage *StageStruct) StageBranchNoteShape(noteshape *NoteShape) {
 
 	// check if instance is already staged
@@ -426,24 +382,6 @@ func (stage *StageStruct) StageBranchPosition(position *Position) {
 	//insertion point for the staging of instances referenced by pointers
 
 	//insertion point for the staging of instances referenced by slice of pointers
-
-}
-
-func (stage *StageStruct) StageBranchTree(tree *Tree) {
-
-	// check if instance is already staged
-	if IsStaged(stage, tree) {
-		return
-	}
-
-	tree.Stage(stage)
-
-	//insertion point for the staging of instances referenced by pointers
-
-	//insertion point for the staging of instances referenced by slice of pointers
-	for _, _node := range tree.RootNodes {
-		StageBranch(stage, _node)
-	}
 
 }
 
@@ -525,9 +463,6 @@ func UnstageBranch[Type Gongstruct](stage *StageStruct, instance *Type) {
 	case *Link:
 		stage.UnstageBranchLink(target)
 
-	case *Node:
-		stage.UnstageBranchNode(target)
-
 	case *NoteShape:
 		stage.UnstageBranchNoteShape(target)
 
@@ -536,9 +471,6 @@ func UnstageBranch[Type Gongstruct](stage *StageStruct, instance *Type) {
 
 	case *Position:
 		stage.UnstageBranchPosition(target)
-
-	case *Tree:
-		stage.UnstageBranchTree(target)
 
 	case *UmlState:
 		stage.UnstageBranchUmlState(target)
@@ -696,24 +628,6 @@ func (stage *StageStruct) UnstageBranchLink(link *Link) {
 
 }
 
-func (stage *StageStruct) UnstageBranchNode(node *Node) {
-
-	// check if instance is already staged
-	if ! IsStaged(stage, node) {
-		return
-	}
-
-	node.Unstage(stage)
-
-	//insertion point for the staging of instances referenced by pointers
-
-	//insertion point for the staging of instances referenced by slice of pointers
-	for _, _node := range node.Children {
-		UnstageBranch(stage, _node)
-	}
-
-}
-
 func (stage *StageStruct) UnstageBranchNoteShape(noteshape *NoteShape) {
 
 	// check if instance is already staged
@@ -759,24 +673,6 @@ func (stage *StageStruct) UnstageBranchPosition(position *Position) {
 	//insertion point for the staging of instances referenced by pointers
 
 	//insertion point for the staging of instances referenced by slice of pointers
-
-}
-
-func (stage *StageStruct) UnstageBranchTree(tree *Tree) {
-
-	// check if instance is already staged
-	if ! IsStaged(stage, tree) {
-		return
-	}
-
-	tree.Unstage(stage)
-
-	//insertion point for the staging of instances referenced by pointers
-
-	//insertion point for the staging of instances referenced by slice of pointers
-	for _, _node := range tree.RootNodes {
-		UnstageBranch(stage, _node)
-	}
 
 }
 

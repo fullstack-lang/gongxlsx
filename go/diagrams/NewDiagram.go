@@ -124,8 +124,6 @@ func NewDiagramInjection(stage *models.StageStruct) {
 	__Link__000004_XLFile := (&models.Link{Name: `XLFile`}).Stage(stage)
 	__Link__000005_XLSheet := (&models.Link{Name: `XLSheet`}).Stage(stage)
 
-	// Declarations of staged instances of Node
-
 	// Declarations of staged instances of NoteShape
 
 	// Declarations of staged instances of NoteShapeLink
@@ -136,8 +134,6 @@ func NewDiagramInjection(stage *models.StageStruct) {
 	__Position__000002_Pos_NewDiagram_XLFile := (&models.Position{Name: `Pos-NewDiagram-XLFile`}).Stage(stage)
 	__Position__000003_Pos_NewDiagram_XLRow := (&models.Position{Name: `Pos-NewDiagram-XLRow`}).Stage(stage)
 	__Position__000004_Pos_NewDiagram_XLSheet := (&models.Position{Name: `Pos-NewDiagram-XLSheet`}).Stage(stage)
-
-	// Declarations of staged instances of Tree
 
 	// Declarations of staged instances of UmlState
 
@@ -184,10 +180,10 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	// comment added to overcome the problem with the comment map association
 
-	//gong:ident [ref_models.XLSheet.Name]
-	__Field__000002_Name.Identifier = `ref_models.XLSheet.Name`
+	//gong:ident [ref_models.XLRow.Name]
+	__Field__000002_Name.Identifier = `ref_models.XLRow.Name`
 	__Field__000002_Name.FieldTypeAsString = ``
-	__Field__000002_Name.Structname = `XLSheet`
+	__Field__000002_Name.Structname = `XLRow`
 	__Field__000002_Name.Fieldtypename = `string`
 
 	// Field values setup
@@ -195,10 +191,10 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	// comment added to overcome the problem with the comment map association
 
-	//gong:ident [ref_models.XLRow.Name]
-	__Field__000003_Name.Identifier = `ref_models.XLRow.Name`
+	//gong:ident [ref_models.XLSheet.Name]
+	__Field__000003_Name.Identifier = `ref_models.XLSheet.Name`
 	__Field__000003_Name.FieldTypeAsString = ``
-	__Field__000003_Name.Structname = `XLRow`
+	__Field__000003_Name.Structname = `XLSheet`
 	__Field__000003_Name.Fieldtypename = `string`
 
 	// Field values setup
@@ -206,10 +202,10 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	// comment added to overcome the problem with the comment map association
 
-	//gong:ident [ref_models.XLFile.Name]
-	__Field__000004_Name.Identifier = `ref_models.XLFile.Name`
+	//gong:ident [ref_models.DisplaySelection.Name]
+	__Field__000004_Name.Identifier = `ref_models.DisplaySelection.Name`
 	__Field__000004_Name.FieldTypeAsString = ``
-	__Field__000004_Name.Structname = `XLFile`
+	__Field__000004_Name.Structname = `DisplaySelection`
 	__Field__000004_Name.Fieldtypename = `string`
 
 	// Field values setup
@@ -217,10 +213,10 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	// comment added to overcome the problem with the comment map association
 
-	//gong:ident [ref_models.XLCell.Name]
-	__Field__000005_Name.Identifier = `ref_models.XLCell.Name`
+	//gong:ident [ref_models.XLFile.Name]
+	__Field__000005_Name.Identifier = `ref_models.XLFile.Name`
 	__Field__000005_Name.FieldTypeAsString = ``
-	__Field__000005_Name.Structname = `XLCell`
+	__Field__000005_Name.Structname = `XLFile`
 	__Field__000005_Name.Fieldtypename = `string`
 
 	// Field values setup
@@ -228,10 +224,10 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	// comment added to overcome the problem with the comment map association
 
-	//gong:ident [ref_models.DisplaySelection.Name]
-	__Field__000006_Name.Identifier = `ref_models.DisplaySelection.Name`
+	//gong:ident [ref_models.XLCell.Name]
+	__Field__000006_Name.Identifier = `ref_models.XLCell.Name`
 	__Field__000006_Name.FieldTypeAsString = ``
-	__Field__000006_Name.Structname = `DisplaySelection`
+	__Field__000006_Name.Structname = `XLCell`
 	__Field__000006_Name.Fieldtypename = `string`
 
 	// Field values setup
@@ -296,7 +292,7 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	//gong:ident [ref_models.DisplaySelection]
 	__GongStructShape__000000_NewDiagram_DisplaySelection.Identifier = `ref_models.DisplaySelection`
-	__GongStructShape__000000_NewDiagram_DisplaySelection.ShowNbInstances = false
+	__GongStructShape__000000_NewDiagram_DisplaySelection.ShowNbInstances = true
 	__GongStructShape__000000_NewDiagram_DisplaySelection.NbInstances = 0
 	__GongStructShape__000000_NewDiagram_DisplaySelection.Width = 240.000000
 	__GongStructShape__000000_NewDiagram_DisplaySelection.Heigth = 78.000000
@@ -309,7 +305,7 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	//gong:ident [ref_models.XLCell]
 	__GongStructShape__000001_NewDiagram_XLCell.Identifier = `ref_models.XLCell`
-	__GongStructShape__000001_NewDiagram_XLCell.ShowNbInstances = false
+	__GongStructShape__000001_NewDiagram_XLCell.ShowNbInstances = true
 	__GongStructShape__000001_NewDiagram_XLCell.NbInstances = 0
 	__GongStructShape__000001_NewDiagram_XLCell.Width = 240.000000
 	__GongStructShape__000001_NewDiagram_XLCell.Heigth = 108.000000
@@ -322,7 +318,7 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	//gong:ident [ref_models.XLFile]
 	__GongStructShape__000002_NewDiagram_XLFile.Identifier = `ref_models.XLFile`
-	__GongStructShape__000002_NewDiagram_XLFile.ShowNbInstances = false
+	__GongStructShape__000002_NewDiagram_XLFile.ShowNbInstances = true
 	__GongStructShape__000002_NewDiagram_XLFile.NbInstances = 0
 	__GongStructShape__000002_NewDiagram_XLFile.Width = 240.000000
 	__GongStructShape__000002_NewDiagram_XLFile.Heigth = 93.000000
@@ -335,7 +331,7 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	//gong:ident [ref_models.XLRow]
 	__GongStructShape__000003_NewDiagram_XLRow.Identifier = `ref_models.XLRow`
-	__GongStructShape__000003_NewDiagram_XLRow.ShowNbInstances = false
+	__GongStructShape__000003_NewDiagram_XLRow.ShowNbInstances = true
 	__GongStructShape__000003_NewDiagram_XLRow.NbInstances = 0
 	__GongStructShape__000003_NewDiagram_XLRow.Width = 240.000000
 	__GongStructShape__000003_NewDiagram_XLRow.Heigth = 93.000000
@@ -348,7 +344,7 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	//gong:ident [ref_models.XLSheet]
 	__GongStructShape__000004_NewDiagram_XLSheet.Identifier = `ref_models.XLSheet`
-	__GongStructShape__000004_NewDiagram_XLSheet.ShowNbInstances = false
+	__GongStructShape__000004_NewDiagram_XLSheet.ShowNbInstances = true
 	__GongStructShape__000004_NewDiagram_XLSheet.NbInstances = 0
 	__GongStructShape__000004_NewDiagram_XLSheet.Width = 240.000000
 	__GongStructShape__000004_NewDiagram_XLSheet.Heigth = 123.000000
@@ -366,8 +362,19 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	//gong:ident [ref_models.XLCell]
 	__Link__000000_Cells.Fieldtypename = `ref_models.XLCell`
+	__Link__000000_Cells.FieldOffsetX = 26.000000
+	__Link__000000_Cells.FieldOffsetY = -20.000000
 	__Link__000000_Cells.TargetMultiplicity = models.MANY
+	__Link__000000_Cells.TargetMultiplicityOffsetX = 24.000000
+	__Link__000000_Cells.TargetMultiplicityOffsetY = 38.000000
 	__Link__000000_Cells.SourceMultiplicity = models.ZERO_ONE
+	__Link__000000_Cells.SourceMultiplicityOffsetX = 10.000000
+	__Link__000000_Cells.SourceMultiplicityOffsetY = -50.000000
+	__Link__000000_Cells.StartOrientation = models.ORIENTATION_VERTICAL
+	__Link__000000_Cells.StartRatio = 0.788611
+	__Link__000000_Cells.EndOrientation = models.ORIENTATION_HORIZONTAL
+	__Link__000000_Cells.EndRatio = 0.537037
+	__Link__000000_Cells.CornerOffsetRatio = 1.010753
 
 	// Link values setup
 	__Link__000001_Rows.Name = `Rows`
@@ -381,8 +388,19 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	//gong:ident [ref_models.XLRow]
 	__Link__000001_Rows.Fieldtypename = `ref_models.XLRow`
+	__Link__000001_Rows.FieldOffsetX = -62.000000
+	__Link__000001_Rows.FieldOffsetY = -19.000000
 	__Link__000001_Rows.TargetMultiplicity = models.MANY
+	__Link__000001_Rows.TargetMultiplicityOffsetX = -50.000000
+	__Link__000001_Rows.TargetMultiplicityOffsetY = 27.000000
 	__Link__000001_Rows.SourceMultiplicity = models.ZERO_ONE
+	__Link__000001_Rows.SourceMultiplicityOffsetX = -44.000000
+	__Link__000001_Rows.SourceMultiplicityOffsetY = 23.000000
+	__Link__000001_Rows.StartOrientation = models.ORIENTATION_VERTICAL
+	__Link__000001_Rows.StartRatio = 0.738611
+	__Link__000001_Rows.EndOrientation = models.ORIENTATION_HORIZONTAL
+	__Link__000001_Rows.EndRatio = 0.397849
+	__Link__000001_Rows.CornerOffsetRatio = 1.008130
 
 	// Link values setup
 	__Link__000002_SheetCells.Name = `SheetCells`
@@ -396,8 +414,19 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	//gong:ident [ref_models.XLCell]
 	__Link__000002_SheetCells.Fieldtypename = `ref_models.XLCell`
+	__Link__000002_SheetCells.FieldOffsetX = 18.000000
+	__Link__000002_SheetCells.FieldOffsetY = -18.000000
 	__Link__000002_SheetCells.TargetMultiplicity = models.MANY
+	__Link__000002_SheetCells.TargetMultiplicityOffsetX = -36.000000
+	__Link__000002_SheetCells.TargetMultiplicityOffsetY = -10.000000
 	__Link__000002_SheetCells.SourceMultiplicity = models.ZERO_ONE
+	__Link__000002_SheetCells.SourceMultiplicityOffsetX = -42.000000
+	__Link__000002_SheetCells.SourceMultiplicityOffsetY = 27.000000
+	__Link__000002_SheetCells.StartOrientation = models.ORIENTATION_VERTICAL
+	__Link__000002_SheetCells.StartRatio = 0.230278
+	__Link__000002_SheetCells.EndOrientation = models.ORIENTATION_VERTICAL
+	__Link__000002_SheetCells.EndRatio = 0.280278
+	__Link__000002_SheetCells.CornerOffsetRatio = 1.642276
 
 	// Link values setup
 	__Link__000003_Sheets.Name = `Sheets`
@@ -411,8 +440,19 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	//gong:ident [ref_models.XLSheet]
 	__Link__000003_Sheets.Fieldtypename = `ref_models.XLSheet`
+	__Link__000003_Sheets.FieldOffsetX = -83.000000
+	__Link__000003_Sheets.FieldOffsetY = -17.000000
 	__Link__000003_Sheets.TargetMultiplicity = models.MANY
+	__Link__000003_Sheets.TargetMultiplicityOffsetX = 23.000000
+	__Link__000003_Sheets.TargetMultiplicityOffsetY = -14.000000
 	__Link__000003_Sheets.SourceMultiplicity = models.ZERO_ONE
+	__Link__000003_Sheets.SourceMultiplicityOffsetX = 14.000000
+	__Link__000003_Sheets.SourceMultiplicityOffsetY = 36.000000
+	__Link__000003_Sheets.StartOrientation = models.ORIENTATION_VERTICAL
+	__Link__000003_Sheets.StartRatio = 0.713611
+	__Link__000003_Sheets.EndOrientation = models.ORIENTATION_VERTICAL
+	__Link__000003_Sheets.EndRatio = 0.696944
+	__Link__000003_Sheets.CornerOffsetRatio = 1.537634
 
 	// Link values setup
 	__Link__000004_XLFile.Name = `XLFile`
@@ -426,8 +466,19 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	//gong:ident [ref_models.XLFile]
 	__Link__000004_XLFile.Fieldtypename = `ref_models.XLFile`
+	__Link__000004_XLFile.FieldOffsetX = 8.000000
+	__Link__000004_XLFile.FieldOffsetY = -14.000000
 	__Link__000004_XLFile.TargetMultiplicity = models.ZERO_ONE
+	__Link__000004_XLFile.TargetMultiplicityOffsetX = 22.000000
+	__Link__000004_XLFile.TargetMultiplicityOffsetY = 28.000000
 	__Link__000004_XLFile.SourceMultiplicity = models.MANY
+	__Link__000004_XLFile.SourceMultiplicityOffsetX = -29.000000
+	__Link__000004_XLFile.SourceMultiplicityOffsetY = 24.000000
+	__Link__000004_XLFile.StartOrientation = models.ORIENTATION_HORIZONTAL
+	__Link__000004_XLFile.StartRatio = 0.500000
+	__Link__000004_XLFile.EndOrientation = models.ORIENTATION_HORIZONTAL
+	__Link__000004_XLFile.EndRatio = 0.602151
+	__Link__000004_XLFile.CornerOffsetRatio = -0.753056
 
 	// Link values setup
 	__Link__000005_XLSheet.Name = `XLSheet`
@@ -441,8 +492,19 @@ func NewDiagramInjection(stage *models.StageStruct) {
 
 	//gong:ident [ref_models.XLSheet]
 	__Link__000005_XLSheet.Fieldtypename = `ref_models.XLSheet`
+	__Link__000005_XLSheet.FieldOffsetX = 11.000000
+	__Link__000005_XLSheet.FieldOffsetY = -21.000000
 	__Link__000005_XLSheet.TargetMultiplicity = models.ZERO_ONE
+	__Link__000005_XLSheet.TargetMultiplicityOffsetX = 22.000000
+	__Link__000005_XLSheet.TargetMultiplicityOffsetY = 21.000000
 	__Link__000005_XLSheet.SourceMultiplicity = models.MANY
+	__Link__000005_XLSheet.SourceMultiplicityOffsetX = 20.000000
+	__Link__000005_XLSheet.SourceMultiplicityOffsetY = 30.000000
+	__Link__000005_XLSheet.StartOrientation = models.ORIENTATION_VERTICAL
+	__Link__000005_XLSheet.StartRatio = 0.755278
+	__Link__000005_XLSheet.EndOrientation = models.ORIENTATION_HORIZONTAL
+	__Link__000005_XLSheet.EndRatio = 0.414634
+	__Link__000005_XLSheet.CornerOffsetRatio = 1.025641
 
 	// Position values setup
 	__Position__000000_Pos_NewDiagram_DisplaySelection.X = 610.000000
@@ -450,53 +512,53 @@ func NewDiagramInjection(stage *models.StageStruct) {
 	__Position__000000_Pos_NewDiagram_DisplaySelection.Name = `Pos-NewDiagram-DisplaySelection`
 
 	// Position values setup
-	__Position__000001_Pos_NewDiagram_XLCell.X = 60.000000
-	__Position__000001_Pos_NewDiagram_XLCell.Y = 420.000000
+	__Position__000001_Pos_NewDiagram_XLCell.X = 57.000000
+	__Position__000001_Pos_NewDiagram_XLCell.Y = 478.000000
 	__Position__000001_Pos_NewDiagram_XLCell.Name = `Pos-NewDiagram-XLCell`
 
 	// Position values setup
-	__Position__000002_Pos_NewDiagram_XLFile.X = 70.000000
-	__Position__000002_Pos_NewDiagram_XLFile.Y = 0.000000
+	__Position__000002_Pos_NewDiagram_XLFile.X = 69.000000
+	__Position__000002_Pos_NewDiagram_XLFile.Y = 17.000000
 	__Position__000002_Pos_NewDiagram_XLFile.Name = `Pos-NewDiagram-XLFile`
 
 	// Position values setup
-	__Position__000003_Pos_NewDiagram_XLRow.X = 610.000000
-	__Position__000003_Pos_NewDiagram_XLRow.Y = 230.000000
+	__Position__000003_Pos_NewDiagram_XLRow.X = 595.000000
+	__Position__000003_Pos_NewDiagram_XLRow.Y = 368.000000
 	__Position__000003_Pos_NewDiagram_XLRow.Name = `Pos-NewDiagram-XLRow`
 
 	// Position values setup
-	__Position__000004_Pos_NewDiagram_XLSheet.X = 70.000000
-	__Position__000004_Pos_NewDiagram_XLSheet.Y = 220.000000
+	__Position__000004_Pos_NewDiagram_XLSheet.X = 75.000000
+	__Position__000004_Pos_NewDiagram_XLSheet.Y = 223.000000
 	__Position__000004_Pos_NewDiagram_XLSheet.Name = `Pos-NewDiagram-XLSheet`
 
 	// Vertice values setup
-	__Vertice__000000_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_DisplaySelection_and_NewDiagram_XLFile.X = 510.000000
-	__Vertice__000000_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_DisplaySelection_and_NewDiagram_XLFile.Y = 64.000000
+	__Vertice__000000_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_DisplaySelection_and_NewDiagram_XLFile.X = 700.000000
+	__Vertice__000000_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_DisplaySelection_and_NewDiagram_XLFile.Y = 54.000000
 	__Vertice__000000_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_DisplaySelection_and_NewDiagram_XLFile.Name = `Verticle in class diagram NewDiagram in middle between NewDiagram-DisplaySelection and NewDiagram-XLFile`
 
 	// Vertice values setup
-	__Vertice__000001_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_DisplaySelection_and_NewDiagram_XLSheet.X = 540.000000
-	__Vertice__000001_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_DisplaySelection_and_NewDiagram_XLSheet.Y = 154.000000
+	__Vertice__000001_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_DisplaySelection_and_NewDiagram_XLSheet.X = 700.000000
+	__Vertice__000001_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_DisplaySelection_and_NewDiagram_XLSheet.Y = 164.000000
 	__Vertice__000001_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_DisplaySelection_and_NewDiagram_XLSheet.Name = `Verticle in class diagram NewDiagram in middle between NewDiagram-DisplaySelection and NewDiagram-XLSheet`
 
 	// Vertice values setup
-	__Vertice__000002_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLFile_and_NewDiagram_XLSheet.X = 439.500000
-	__Vertice__000002_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLFile_and_NewDiagram_XLSheet.Y = 110.500000
+	__Vertice__000002_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLFile_and_NewDiagram_XLSheet.X = 430.000000
+	__Vertice__000002_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLFile_and_NewDiagram_XLSheet.Y = 156.500000
 	__Vertice__000002_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLFile_and_NewDiagram_XLSheet.Name = `Verticle in class diagram NewDiagram in middle between NewDiagram-XLFile and NewDiagram-XLSheet`
 
 	// Vertice values setup
-	__Vertice__000003_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLRow_and_NewDiagram_XLCell.X = 705.000000
-	__Vertice__000003_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLRow_and_NewDiagram_XLCell.Y = 401.500000
+	__Vertice__000003_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLRow_and_NewDiagram_XLCell.X = 686.000000
+	__Vertice__000003_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLRow_and_NewDiagram_XLCell.Y = 469.500000
 	__Vertice__000003_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLRow_and_NewDiagram_XLCell.Name = `Verticle in class diagram NewDiagram in middle between NewDiagram-XLRow and NewDiagram-XLCell`
 
 	// Vertice values setup
-	__Vertice__000004_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLSheet_and_NewDiagram_XLCell.X = 30.000000
-	__Vertice__000004_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLSheet_and_NewDiagram_XLCell.Y = 351.500000
+	__Vertice__000004_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLSheet_and_NewDiagram_XLCell.X = 426.000000
+	__Vertice__000004_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLSheet_and_NewDiagram_XLCell.Y = 412.000000
 	__Vertice__000004_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLSheet_and_NewDiagram_XLCell.Name = `Verticle in class diagram NewDiagram in middle between NewDiagram-XLSheet and NewDiagram-XLCell`
 
 	// Vertice values setup
-	__Vertice__000005_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLSheet_and_NewDiagram_XLRow.X = 457.000000
-	__Vertice__000005_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLSheet_and_NewDiagram_XLRow.Y = 224.000000
+	__Vertice__000005_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLSheet_and_NewDiagram_XLRow.X = 692.500000
+	__Vertice__000005_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLSheet_and_NewDiagram_XLRow.Y = 355.500000
 	__Vertice__000005_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_XLSheet_and_NewDiagram_XLRow.Name = `Verticle in class diagram NewDiagram in middle between NewDiagram-XLSheet and NewDiagram-XLRow`
 
 	// Setup of pointers
@@ -506,23 +568,23 @@ func NewDiagramInjection(stage *models.StageStruct) {
 	__Classdiagram__000000_NewDiagram.GongStructShapes = append(__Classdiagram__000000_NewDiagram.GongStructShapes, __GongStructShape__000000_NewDiagram_DisplaySelection)
 	__Classdiagram__000000_NewDiagram.GongStructShapes = append(__Classdiagram__000000_NewDiagram.GongStructShapes, __GongStructShape__000003_NewDiagram_XLRow)
 	__GongStructShape__000000_NewDiagram_DisplaySelection.Position = __Position__000000_Pos_NewDiagram_DisplaySelection
-	__GongStructShape__000000_NewDiagram_DisplaySelection.Fields = append(__GongStructShape__000000_NewDiagram_DisplaySelection.Fields, __Field__000006_Name)
+	__GongStructShape__000000_NewDiagram_DisplaySelection.Fields = append(__GongStructShape__000000_NewDiagram_DisplaySelection.Fields, __Field__000004_Name)
 	__GongStructShape__000000_NewDiagram_DisplaySelection.Links = append(__GongStructShape__000000_NewDiagram_DisplaySelection.Links, __Link__000004_XLFile)
 	__GongStructShape__000000_NewDiagram_DisplaySelection.Links = append(__GongStructShape__000000_NewDiagram_DisplaySelection.Links, __Link__000005_XLSheet)
 	__GongStructShape__000001_NewDiagram_XLCell.Position = __Position__000001_Pos_NewDiagram_XLCell
-	__GongStructShape__000001_NewDiagram_XLCell.Fields = append(__GongStructShape__000001_NewDiagram_XLCell.Fields, __Field__000005_Name)
+	__GongStructShape__000001_NewDiagram_XLCell.Fields = append(__GongStructShape__000001_NewDiagram_XLCell.Fields, __Field__000006_Name)
 	__GongStructShape__000001_NewDiagram_XLCell.Fields = append(__GongStructShape__000001_NewDiagram_XLCell.Fields, __Field__000010_X)
 	__GongStructShape__000001_NewDiagram_XLCell.Fields = append(__GongStructShape__000001_NewDiagram_XLCell.Fields, __Field__000011_Y)
 	__GongStructShape__000002_NewDiagram_XLFile.Position = __Position__000002_Pos_NewDiagram_XLFile
-	__GongStructShape__000002_NewDiagram_XLFile.Fields = append(__GongStructShape__000002_NewDiagram_XLFile.Fields, __Field__000004_Name)
+	__GongStructShape__000002_NewDiagram_XLFile.Fields = append(__GongStructShape__000002_NewDiagram_XLFile.Fields, __Field__000005_Name)
 	__GongStructShape__000002_NewDiagram_XLFile.Fields = append(__GongStructShape__000002_NewDiagram_XLFile.Fields, __Field__000008_NbSheets)
 	__GongStructShape__000002_NewDiagram_XLFile.Links = append(__GongStructShape__000002_NewDiagram_XLFile.Links, __Link__000003_Sheets)
 	__GongStructShape__000003_NewDiagram_XLRow.Position = __Position__000003_Pos_NewDiagram_XLRow
-	__GongStructShape__000003_NewDiagram_XLRow.Fields = append(__GongStructShape__000003_NewDiagram_XLRow.Fields, __Field__000003_Name)
+	__GongStructShape__000003_NewDiagram_XLRow.Fields = append(__GongStructShape__000003_NewDiagram_XLRow.Fields, __Field__000002_Name)
 	__GongStructShape__000003_NewDiagram_XLRow.Fields = append(__GongStructShape__000003_NewDiagram_XLRow.Fields, __Field__000009_RowIndex)
 	__GongStructShape__000003_NewDiagram_XLRow.Links = append(__GongStructShape__000003_NewDiagram_XLRow.Links, __Link__000000_Cells)
 	__GongStructShape__000004_NewDiagram_XLSheet.Position = __Position__000004_Pos_NewDiagram_XLSheet
-	__GongStructShape__000004_NewDiagram_XLSheet.Fields = append(__GongStructShape__000004_NewDiagram_XLSheet.Fields, __Field__000002_Name)
+	__GongStructShape__000004_NewDiagram_XLSheet.Fields = append(__GongStructShape__000004_NewDiagram_XLSheet.Fields, __Field__000003_Name)
 	__GongStructShape__000004_NewDiagram_XLSheet.Fields = append(__GongStructShape__000004_NewDiagram_XLSheet.Fields, __Field__000001_MaxRow)
 	__GongStructShape__000004_NewDiagram_XLSheet.Fields = append(__GongStructShape__000004_NewDiagram_XLSheet.Fields, __Field__000000_MaxCol)
 	__GongStructShape__000004_NewDiagram_XLSheet.Fields = append(__GongStructShape__000004_NewDiagram_XLSheet.Fields, __Field__000007_NbRows)

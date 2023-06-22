@@ -28,12 +28,13 @@ import { FormsModule } from '@angular/forms';
 import { AngularSplitModule } from 'angular-split';
 
 import { GongdocModule } from 'gongdoc'
-import { GongdocdiagramsModule } from 'gongdocdiagrams'
+import { GongdocspecificModule } from 'gongdocspecific'
 
 import { GongModule } from 'gong'
 
 import { GongxlsxModule } from 'gongxlsx'
 import { GongxlsxspecificModule } from 'gongxlsxspecific'
+import { GongxlsxdatamodelModule } from 'gongxlsxdatamodel'
 import { GongstructSelectionService } from 'gongxlsx'
 
 // mandatory
@@ -72,10 +73,11 @@ import { HttpClientModule } from '@angular/common/http';
 
     // gongdoc stack (for displaying UML diagrams of the gong code in the current stack)
     GongdocModule,
-    GongdocdiagramsModule,
+    GongdocspecificModule,
 
     GongxlsxModule,
     GongxlsxspecificModule,
+    GongxlsxdatamodelModule,
   ],
   providers: [
     GongstructSelectionService

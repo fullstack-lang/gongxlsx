@@ -44,7 +44,7 @@ export class XLCellService {
   }
 
   /** GET xlcells from the server */
-  getXLCells(GONG__StackPath: string = ""): Observable<XLCellDB[]> {
+  getXLCells(GONG__StackPath: string): Observable<XLCellDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -57,10 +57,13 @@ export class XLCellService {
   }
 
   /** GET xlcell by id. Will 404 if id not found */
-  getXLCell(id: number): Observable<XLCellDB> {
+  getXLCell(id: number, GONG__StackPath: string): Observable<XLCellDB> {
+
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+
     const url = `${this.xlcellsUrl}/${id}`;
-    return this.http.get<XLCellDB>(url).pipe(
-      tap(_ => this.log(`fetched xlcell id=${id}`)),
+    return this.http.get<XLCellDB>(url, { params: params }).pipe(
+      // tap(_ => this.log(`fetched xlcell id=${id}`)),
       catchError(this.handleError<XLCellDB>(`getXLCell id=${id}`))
     );
   }
@@ -85,7 +88,7 @@ export class XLCellService {
         // insertion point for restoration of reverse pointers
         xlcelldb.XLRow_Cells_reverse = _XLRow_Cells_reverse
         xlcelldb.XLSheet_SheetCells_reverse = _XLSheet_SheetCells_reverse
-        this.log(`posted xlcelldb id=${xlcelldb.ID}`)
+        // this.log(`posted xlcelldb id=${xlcelldb.ID}`)
       }),
       catchError(this.handleError<XLCellDB>('postXLCell'))
     );
@@ -130,7 +133,7 @@ export class XLCellService {
         // insertion point for restoration of reverse pointers
         xlcelldb.XLRow_Cells_reverse = _XLRow_Cells_reverse
         xlcelldb.XLSheet_SheetCells_reverse = _XLSheet_SheetCells_reverse
-        this.log(`updated xlcelldb id=${xlcelldb.ID}`)
+        // this.log(`updated xlcelldb id=${xlcelldb.ID}`)
       }),
       catchError(this.handleError<XLCellDB>('updateXLCell'))
     );

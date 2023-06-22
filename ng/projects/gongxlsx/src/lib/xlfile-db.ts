@@ -5,6 +5,9 @@ import { XLSheetDB } from './xlsheet-db'
 import { NullInt64 } from './null-int64'
 
 export class XLFileDB {
+
+	static GONGSTRUCT_NAME = "XLFile"
+
 	CreatedAt?: string
 	DeletedAt?: string
 	ID: number = 0

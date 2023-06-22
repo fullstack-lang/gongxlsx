@@ -6,6 +6,9 @@ import { XLSheetDB } from './xlsheet-db'
 import { NullInt64 } from './null-int64'
 
 export class DisplaySelectionDB {
+
+	static GONGSTRUCT_NAME = "DisplaySelection"
+
 	CreatedAt?: string
 	DeletedAt?: string
 	ID: number = 0

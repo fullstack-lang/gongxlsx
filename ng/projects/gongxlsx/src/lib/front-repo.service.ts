@@ -479,7 +479,7 @@ export class FrontRepoService {
     return new Observable<FrontRepo>(
       (observer) => {
         combineLatest([
-          this.displayselectionService.getDisplaySelections()
+          this.displayselectionService.getDisplaySelections(this.GONG__StackPath)
         ]).subscribe(
           ([ // insertion point sub template 
             displayselections,
@@ -544,7 +544,7 @@ export class FrontRepoService {
     return new Observable<FrontRepo>(
       (observer) => {
         combineLatest([
-          this.xlcellService.getXLCells()
+          this.xlcellService.getXLCells(this.GONG__StackPath)
         ]).subscribe(
           ([ // insertion point sub template 
             xlcells,
@@ -621,7 +621,7 @@ export class FrontRepoService {
     return new Observable<FrontRepo>(
       (observer) => {
         combineLatest([
-          this.xlfileService.getXLFiles()
+          this.xlfileService.getXLFiles(this.GONG__StackPath)
         ]).subscribe(
           ([ // insertion point sub template 
             xlfiles,
@@ -672,7 +672,7 @@ export class FrontRepoService {
     return new Observable<FrontRepo>(
       (observer) => {
         combineLatest([
-          this.xlrowService.getXLRows()
+          this.xlrowService.getXLRows(this.GONG__StackPath)
         ]).subscribe(
           ([ // insertion point sub template 
             xlrows,
@@ -736,7 +736,7 @@ export class FrontRepoService {
     return new Observable<FrontRepo>(
       (observer) => {
         combineLatest([
-          this.xlsheetService.getXLSheets()
+          this.xlsheetService.getXLSheets(this.GONG__StackPath)
         ]).subscribe(
           ([ // insertion point sub template 
             xlsheets,

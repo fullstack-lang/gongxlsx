@@ -17,7 +17,8 @@ export class AppComponent implements OnInit {
 
   views: string[] = [this.xl_display, this.default];
 
-  GONG__StackPath = "github.com/fullstack-lang/gongxlsx/go/models"
+  DataStack = "gongxlsx"
+  ModelStacks = "github.com/fullstack-lang/gongxlsx/go/models"
 
   constructor(
   ) {

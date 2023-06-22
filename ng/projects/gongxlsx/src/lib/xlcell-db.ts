@@ -6,6 +6,9 @@ import { XLSheetDB } from './xlsheet-db'
 import { NullInt64 } from './null-int64'
 
 export class XLCellDB {
+
+	static GONGSTRUCT_NAME = "XLCell"
+
 	CreatedAt?: string
 	DeletedAt?: string
 	ID: number = 0
