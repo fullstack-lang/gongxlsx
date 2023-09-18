@@ -315,6 +315,9 @@ func (backRepoLink *BackRepoLinkStruct) CommitPhaseTwoInstance(backRepo *BackRep
 				linkDB.MiddleverticeID.Int64 = int64(MiddleverticeId)
 				linkDB.MiddleverticeID.Valid = true
 			}
+		} else {
+			linkDB.MiddleverticeID.Int64 = 0
+			linkDB.MiddleverticeID.Valid = true
 		}
 
 		query := backRepoLink.db.Save(&linkDB)
@@ -425,6 +428,7 @@ func (backRepoLink *BackRepoLinkStruct) CheckoutPhaseTwoInstance(backRepo *BackR
 
 	// insertion point for checkout of pointer encoding
 	// Middlevertice field
+	link.Middlevertice = nil
 	if linkDB.MiddleverticeID.Int64 != 0 {
 		link.Middlevertice = backRepo.BackRepoVertice.Map_VerticeDBID_VerticePtr[uint(linkDB.MiddleverticeID.Int64)]
 	}

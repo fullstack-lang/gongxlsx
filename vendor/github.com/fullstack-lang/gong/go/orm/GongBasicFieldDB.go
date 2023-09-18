@@ -256,6 +256,9 @@ func (backRepoGongBasicField *BackRepoGongBasicFieldStruct) CommitPhaseTwoInstan
 				gongbasicfieldDB.GongEnumID.Int64 = int64(GongEnumId)
 				gongbasicfieldDB.GongEnumID.Valid = true
 			}
+		} else {
+			gongbasicfieldDB.GongEnumID.Int64 = 0
+			gongbasicfieldDB.GongEnumID.Valid = true
 		}
 
 		query := backRepoGongBasicField.db.Save(&gongbasicfieldDB)
@@ -366,6 +369,7 @@ func (backRepoGongBasicField *BackRepoGongBasicFieldStruct) CheckoutPhaseTwoInst
 
 	// insertion point for checkout of pointer encoding
 	// GongEnum field
+	gongbasicfield.GongEnum = nil
 	if gongbasicfieldDB.GongEnumID.Int64 != 0 {
 		gongbasicfield.GongEnum = backRepo.BackRepoGongEnum.Map_GongEnumDBID_GongEnumPtr[uint(gongbasicfieldDB.GongEnumID.Int64)]
 	}
@@ -642,6 +646,39 @@ func (backRepoGongBasicField *BackRepoGongBasicFieldStruct) RestorePhaseTwo() {
 		}
 	}
 
+}
+
+// BackRepoGongBasicField.ResetReversePointers commits all staged instances of GongBasicField to the BackRepo
+// Phase Two is the update of instance with the field in the database
+func (backRepoGongBasicField *BackRepoGongBasicFieldStruct) ResetReversePointers(backRepo *BackRepoStruct) (Error error) {
+
+	for idx, gongbasicfield := range backRepoGongBasicField.Map_GongBasicFieldDBID_GongBasicFieldPtr {
+		backRepoGongBasicField.ResetReversePointersInstance(backRepo, idx, gongbasicfield)
+	}
+
+	return
+}
+
+func (backRepoGongBasicField *BackRepoGongBasicFieldStruct) ResetReversePointersInstance(backRepo *BackRepoStruct, idx uint, astruct *models.GongBasicField) (Error error) {
+
+	// fetch matching gongbasicfieldDB
+	if gongbasicfieldDB, ok := backRepoGongBasicField.Map_GongBasicFieldDBID_GongBasicFieldDB[idx]; ok {
+		_ = gongbasicfieldDB // to avoid unused variable error if there are no reverse to reset
+
+		// insertion point for reverse pointers reset
+		if gongbasicfieldDB.GongStruct_GongBasicFieldsDBID.Int64 != 0 {
+			gongbasicfieldDB.GongStruct_GongBasicFieldsDBID.Int64 = 0
+			gongbasicfieldDB.GongStruct_GongBasicFieldsDBID.Valid = true
+
+			// save the reset
+			if q := backRepoGongBasicField.db.Save(gongbasicfieldDB); q.Error != nil {
+				return q.Error
+			}
+		}
+		// end of insertion point for reverse pointers reset
+	}
+
+	return
 }
 
 // this field is used during the restauration process.

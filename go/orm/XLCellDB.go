@@ -590,6 +590,48 @@ func (backRepoXLCell *BackRepoXLCellStruct) RestorePhaseTwo() {
 
 }
 
+// BackRepoXLCell.ResetReversePointers commits all staged instances of XLCell to the BackRepo
+// Phase Two is the update of instance with the field in the database
+func (backRepoXLCell *BackRepoXLCellStruct) ResetReversePointers(backRepo *BackRepoStruct) (Error error) {
+
+	for idx, xlcell := range backRepoXLCell.Map_XLCellDBID_XLCellPtr {
+		backRepoXLCell.ResetReversePointersInstance(backRepo, idx, xlcell)
+	}
+
+	return
+}
+
+func (backRepoXLCell *BackRepoXLCellStruct) ResetReversePointersInstance(backRepo *BackRepoStruct, idx uint, astruct *models.XLCell) (Error error) {
+
+	// fetch matching xlcellDB
+	if xlcellDB, ok := backRepoXLCell.Map_XLCellDBID_XLCellDB[idx]; ok {
+		_ = xlcellDB // to avoid unused variable error if there are no reverse to reset
+
+		// insertion point for reverse pointers reset
+		if xlcellDB.XLRow_CellsDBID.Int64 != 0 {
+			xlcellDB.XLRow_CellsDBID.Int64 = 0
+			xlcellDB.XLRow_CellsDBID.Valid = true
+
+			// save the reset
+			if q := backRepoXLCell.db.Save(xlcellDB); q.Error != nil {
+				return q.Error
+			}
+		}
+		if xlcellDB.XLSheet_SheetCellsDBID.Int64 != 0 {
+			xlcellDB.XLSheet_SheetCellsDBID.Int64 = 0
+			xlcellDB.XLSheet_SheetCellsDBID.Valid = true
+
+			// save the reset
+			if q := backRepoXLCell.db.Save(xlcellDB); q.Error != nil {
+				return q.Error
+			}
+		}
+		// end of insertion point for reverse pointers reset
+	}
+
+	return
+}
+
 // this field is used during the restauration process.
 // it stores the ID at the backup time and is used for renumbering
 var BackRepoXLCellid_atBckpTime_newID map[uint]uint

@@ -15,6 +15,9 @@ var FullstackPkgGenPath string
 // StaticPkgGenPath is target path for Static package
 var StaticPkgGenPath string
 
+// ProbePkgGenPath is target path for Data package
+var ProbePkgGenPath string
+
 // NgWorkspacePath is the path to the Ng Workspace
 var NgWorkspacePath string
 

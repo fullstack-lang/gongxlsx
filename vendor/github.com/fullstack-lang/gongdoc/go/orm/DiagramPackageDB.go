@@ -270,6 +270,9 @@ func (backRepoDiagramPackage *BackRepoDiagramPackageStruct) CommitPhaseTwoInstan
 				diagrampackageDB.SelectedClassdiagramID.Int64 = int64(SelectedClassdiagramId)
 				diagrampackageDB.SelectedClassdiagramID.Valid = true
 			}
+		} else {
+			diagrampackageDB.SelectedClassdiagramID.Int64 = 0
+			diagrampackageDB.SelectedClassdiagramID.Valid = true
 		}
 
 		// This loop encodes the slice of pointers diagrampackage.Umlscs into the back repo.
@@ -426,6 +429,7 @@ func (backRepoDiagramPackage *BackRepoDiagramPackageStruct) CheckoutPhaseTwoInst
 	})
 
 	// SelectedClassdiagram field
+	diagrampackage.SelectedClassdiagram = nil
 	if diagrampackageDB.SelectedClassdiagramID.Int64 != 0 {
 		diagrampackage.SelectedClassdiagram = backRepo.BackRepoClassdiagram.Map_ClassdiagramDBID_ClassdiagramPtr[uint(diagrampackageDB.SelectedClassdiagramID.Int64)]
 	}

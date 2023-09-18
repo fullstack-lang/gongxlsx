@@ -1,3 +1,4 @@
+// do not modify, generated file
 package orm
 
 import (
@@ -256,6 +257,20 @@ func (backRepo *BackRepoStruct) Commit(stage *models.StageStruct) {
 	backRepo.BackRepoModelPkg.CommitPhaseOne(stage)
 	backRepo.BackRepoPointerToGongStructField.CommitPhaseOne(stage)
 	backRepo.BackRepoSliceOfPointerToGongStructField.CommitPhaseOne(stage)
+
+	// insertion point for per struct back repo for reseting the reverse pointers
+	backRepo.BackRepoGongBasicField.ResetReversePointers(backRepo)
+	backRepo.BackRepoGongEnum.ResetReversePointers(backRepo)
+	backRepo.BackRepoGongEnumValue.ResetReversePointers(backRepo)
+	backRepo.BackRepoGongLink.ResetReversePointers(backRepo)
+	backRepo.BackRepoGongNote.ResetReversePointers(backRepo)
+	backRepo.BackRepoGongStruct.ResetReversePointers(backRepo)
+	backRepo.BackRepoGongTimeField.ResetReversePointers(backRepo)
+	backRepo.BackRepoMeta.ResetReversePointers(backRepo)
+	backRepo.BackRepoMetaReference.ResetReversePointers(backRepo)
+	backRepo.BackRepoModelPkg.ResetReversePointers(backRepo)
+	backRepo.BackRepoPointerToGongStructField.ResetReversePointers(backRepo)
+	backRepo.BackRepoSliceOfPointerToGongStructField.ResetReversePointers(backRepo)
 
 	// insertion point for per struct back repo phase two commit
 	backRepo.BackRepoGongBasicField.CommitPhaseTwo(backRepo)

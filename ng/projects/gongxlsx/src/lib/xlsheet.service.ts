@@ -71,7 +71,9 @@ export class XLSheetService {
   postXLSheet(xlsheetdb: XLSheetDB, GONG__StackPath: string): Observable<XLSheetDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    let Rows = xlsheetdb.Rows
     xlsheetdb.Rows = []
+    let SheetCells = xlsheetdb.SheetCells
     xlsheetdb.SheetCells = []
     let _XLFile_Sheets_reverse = xlsheetdb.XLFile_Sheets_reverse
     xlsheetdb.XLFile_Sheets_reverse = new XLFileDB
@@ -85,6 +87,8 @@ export class XLSheetService {
     return this.http.post<XLSheetDB>(this.xlsheetsUrl, xlsheetdb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
+	      xlsheetdb.Rows = Rows
+	      xlsheetdb.SheetCells = SheetCells
         xlsheetdb.XLFile_Sheets_reverse = _XLFile_Sheets_reverse
         // this.log(`posted xlsheetdb id=${xlsheetdb.ID}`)
       }),
@@ -115,7 +119,9 @@ export class XLSheetService {
     const url = `${this.xlsheetsUrl}/${id}`;
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    let Rows = xlsheetdb.Rows
     xlsheetdb.Rows = []
+    let SheetCells = xlsheetdb.SheetCells
     xlsheetdb.SheetCells = []
     let _XLFile_Sheets_reverse = xlsheetdb.XLFile_Sheets_reverse
     xlsheetdb.XLFile_Sheets_reverse = new XLFileDB
@@ -129,6 +135,8 @@ export class XLSheetService {
     return this.http.put<XLSheetDB>(url, xlsheetdb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
+	      xlsheetdb.Rows = Rows
+	      xlsheetdb.SheetCells = SheetCells
         xlsheetdb.XLFile_Sheets_reverse = _XLFile_Sheets_reverse
         // this.log(`updated xlsheetdb id=${xlsheetdb.ID}`)
       }),

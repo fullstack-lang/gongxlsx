@@ -70,6 +70,7 @@ export class XLFileService {
   postXLFile(xlfiledb: XLFileDB, GONG__StackPath: string): Observable<XLFileDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    let Sheets = xlfiledb.Sheets
     xlfiledb.Sheets = []
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -81,6 +82,7 @@ export class XLFileService {
     return this.http.post<XLFileDB>(this.xlfilesUrl, xlfiledb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
+	      xlfiledb.Sheets = Sheets
         // this.log(`posted xlfiledb id=${xlfiledb.ID}`)
       }),
       catchError(this.handleError<XLFileDB>('postXLFile'))
@@ -110,6 +112,7 @@ export class XLFileService {
     const url = `${this.xlfilesUrl}/${id}`;
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    let Sheets = xlfiledb.Sheets
     xlfiledb.Sheets = []
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -121,6 +124,7 @@ export class XLFileService {
     return this.http.put<XLFileDB>(url, xlfiledb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
+	      xlfiledb.Sheets = Sheets
         // this.log(`updated xlfiledb id=${xlfiledb.ID}`)
       }),
       catchError(this.handleError<XLFileDB>('updateXLFile'))

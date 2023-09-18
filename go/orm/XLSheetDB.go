@@ -684,6 +684,39 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseTwo() {
 
 }
 
+// BackRepoXLSheet.ResetReversePointers commits all staged instances of XLSheet to the BackRepo
+// Phase Two is the update of instance with the field in the database
+func (backRepoXLSheet *BackRepoXLSheetStruct) ResetReversePointers(backRepo *BackRepoStruct) (Error error) {
+
+	for idx, xlsheet := range backRepoXLSheet.Map_XLSheetDBID_XLSheetPtr {
+		backRepoXLSheet.ResetReversePointersInstance(backRepo, idx, xlsheet)
+	}
+
+	return
+}
+
+func (backRepoXLSheet *BackRepoXLSheetStruct) ResetReversePointersInstance(backRepo *BackRepoStruct, idx uint, astruct *models.XLSheet) (Error error) {
+
+	// fetch matching xlsheetDB
+	if xlsheetDB, ok := backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[idx]; ok {
+		_ = xlsheetDB // to avoid unused variable error if there are no reverse to reset
+
+		// insertion point for reverse pointers reset
+		if xlsheetDB.XLFile_SheetsDBID.Int64 != 0 {
+			xlsheetDB.XLFile_SheetsDBID.Int64 = 0
+			xlsheetDB.XLFile_SheetsDBID.Valid = true
+
+			// save the reset
+			if q := backRepoXLSheet.db.Save(xlsheetDB); q.Error != nil {
+				return q.Error
+			}
+		}
+		// end of insertion point for reverse pointers reset
+	}
+
+	return
+}
+
 // this field is used during the restauration process.
 // it stores the ID at the backup time and is used for renumbering
 var BackRepoXLSheetid_atBckpTime_newID map[uint]uint

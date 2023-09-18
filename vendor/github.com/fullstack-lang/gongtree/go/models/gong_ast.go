@@ -1,3 +1,4 @@
+// generated code - do not edit
 package models
 
 import (
@@ -661,6 +662,10 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 					// remove first and last char
 					fielValue := basicLit.Value[1 : len(basicLit.Value)-1]
 					__gong__map_Node[identifier].Name = fielValue
+				case "BackgroundColor":
+					// remove first and last char
+					fielValue := basicLit.Value[1 : len(basicLit.Value)-1]
+					__gong__map_Node[identifier].BackgroundColor = fielValue
 				}
 			case "Tree":
 				switch fieldName {
@@ -726,6 +731,13 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 						log.Fatalln(err)
 					}
 					__gong__map_Node[identifier].IsInEditMode = fielValue
+				case "IsNodeClickable":
+					// convert string to boolean
+					fielValue, err := strconv.ParseBool(ident.Name)
+					if err != nil {
+						log.Fatalln(err)
+					}
+					__gong__map_Node[identifier].IsNodeClickable = fielValue
 				}
 			case "Tree":
 				switch fieldName {

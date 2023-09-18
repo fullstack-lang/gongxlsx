@@ -45,11 +45,10 @@ func Load(
 	embeddedDiagrams bool,
 	map_StructName_InstanceNb *map[string]int) {
 
-	gongStage := gong_fullstack.NewStackInstance(r, pkgPath)
-	gongdocStage := gongdoc_fullstack.NewStackInstance(r, pkgPath)
-	gongsvgStage := gongsvg_fullstack.NewStackInstance(r, pkgPath)
-	gongtreeStage := gongtree_fullstack.NewStackInstance(r, pkgPath)
-	_ = gongtreeStage
+	gongStage, _ := gong_fullstack.NewStackInstance(r, pkgPath)
+	gongdocStage, _ := gongdoc_fullstack.NewStackInstance(r, pkgPath)
+	gongsvgStage, _ := gongsvg_fullstack.NewStackInstance(r, pkgPath)
+	gongtreeStage, _ := gongtree_fullstack.NewStackInstance(r, pkgPath)
 
 	beforeCommitImplementation := new(BeforeCommitImplementation)
 

@@ -598,6 +598,30 @@ func (backRepoXLFile *BackRepoXLFileStruct) RestorePhaseTwo() {
 
 }
 
+// BackRepoXLFile.ResetReversePointers commits all staged instances of XLFile to the BackRepo
+// Phase Two is the update of instance with the field in the database
+func (backRepoXLFile *BackRepoXLFileStruct) ResetReversePointers(backRepo *BackRepoStruct) (Error error) {
+
+	for idx, xlfile := range backRepoXLFile.Map_XLFileDBID_XLFilePtr {
+		backRepoXLFile.ResetReversePointersInstance(backRepo, idx, xlfile)
+	}
+
+	return
+}
+
+func (backRepoXLFile *BackRepoXLFileStruct) ResetReversePointersInstance(backRepo *BackRepoStruct, idx uint, astruct *models.XLFile) (Error error) {
+
+	// fetch matching xlfileDB
+	if xlfileDB, ok := backRepoXLFile.Map_XLFileDBID_XLFileDB[idx]; ok {
+		_ = xlfileDB // to avoid unused variable error if there are no reverse to reset
+
+		// insertion point for reverse pointers reset
+		// end of insertion point for reverse pointers reset
+	}
+
+	return
+}
+
 // this field is used during the restauration process.
 // it stores the ID at the backup time and is used for renumbering
 var BackRepoXLFileid_atBckpTime_newID map[uint]uint

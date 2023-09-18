@@ -72,7 +72,9 @@ export class DisplaySelectionService {
   postDisplaySelection(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string): Observable<DisplaySelectionDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    let XLFile = displayselectiondb.XLFile
     displayselectiondb.XLFile = new XLFileDB
+    let XLSheet = displayselectiondb.XLSheet
     displayselectiondb.XLSheet = new XLSheetDB
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -113,7 +115,9 @@ export class DisplaySelectionService {
     const url = `${this.displayselectionsUrl}/${id}`;
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    let XLFile = displayselectiondb.XLFile
     displayselectiondb.XLFile = new XLFileDB
+    let XLSheet = displayselectiondb.XLSheet
     displayselectiondb.XLSheet = new XLSheetDB
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)

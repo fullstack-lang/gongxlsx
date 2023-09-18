@@ -5,3 +5,4 @@ __debug_bin.exe
 .DS_Store
 go/controllers/gongxlsxapi.yml
 go/cmd/gongxlsx/gongxlsx
+go/cmd/gongxlsx/__debug_bin*

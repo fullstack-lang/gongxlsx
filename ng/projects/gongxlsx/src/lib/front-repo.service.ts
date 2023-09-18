@@ -464,6 +464,75 @@ export class FrontRepoService {
               }
             )
 
+            // 
+            // Third Step: sort arrays (slices in go) according to their index
+            // insertion point sub template for redeem 
+            displayselections.forEach(
+              displayselection => {
+                // insertion point for sorting
+              }
+            )
+            xlcells.forEach(
+              xlcell => {
+                // insertion point for sorting
+              }
+            )
+            xlfiles.forEach(
+              xlfile => {
+                // insertion point for sorting
+                xlfile.Sheets?.sort((t1, t2) => {
+                  if (t1.XLFile_SheetsDBID_Index.Int64 > t2.XLFile_SheetsDBID_Index.Int64) {
+                    return 1;
+                  }
+                  if (t1.XLFile_SheetsDBID_Index.Int64 < t2.XLFile_SheetsDBID_Index.Int64) {
+                    return -1;
+                  }
+                  return 0;
+                })
+
+              }
+            )
+            xlrows.forEach(
+              xlrow => {
+                // insertion point for sorting
+                xlrow.Cells?.sort((t1, t2) => {
+                  if (t1.XLRow_CellsDBID_Index.Int64 > t2.XLRow_CellsDBID_Index.Int64) {
+                    return 1;
+                  }
+                  if (t1.XLRow_CellsDBID_Index.Int64 < t2.XLRow_CellsDBID_Index.Int64) {
+                    return -1;
+                  }
+                  return 0;
+                })
+
+              }
+            )
+            xlsheets.forEach(
+              xlsheet => {
+                // insertion point for sorting
+                xlsheet.Rows?.sort((t1, t2) => {
+                  if (t1.XLSheet_RowsDBID_Index.Int64 > t2.XLSheet_RowsDBID_Index.Int64) {
+                    return 1;
+                  }
+                  if (t1.XLSheet_RowsDBID_Index.Int64 < t2.XLSheet_RowsDBID_Index.Int64) {
+                    return -1;
+                  }
+                  return 0;
+                })
+
+                xlsheet.SheetCells?.sort((t1, t2) => {
+                  if (t1.XLSheet_SheetCellsDBID_Index.Int64 > t2.XLSheet_SheetCellsDBID_Index.Int64) {
+                    return 1;
+                  }
+                  if (t1.XLSheet_SheetCellsDBID_Index.Int64 < t2.XLSheet_SheetCellsDBID_Index.Int64) {
+                    return -1;
+                  }
+                  return 0;
+                })
+
+              }
+            )
+
             // hand over control flow to observer
             observer.next(this.frontRepo)
           }

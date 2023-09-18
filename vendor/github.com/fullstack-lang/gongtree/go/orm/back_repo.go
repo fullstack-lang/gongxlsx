@@ -1,3 +1,4 @@
+// do not modify, generated file
 package orm
 
 import (
@@ -148,6 +149,11 @@ func (backRepo *BackRepoStruct) Commit(stage *models.StageStruct) {
 	backRepo.BackRepoButton.CommitPhaseOne(stage)
 	backRepo.BackRepoNode.CommitPhaseOne(stage)
 	backRepo.BackRepoTree.CommitPhaseOne(stage)
+
+	// insertion point for per struct back repo for reseting the reverse pointers
+	backRepo.BackRepoButton.ResetReversePointers(backRepo)
+	backRepo.BackRepoNode.ResetReversePointers(backRepo)
+	backRepo.BackRepoTree.ResetReversePointers(backRepo)
 
 	// insertion point for per struct back repo phase two commit
 	backRepo.BackRepoButton.CommitPhaseTwo(backRepo)

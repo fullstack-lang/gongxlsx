@@ -223,6 +223,9 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseTwoIn
 				displayselectionDB.XLFileID.Int64 = int64(XLFileId)
 				displayselectionDB.XLFileID.Valid = true
 			}
+		} else {
+			displayselectionDB.XLFileID.Int64 = 0
+			displayselectionDB.XLFileID.Valid = true
 		}
 
 		// commit pointer value displayselection.XLSheet translates to updating the displayselection.XLSheetID
@@ -232,6 +235,9 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseTwoIn
 				displayselectionDB.XLSheetID.Int64 = int64(XLSheetId)
 				displayselectionDB.XLSheetID.Valid = true
 			}
+		} else {
+			displayselectionDB.XLSheetID.Int64 = 0
+			displayselectionDB.XLSheetID.Valid = true
 		}
 
 		query := backRepoDisplaySelection.db.Save(&displayselectionDB)
@@ -342,10 +348,12 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseTwo
 
 	// insertion point for checkout of pointer encoding
 	// XLFile field
+	displayselection.XLFile = nil
 	if displayselectionDB.XLFileID.Int64 != 0 {
 		displayselection.XLFile = backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr[uint(displayselectionDB.XLFileID.Int64)]
 	}
 	// XLSheet field
+	displayselection.XLSheet = nil
 	if displayselectionDB.XLSheetID.Int64 != 0 {
 		displayselection.XLSheet = backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[uint(displayselectionDB.XLSheetID.Int64)]
 	}
@@ -582,6 +590,30 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) RestorePhaseTwo(
 		}
 	}
 
+}
+
+// BackRepoDisplaySelection.ResetReversePointers commits all staged instances of DisplaySelection to the BackRepo
+// Phase Two is the update of instance with the field in the database
+func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) ResetReversePointers(backRepo *BackRepoStruct) (Error error) {
+
+	for idx, displayselection := range backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr {
+		backRepoDisplaySelection.ResetReversePointersInstance(backRepo, idx, displayselection)
+	}
+
+	return
+}
+
+func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) ResetReversePointersInstance(backRepo *BackRepoStruct, idx uint, astruct *models.DisplaySelection) (Error error) {
+
+	// fetch matching displayselectionDB
+	if displayselectionDB, ok := backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[idx]; ok {
+		_ = displayselectionDB // to avoid unused variable error if there are no reverse to reset
+
+		// insertion point for reverse pointers reset
+		// end of insertion point for reverse pointers reset
+	}
+
+	return
 }
 
 // this field is used during the restauration process.

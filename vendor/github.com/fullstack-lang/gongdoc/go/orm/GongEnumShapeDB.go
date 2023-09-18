@@ -243,6 +243,9 @@ func (backRepoGongEnumShape *BackRepoGongEnumShapeStruct) CommitPhaseTwoInstance
 				gongenumshapeDB.PositionID.Int64 = int64(PositionId)
 				gongenumshapeDB.PositionID.Valid = true
 			}
+		} else {
+			gongenumshapeDB.PositionID.Int64 = 0
+			gongenumshapeDB.PositionID.Valid = true
 		}
 
 		// This loop encodes the slice of pointers gongenumshape.GongEnumValueEntrys into the back repo.
@@ -372,6 +375,7 @@ func (backRepoGongEnumShape *BackRepoGongEnumShapeStruct) CheckoutPhaseTwoInstan
 
 	// insertion point for checkout of pointer encoding
 	// Position field
+	gongenumshape.Position = nil
 	if gongenumshapeDB.PositionID.Int64 != 0 {
 		gongenumshape.Position = backRepo.BackRepoPosition.Map_PositionDBID_PositionPtr[uint(gongenumshapeDB.PositionID.Int64)]
 	}

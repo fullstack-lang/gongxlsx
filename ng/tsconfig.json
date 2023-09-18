@@ -35,13 +35,14 @@
         "./node_modules/tslib"
       ],
       "gong": [
-      "../vendor/github.com/fullstack-lang/gong/ng/projects/gong/src/public-api.ts"
+        "../vendor/github.com/fullstack-lang/gong/ng/projects/gong/src/public-api.ts",
+        "../../vendor/github.com/fullstack-lang/gong/ng/projects/gong/src/public-api.ts"
       ],
       "gongdoc": [
-      "../vendor/github.com/fullstack-lang/gongdoc/ng/projects/gongdoc/src/public-api.ts"
+        "../vendor/github.com/fullstack-lang/gongdoc/ng/projects/gongdoc/src/public-api.ts"
       ],
       "gongdocspecific": [
-      "../vendor/github.com/fullstack-lang/gongdoc/ng/projects/gongdocspecific/src/public-api.ts"
+        "../vendor/github.com/fullstack-lang/gongdoc/ng/projects/gongdocspecific/src/public-api.ts"
       ],
       "gongsvg": [
         "../vendor/github.com/fullstack-lang/gongsvg/ng/projects/gongsvg/src/public-api.ts"
@@ -55,25 +56,30 @@
       "gongtree": [
         "../vendor/github.com/fullstack-lang/gongtree/ng/projects/gongtree/src/public-api.ts"
       ],
-      "gongxlsxdatamodel": [
-        "projects/gongxlsxdatamodel/src/public-api.ts",
-        "dist/gongxlsxdatamodel"
-      ],
-      "gongxlsxspecific": [
-        "projects/gongxlsxspecific/src/public-api.ts",
-        "dist/gongxlsxspecific"
-      ],
       "gongtreedatamodel": [
         "../vendor/github.com/fullstack-lang/gongtree/ng/projects/gongtreedatamodel/src/public-api.ts"
       ],
       "gongtreespecific": [
         "../vendor/github.com/fullstack-lang/gongtree/ng/projects/gongtreespecific/src/public-api.ts"
       ],
-
+      "gongtable": [
+        "../vendor/github.com/fullstack-lang/gongtable/ng/projects/gongtable/src/public-api.ts"
+      ],
+      "gongtablespecific": [
+        "../vendor/github.com/fullstack-lang/gongtable/ng/projects/gongtablespecific/src/public-api.ts"
+      ],
+      "gongtabledatamodel": [
+        "../vendor/github.com/fullstack-lang/gongtable/ng/projects/gongtabledatamodel/src/public-api.ts"
+      ],
       "gongxlsx": [
         "projects/gongxlsx/src/public-api.ts",
-        "dist/gongxlsx"
-      ]
+      ],
+      "gongxlsxdatamodel": [
+        "projects/gongxlsxdatamodel/src/public-api.ts",
+      ],
+      "gongxlsxspecific": [
+        "projects/gongxlsxspecific/src/public-api.ts",
+      ],
     },
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
