@@ -3,17 +3,16 @@ module github.com/fullstack-lang/gongxlsx
 go 1.21.0
 
 require (
-	github.com/fullstack-lang/gong v0.0.0-20230918063249-f07562180522
-	github.com/fullstack-lang/gongdoc v0.0.0-20230910200256-43715514dfd6
-	github.com/fullstack-lang/gongtable v0.0.0-20230918091327-5a14be010404
-	github.com/fullstack-lang/gongtree v0.0.0-20230918093831-a60479924a5d
+	github.com/fullstack-lang/gong v0.0.0-20230919080240-e0c55f62c48e
+	github.com/fullstack-lang/gongdoc v0.0.0-20230919080302-245bed2ab4c1
+	github.com/fullstack-lang/gongtable v0.0.0-20230919080442-e2c110ca22f7
+	github.com/fullstack-lang/gongtree v0.0.0-20230919080455-0a08756a0ead
 	github.com/fullstack-lang/maticons v0.0.0-20230823061653-70c364fbdd00
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/glebarez/sqlite v1.9.0
 	github.com/tealeg/xlsx/v3 v3.3.1
-	github.com/xuri/excelize/v2 v2.8.0
 	gorm.io/gorm v1.25.4
 )
 
@@ -56,6 +55,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/xuri/efp v0.0.0-20230802181842-ad255f2331ca // indirect
+	github.com/xuri/excelize/v2 v2.8.0 // indirect
 	github.com/xuri/nfp v0.0.0-20230819163627-dc951e3ffe1a // indirect
 	golang.org/x/arch v0.5.0 // indirect
 	golang.org/x/crypto v0.13.0 // indirect
