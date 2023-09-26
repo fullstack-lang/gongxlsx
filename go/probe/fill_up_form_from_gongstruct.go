@@ -18,7 +18,7 @@ func FillUpFormFromGongstruct[T models.Gongstruct](instance *T, playground *Play
 		formGroup := (&gongtable.FormGroup{
 			Name:  gongtable.FormGroupDefaultName.ToString(),
 			Label: "Update DisplaySelection Form",
-			OnSave: NewDisplaySelectionFormCallback(
+			OnSave: __gong__New__DisplaySelectionFormCallback(
 				instancesTyped,
 				playground,
 			),
@@ -28,7 +28,7 @@ func FillUpFormFromGongstruct[T models.Gongstruct](instance *T, playground *Play
 		formGroup := (&gongtable.FormGroup{
 			Name:  gongtable.FormGroupDefaultName.ToString(),
 			Label: "Update XLCell Form",
-			OnSave: NewXLCellFormCallback(
+			OnSave: __gong__New__XLCellFormCallback(
 				instancesTyped,
 				playground,
 			),
@@ -38,7 +38,7 @@ func FillUpFormFromGongstruct[T models.Gongstruct](instance *T, playground *Play
 		formGroup := (&gongtable.FormGroup{
 			Name:  gongtable.FormGroupDefaultName.ToString(),
 			Label: "Update XLFile Form",
-			OnSave: NewXLFileFormCallback(
+			OnSave: __gong__New__XLFileFormCallback(
 				instancesTyped,
 				playground,
 			),
@@ -48,7 +48,7 @@ func FillUpFormFromGongstruct[T models.Gongstruct](instance *T, playground *Play
 		formGroup := (&gongtable.FormGroup{
 			Name:  gongtable.FormGroupDefaultName.ToString(),
 			Label: "Update XLRow Form",
-			OnSave: NewXLRowFormCallback(
+			OnSave: __gong__New__XLRowFormCallback(
 				instancesTyped,
 				playground,
 			),
@@ -58,7 +58,7 @@ func FillUpFormFromGongstruct[T models.Gongstruct](instance *T, playground *Play
 		formGroup := (&gongtable.FormGroup{
 			Name:  gongtable.FormGroupDefaultName.ToString(),
 			Label: "Update XLSheet Form",
-			OnSave: NewXLSheetFormCallback(
+			OnSave: __gong__New__XLSheetFormCallback(
 				instancesTyped,
 				playground,
 			),

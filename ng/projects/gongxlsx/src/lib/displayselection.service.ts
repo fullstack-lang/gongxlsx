@@ -44,6 +44,10 @@ export class DisplaySelectionService {
   }
 
   /** GET displayselections from the server */
+  // gets is more robust to refactoring
+  gets(GONG__StackPath: string): Observable<DisplaySelectionDB[]> {
+    return this.getDisplaySelections(GONG__StackPath)
+  }
   getDisplaySelections(GONG__StackPath: string): Observable<DisplaySelectionDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -57,6 +61,10 @@ export class DisplaySelectionService {
   }
 
   /** GET displayselection by id. Will 404 if id not found */
+  // more robust API to refactoring
+  get(id: number, GONG__StackPath: string): Observable<DisplaySelectionDB> {
+	return this.getDisplaySelection(id, GONG__StackPath)
+  }
   getDisplaySelection(id: number, GONG__StackPath: string): Observable<DisplaySelectionDB> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -69,6 +77,9 @@ export class DisplaySelectionService {
   }
 
   /** POST: add a new displayselection to the server */
+  post(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string): Observable<DisplaySelectionDB> {
+    return this.postDisplaySelection(displayselectiondb, GONG__StackPath)	
+  }
   postDisplaySelection(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string): Observable<DisplaySelectionDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
@@ -93,6 +104,9 @@ export class DisplaySelectionService {
   }
 
   /** DELETE: delete the displayselectiondb from the server */
+  delete(displayselectiondb: DisplaySelectionDB | number, GONG__StackPath: string): Observable<DisplaySelectionDB> {
+    return this.deleteDisplaySelection(displayselectiondb, GONG__StackPath)
+  }
   deleteDisplaySelection(displayselectiondb: DisplaySelectionDB | number, GONG__StackPath: string): Observable<DisplaySelectionDB> {
     const id = typeof displayselectiondb === 'number' ? displayselectiondb : displayselectiondb.ID;
     const url = `${this.displayselectionsUrl}/${id}`;
@@ -110,6 +124,9 @@ export class DisplaySelectionService {
   }
 
   /** PUT: update the displayselectiondb on the server */
+  update(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string): Observable<DisplaySelectionDB> {
+    return this.updateDisplaySelection(displayselectiondb, GONG__StackPath)
+  }
   updateDisplaySelection(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string): Observable<DisplaySelectionDB> {
     const id = typeof displayselectiondb === 'number' ? displayselectiondb : displayselectiondb.ID;
     const url = `${this.displayselectionsUrl}/${id}`;

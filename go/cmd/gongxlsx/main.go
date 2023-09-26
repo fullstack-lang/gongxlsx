@@ -3,24 +3,24 @@ package main
 import (
 	"flag"
 	"log"
+	"strconv"
 
 	gongxlsx_go "github.com/fullstack-lang/gongxlsx/go"
 	gongxlsx_fullstack "github.com/fullstack-lang/gongxlsx/go/fullstack"
 	gongxlsx_models "github.com/fullstack-lang/gongxlsx/go/models"
 	gongxlsx_probe "github.com/fullstack-lang/gongxlsx/go/probe"
 	gongxlsx_static "github.com/fullstack-lang/gongxlsx/go/static"
-
-	gongdoc_load "github.com/fullstack-lang/gongdoc/go/load"
 )
 
 var (
-	logDBFlag  = flag.Bool("logDB", false, "log mode for db")
 	logGINFlag = flag.Bool("logGIN", false, "log mode for gin")
 
 	compareFlag = flag.String("compare", "sampleFile", "compare to the other file")
 
 	diagrams         = flag.Bool("diagrams", true, "parse/analysis go/models and go/diagrams")
 	embeddedDiagrams = flag.Bool("embeddedDiagrams", false, "parse/analysis go/models and go/embeddedDiagrams")
+
+	port = flag.Int("port", 8080, "port server")
 )
 
 func main() {
@@ -60,17 +60,12 @@ func main() {
 
 	stage.Commit()
 
-	gongxlsx_probe.NewProbe(r, gongxlsx_go.GoModelsDir, "gongxlsx", stage, backRepo)
+	gongxlsx_probe.NewProbe(r, gongxlsx_go.GoModelsDir, gongxlsx_go.GoDiagramsDir,
+		*embeddedDiagrams, "gongxlsx", stage, backRepo)
 
-	gongdoc_load.Load(
-		"gongxlsx",
-		"github.com/fullstack-lang/gongxlsx/go/models",
-		gongxlsx_go.GoModelsDir,
-		gongxlsx_go.GoDiagramsDir,
-		r,
-		*embeddedDiagrams,
-		&stage.Map_GongStructName_InstancesNb)
-
-	log.Printf("Server ready serve on localhost:8080")
-	r.Run()
+	log.Printf("Server ready serve on localhost:" + strconv.Itoa(*port))
+	err := r.Run(":" + strconv.Itoa(*port))
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 }

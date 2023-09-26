@@ -65,6 +65,9 @@ func (controller *Controller) GetDisplaySelections(c *gin.Context) {
 		}
 	}
 	backRepo := controller.Map_BackRepos[stackPath]
+	if backRepo == nil {
+		log.Panic("Stack github.com/fullstack-lang/gongxlsx/go/models, Unkown stack", stackPath)
+	}
 	db := backRepo.BackRepoDisplaySelection.GetDB()
 
 	query := db.Find(&displayselectionDBs)
@@ -124,6 +127,9 @@ func (controller *Controller) PostDisplaySelection(c *gin.Context) {
 		}
 	}
 	backRepo := controller.Map_BackRepos[stackPath]
+	if backRepo == nil {
+		log.Panic("Stack github.com/fullstack-lang/gongxlsx/go/models, Unkown stack", stackPath)
+	}
 	db := backRepo.BackRepoDisplaySelection.GetDB()
 
 	// Validate input
@@ -193,6 +199,9 @@ func (controller *Controller) GetDisplaySelection(c *gin.Context) {
 		}
 	}
 	backRepo := controller.Map_BackRepos[stackPath]
+	if backRepo == nil {
+		log.Panic("Stack github.com/fullstack-lang/gongxlsx/go/models, Unkown stack", stackPath)
+	}
 	db := backRepo.BackRepoDisplaySelection.GetDB()
 
 	// Get displayselectionDB in DB
@@ -238,6 +247,9 @@ func (controller *Controller) UpdateDisplaySelection(c *gin.Context) {
 		}
 	}
 	backRepo := controller.Map_BackRepos[stackPath]
+	if backRepo == nil {
+		log.Panic("Stack github.com/fullstack-lang/gongxlsx/go/models, Unkown stack", stackPath)
+	}
 	db := backRepo.BackRepoDisplaySelection.GetDB()
 
 	// Validate input
@@ -322,6 +334,9 @@ func (controller *Controller) DeleteDisplaySelection(c *gin.Context) {
 		}
 	}
 	backRepo := controller.Map_BackRepos[stackPath]
+	if backRepo == nil {
+		log.Panic("Stack github.com/fullstack-lang/gongxlsx/go/models, Unkown stack", stackPath)
+	}
 	db := backRepo.BackRepoDisplaySelection.GetDB()
 
 	// Get model if exist

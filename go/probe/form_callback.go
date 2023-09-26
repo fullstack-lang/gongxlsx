@@ -3,17 +3,22 @@ package probe
 
 import (
 	"log"
+	"slices"
 	"time"
 
 	table "github.com/fullstack-lang/gongtable/go/models"
 
 	"github.com/fullstack-lang/gongxlsx/go/models"
+	"github.com/fullstack-lang/gongxlsx/go/orm"
 )
 
 const __dummmy__time = time.Nanosecond
 
+var __dummmy__letters = slices.Delete([]string{"a"}, 0, 1)
+var __dummy_orm = orm.BackRepoStruct{}
+
 // insertion point
-func NewDisplaySelectionFormCallback(
+func __gong__New__DisplaySelectionFormCallback(
 	displayselection *models.DisplaySelection,
 	playground *Playground,
 ) (displayselectionFormCallback *DisplaySelectionFormCallback) {
@@ -75,7 +80,7 @@ func (displayselectionFormCallback *DisplaySelectionFormCallback) OnSave() {
 		displayselectionFormCallback.playground.formStage.Reset()
 		newFormGroup := (&table.FormGroup{
 			Name: table.FormGroupDefaultName.ToString(),
-			OnSave: NewDisplaySelectionFormCallback(
+			OnSave: __gong__New__DisplaySelectionFormCallback(
 				nil,
 				displayselectionFormCallback.playground,
 			),
@@ -85,8 +90,9 @@ func (displayselectionFormCallback *DisplaySelectionFormCallback) OnSave() {
 		displayselectionFormCallback.playground.formStage.Commit()
 	}
 
+	fillUpTree(displayselectionFormCallback.playground)
 }
-func NewXLCellFormCallback(
+func __gong__New__XLCellFormCallback(
 	xlcell *models.XLCell,
 	playground *Playground,
 ) (xlcellFormCallback *XLCellFormCallback) {
@@ -134,6 +140,90 @@ func (xlcellFormCallback *XLCellFormCallback) OnSave() {
 			FormDivBasicFieldToField(&(xlcell_.X), formDiv)
 		case "Y":
 			FormDivBasicFieldToField(&(xlcell_.Y), formDiv)
+		case "XLRow:Cells":
+			// we need to retrieve the field owner before the change
+			var pastXLRowOwner *models.XLRow
+			var rf models.ReverseField
+			_ = rf
+			rf.GongstructName = "XLRow"
+			rf.Fieldname = "Cells"
+			reverseFieldOwner := orm.GetReverseFieldOwner(
+				xlcellFormCallback.playground.stageOfInterest,
+				xlcellFormCallback.playground.backRepoOfInterest,
+				xlcell_,
+				&rf)
+
+			if reverseFieldOwner != nil {
+				pastXLRowOwner = reverseFieldOwner.(*models.XLRow)
+			}
+			if formDiv.FormFields[0].FormFieldSelect.Value == nil {
+				if pastXLRowOwner != nil {
+					idx := slices.Index(pastXLRowOwner.Cells, xlcell_)
+					pastXLRowOwner.Cells = slices.Delete(pastXLRowOwner.Cells, idx, idx+1)
+				}
+			} else {
+				// we need to retrieve the field owner after the change
+				// parse all astrcut and get the one with the name in the
+				// div
+				for _xlrow := range *models.GetGongstructInstancesSet[models.XLRow](xlcellFormCallback.playground.stageOfInterest) {
+
+					// the match is base on the name
+					if _xlrow.GetName() == formDiv.FormFields[0].FormFieldSelect.Value.GetName() {
+						newXLRowOwner := _xlrow // we have a match
+						if pastXLRowOwner != nil {
+							if newXLRowOwner != pastXLRowOwner {
+								idx := slices.Index(pastXLRowOwner.Cells, xlcell_)
+								pastXLRowOwner.Cells = slices.Delete(pastXLRowOwner.Cells, idx, idx+1)
+								newXLRowOwner.Cells = append(newXLRowOwner.Cells, xlcell_)
+							}
+						} else {
+							newXLRowOwner.Cells = append(newXLRowOwner.Cells, xlcell_)
+						}
+					}
+				}
+			}
+		case "XLSheet:SheetCells":
+			// we need to retrieve the field owner before the change
+			var pastXLSheetOwner *models.XLSheet
+			var rf models.ReverseField
+			_ = rf
+			rf.GongstructName = "XLSheet"
+			rf.Fieldname = "SheetCells"
+			reverseFieldOwner := orm.GetReverseFieldOwner(
+				xlcellFormCallback.playground.stageOfInterest,
+				xlcellFormCallback.playground.backRepoOfInterest,
+				xlcell_,
+				&rf)
+
+			if reverseFieldOwner != nil {
+				pastXLSheetOwner = reverseFieldOwner.(*models.XLSheet)
+			}
+			if formDiv.FormFields[0].FormFieldSelect.Value == nil {
+				if pastXLSheetOwner != nil {
+					idx := slices.Index(pastXLSheetOwner.SheetCells, xlcell_)
+					pastXLSheetOwner.SheetCells = slices.Delete(pastXLSheetOwner.SheetCells, idx, idx+1)
+				}
+			} else {
+				// we need to retrieve the field owner after the change
+				// parse all astrcut and get the one with the name in the
+				// div
+				for _xlsheet := range *models.GetGongstructInstancesSet[models.XLSheet](xlcellFormCallback.playground.stageOfInterest) {
+
+					// the match is base on the name
+					if _xlsheet.GetName() == formDiv.FormFields[0].FormFieldSelect.Value.GetName() {
+						newXLSheetOwner := _xlsheet // we have a match
+						if pastXLSheetOwner != nil {
+							if newXLSheetOwner != pastXLSheetOwner {
+								idx := slices.Index(pastXLSheetOwner.SheetCells, xlcell_)
+								pastXLSheetOwner.SheetCells = slices.Delete(pastXLSheetOwner.SheetCells, idx, idx+1)
+								newXLSheetOwner.SheetCells = append(newXLSheetOwner.SheetCells, xlcell_)
+							}
+						} else {
+							newXLSheetOwner.SheetCells = append(newXLSheetOwner.SheetCells, xlcell_)
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -148,7 +238,7 @@ func (xlcellFormCallback *XLCellFormCallback) OnSave() {
 		xlcellFormCallback.playground.formStage.Reset()
 		newFormGroup := (&table.FormGroup{
 			Name: table.FormGroupDefaultName.ToString(),
-			OnSave: NewXLCellFormCallback(
+			OnSave: __gong__New__XLCellFormCallback(
 				nil,
 				xlcellFormCallback.playground,
 			),
@@ -158,8 +248,9 @@ func (xlcellFormCallback *XLCellFormCallback) OnSave() {
 		xlcellFormCallback.playground.formStage.Commit()
 	}
 
+	fillUpTree(xlcellFormCallback.playground)
 }
-func NewXLFileFormCallback(
+func __gong__New__XLFileFormCallback(
 	xlfile *models.XLFile,
 	playground *Playground,
 ) (xlfileFormCallback *XLFileFormCallback) {
@@ -219,7 +310,7 @@ func (xlfileFormCallback *XLFileFormCallback) OnSave() {
 		xlfileFormCallback.playground.formStage.Reset()
 		newFormGroup := (&table.FormGroup{
 			Name: table.FormGroupDefaultName.ToString(),
-			OnSave: NewXLFileFormCallback(
+			OnSave: __gong__New__XLFileFormCallback(
 				nil,
 				xlfileFormCallback.playground,
 			),
@@ -229,8 +320,9 @@ func (xlfileFormCallback *XLFileFormCallback) OnSave() {
 		xlfileFormCallback.playground.formStage.Commit()
 	}
 
+	fillUpTree(xlfileFormCallback.playground)
 }
-func NewXLRowFormCallback(
+func __gong__New__XLRowFormCallback(
 	xlrow *models.XLRow,
 	playground *Playground,
 ) (xlrowFormCallback *XLRowFormCallback) {
@@ -276,6 +368,48 @@ func (xlrowFormCallback *XLRowFormCallback) OnSave() {
 			FormDivBasicFieldToField(&(xlrow_.Name), formDiv)
 		case "RowIndex":
 			FormDivBasicFieldToField(&(xlrow_.RowIndex), formDiv)
+		case "XLSheet:Rows":
+			// we need to retrieve the field owner before the change
+			var pastXLSheetOwner *models.XLSheet
+			var rf models.ReverseField
+			_ = rf
+			rf.GongstructName = "XLSheet"
+			rf.Fieldname = "Rows"
+			reverseFieldOwner := orm.GetReverseFieldOwner(
+				xlrowFormCallback.playground.stageOfInterest,
+				xlrowFormCallback.playground.backRepoOfInterest,
+				xlrow_,
+				&rf)
+
+			if reverseFieldOwner != nil {
+				pastXLSheetOwner = reverseFieldOwner.(*models.XLSheet)
+			}
+			if formDiv.FormFields[0].FormFieldSelect.Value == nil {
+				if pastXLSheetOwner != nil {
+					idx := slices.Index(pastXLSheetOwner.Rows, xlrow_)
+					pastXLSheetOwner.Rows = slices.Delete(pastXLSheetOwner.Rows, idx, idx+1)
+				}
+			} else {
+				// we need to retrieve the field owner after the change
+				// parse all astrcut and get the one with the name in the
+				// div
+				for _xlsheet := range *models.GetGongstructInstancesSet[models.XLSheet](xlrowFormCallback.playground.stageOfInterest) {
+
+					// the match is base on the name
+					if _xlsheet.GetName() == formDiv.FormFields[0].FormFieldSelect.Value.GetName() {
+						newXLSheetOwner := _xlsheet // we have a match
+						if pastXLSheetOwner != nil {
+							if newXLSheetOwner != pastXLSheetOwner {
+								idx := slices.Index(pastXLSheetOwner.Rows, xlrow_)
+								pastXLSheetOwner.Rows = slices.Delete(pastXLSheetOwner.Rows, idx, idx+1)
+								newXLSheetOwner.Rows = append(newXLSheetOwner.Rows, xlrow_)
+							}
+						} else {
+							newXLSheetOwner.Rows = append(newXLSheetOwner.Rows, xlrow_)
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -290,7 +424,7 @@ func (xlrowFormCallback *XLRowFormCallback) OnSave() {
 		xlrowFormCallback.playground.formStage.Reset()
 		newFormGroup := (&table.FormGroup{
 			Name: table.FormGroupDefaultName.ToString(),
-			OnSave: NewXLRowFormCallback(
+			OnSave: __gong__New__XLRowFormCallback(
 				nil,
 				xlrowFormCallback.playground,
 			),
@@ -300,8 +434,9 @@ func (xlrowFormCallback *XLRowFormCallback) OnSave() {
 		xlrowFormCallback.playground.formStage.Commit()
 	}
 
+	fillUpTree(xlrowFormCallback.playground)
 }
-func NewXLSheetFormCallback(
+func __gong__New__XLSheetFormCallback(
 	xlsheet *models.XLSheet,
 	playground *Playground,
 ) (xlsheetFormCallback *XLSheetFormCallback) {
@@ -351,6 +486,48 @@ func (xlsheetFormCallback *XLSheetFormCallback) OnSave() {
 			FormDivBasicFieldToField(&(xlsheet_.MaxCol), formDiv)
 		case "NbRows":
 			FormDivBasicFieldToField(&(xlsheet_.NbRows), formDiv)
+		case "XLFile:Sheets":
+			// we need to retrieve the field owner before the change
+			var pastXLFileOwner *models.XLFile
+			var rf models.ReverseField
+			_ = rf
+			rf.GongstructName = "XLFile"
+			rf.Fieldname = "Sheets"
+			reverseFieldOwner := orm.GetReverseFieldOwner(
+				xlsheetFormCallback.playground.stageOfInterest,
+				xlsheetFormCallback.playground.backRepoOfInterest,
+				xlsheet_,
+				&rf)
+
+			if reverseFieldOwner != nil {
+				pastXLFileOwner = reverseFieldOwner.(*models.XLFile)
+			}
+			if formDiv.FormFields[0].FormFieldSelect.Value == nil {
+				if pastXLFileOwner != nil {
+					idx := slices.Index(pastXLFileOwner.Sheets, xlsheet_)
+					pastXLFileOwner.Sheets = slices.Delete(pastXLFileOwner.Sheets, idx, idx+1)
+				}
+			} else {
+				// we need to retrieve the field owner after the change
+				// parse all astrcut and get the one with the name in the
+				// div
+				for _xlfile := range *models.GetGongstructInstancesSet[models.XLFile](xlsheetFormCallback.playground.stageOfInterest) {
+
+					// the match is base on the name
+					if _xlfile.GetName() == formDiv.FormFields[0].FormFieldSelect.Value.GetName() {
+						newXLFileOwner := _xlfile // we have a match
+						if pastXLFileOwner != nil {
+							if newXLFileOwner != pastXLFileOwner {
+								idx := slices.Index(pastXLFileOwner.Sheets, xlsheet_)
+								pastXLFileOwner.Sheets = slices.Delete(pastXLFileOwner.Sheets, idx, idx+1)
+								newXLFileOwner.Sheets = append(newXLFileOwner.Sheets, xlsheet_)
+							}
+						} else {
+							newXLFileOwner.Sheets = append(newXLFileOwner.Sheets, xlsheet_)
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -365,7 +542,7 @@ func (xlsheetFormCallback *XLSheetFormCallback) OnSave() {
 		xlsheetFormCallback.playground.formStage.Reset()
 		newFormGroup := (&table.FormGroup{
 			Name: table.FormGroupDefaultName.ToString(),
-			OnSave: NewXLSheetFormCallback(
+			OnSave: __gong__New__XLSheetFormCallback(
 				nil,
 				xlsheetFormCallback.playground,
 			),
@@ -375,4 +552,5 @@ func (xlsheetFormCallback *XLSheetFormCallback) OnSave() {
 		xlsheetFormCallback.playground.formStage.Commit()
 	}
 
+	fillUpTree(xlsheetFormCallback.playground)
 }

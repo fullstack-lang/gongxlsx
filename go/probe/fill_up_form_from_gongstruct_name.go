@@ -30,7 +30,7 @@ func FillUpFormFromGongstructName(
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
 			Label: prefix + " DisplaySelection Form",
-			OnSave: NewDisplaySelectionFormCallback(
+			OnSave: __gong__New__DisplaySelectionFormCallback(
 				nil,
 				playground,
 			),
@@ -41,7 +41,7 @@ func FillUpFormFromGongstructName(
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
 			Label: prefix + " XLCell Form",
-			OnSave: NewXLCellFormCallback(
+			OnSave: __gong__New__XLCellFormCallback(
 				nil,
 				playground,
 			),
@@ -52,7 +52,7 @@ func FillUpFormFromGongstructName(
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
 			Label: prefix + " XLFile Form",
-			OnSave: NewXLFileFormCallback(
+			OnSave: __gong__New__XLFileFormCallback(
 				nil,
 				playground,
 			),
@@ -63,7 +63,7 @@ func FillUpFormFromGongstructName(
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
 			Label: prefix + " XLRow Form",
-			OnSave: NewXLRowFormCallback(
+			OnSave: __gong__New__XLRowFormCallback(
 				nil,
 				playground,
 			),
@@ -74,7 +74,7 @@ func FillUpFormFromGongstructName(
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
 			Label: prefix + " XLSheet Form",
-			OnSave: NewXLSheetFormCallback(
+			OnSave: __gong__New__XLSheetFormCallback(
 				nil,
 				playground,
 			),

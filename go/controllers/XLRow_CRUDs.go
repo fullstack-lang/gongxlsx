@@ -65,6 +65,9 @@ func (controller *Controller) GetXLRows(c *gin.Context) {
 		}
 	}
 	backRepo := controller.Map_BackRepos[stackPath]
+	if backRepo == nil {
+		log.Panic("Stack github.com/fullstack-lang/gongxlsx/go/models, Unkown stack", stackPath)
+	}
 	db := backRepo.BackRepoXLRow.GetDB()
 
 	query := db.Find(&xlrowDBs)
@@ -124,6 +127,9 @@ func (controller *Controller) PostXLRow(c *gin.Context) {
 		}
 	}
 	backRepo := controller.Map_BackRepos[stackPath]
+	if backRepo == nil {
+		log.Panic("Stack github.com/fullstack-lang/gongxlsx/go/models, Unkown stack", stackPath)
+	}
 	db := backRepo.BackRepoXLRow.GetDB()
 
 	// Validate input
@@ -193,6 +199,9 @@ func (controller *Controller) GetXLRow(c *gin.Context) {
 		}
 	}
 	backRepo := controller.Map_BackRepos[stackPath]
+	if backRepo == nil {
+		log.Panic("Stack github.com/fullstack-lang/gongxlsx/go/models, Unkown stack", stackPath)
+	}
 	db := backRepo.BackRepoXLRow.GetDB()
 
 	// Get xlrowDB in DB
@@ -238,6 +247,9 @@ func (controller *Controller) UpdateXLRow(c *gin.Context) {
 		}
 	}
 	backRepo := controller.Map_BackRepos[stackPath]
+	if backRepo == nil {
+		log.Panic("Stack github.com/fullstack-lang/gongxlsx/go/models, Unkown stack", stackPath)
+	}
 	db := backRepo.BackRepoXLRow.GetDB()
 
 	// Validate input
@@ -322,6 +334,9 @@ func (controller *Controller) DeleteXLRow(c *gin.Context) {
 		}
 	}
 	backRepo := controller.Map_BackRepos[stackPath]
+	if backRepo == nil {
+		log.Panic("Stack github.com/fullstack-lang/gongxlsx/go/models, Unkown stack", stackPath)
+	}
 	db := backRepo.BackRepoXLRow.GetDB()
 
 	// Get model if exist

@@ -26,66 +26,10 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { AngularSplitModule, SplitComponent } from 'angular-split';
 
-import {
-	NgxMatDatetimePickerModule,
-	NgxMatNativeDateModule,
-	NgxMatTimepickerModule
-} from '@angular-material-components/datetime-picker';
-
 import { AppRoutingModule } from './app-routing.module';
-
-import { SplitterComponent } from './splitter/splitter.component'
-import { SidebarComponent } from './sidebar/sidebar.component';
-import { GongstructSelectionService } from './gongstruct-selection.service'
-
-// insertion point for imports 
-import { DisplaySelectionsTableComponent } from './displayselections-table/displayselections-table.component'
-import { DisplaySelectionSortingComponent } from './displayselection-sorting/displayselection-sorting.component'
-import { DisplaySelectionDetailComponent } from './displayselection-detail/displayselection-detail.component'
-
-import { XLCellsTableComponent } from './xlcells-table/xlcells-table.component'
-import { XLCellSortingComponent } from './xlcell-sorting/xlcell-sorting.component'
-import { XLCellDetailComponent } from './xlcell-detail/xlcell-detail.component'
-
-import { XLFilesTableComponent } from './xlfiles-table/xlfiles-table.component'
-import { XLFileSortingComponent } from './xlfile-sorting/xlfile-sorting.component'
-import { XLFileDetailComponent } from './xlfile-detail/xlfile-detail.component'
-
-import { XLRowsTableComponent } from './xlrows-table/xlrows-table.component'
-import { XLRowSortingComponent } from './xlrow-sorting/xlrow-sorting.component'
-import { XLRowDetailComponent } from './xlrow-detail/xlrow-detail.component'
-
-import { XLSheetsTableComponent } from './xlsheets-table/xlsheets-table.component'
-import { XLSheetSortingComponent } from './xlsheet-sorting/xlsheet-sorting.component'
-import { XLSheetDetailComponent } from './xlsheet-detail/xlsheet-detail.component'
-
 
 @NgModule({
 	declarations: [
-		// insertion point for declarations 
-		DisplaySelectionsTableComponent,
-		DisplaySelectionSortingComponent,
-		DisplaySelectionDetailComponent,
-
-		XLCellsTableComponent,
-		XLCellSortingComponent,
-		XLCellDetailComponent,
-
-		XLFilesTableComponent,
-		XLFileSortingComponent,
-		XLFileDetailComponent,
-
-		XLRowsTableComponent,
-		XLRowSortingComponent,
-		XLRowDetailComponent,
-
-		XLSheetsTableComponent,
-		XLSheetSortingComponent,
-		XLSheetDetailComponent,
-
-
-		SplitterComponent,
-		SidebarComponent
 	],
 	imports: [
 		FormsModule,
@@ -114,45 +58,12 @@ import { XLSheetDetailComponent } from './xlsheet-detail/xlsheet-detail.componen
 		MatTreeModule,
 		DragDropModule,
 
-		NgxMatDatetimePickerModule,
-		NgxMatNativeDateModule,
-		NgxMatTimepickerModule,
-
 		AngularSplitModule,
 	],
 	exports: [
-		// insertion point for declarations 
-		DisplaySelectionsTableComponent,
-		DisplaySelectionSortingComponent,
-		DisplaySelectionDetailComponent,
-
-		XLCellsTableComponent,
-		XLCellSortingComponent,
-		XLCellDetailComponent,
-
-		XLFilesTableComponent,
-		XLFileSortingComponent,
-		XLFileDetailComponent,
-
-		XLRowsTableComponent,
-		XLRowSortingComponent,
-		XLRowDetailComponent,
-
-		XLSheetsTableComponent,
-		XLSheetSortingComponent,
-		XLSheetDetailComponent,
-
-
-		SplitterComponent,
-		SidebarComponent,
-
 	],
 	providers: [
-		GongstructSelectionService,
-		{
-			provide: MatDialogRef,
-			useValue: {}
-		},
+		{ provide: MatDialogRef, useValue: { close: () => { } } }
 	],
 })
 export class GongxlsxModule { }

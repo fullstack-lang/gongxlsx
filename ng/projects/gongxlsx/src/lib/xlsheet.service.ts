@@ -43,6 +43,10 @@ export class XLSheetService {
   }
 
   /** GET xlsheets from the server */
+  // gets is more robust to refactoring
+  gets(GONG__StackPath: string): Observable<XLSheetDB[]> {
+    return this.getXLSheets(GONG__StackPath)
+  }
   getXLSheets(GONG__StackPath: string): Observable<XLSheetDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -56,6 +60,10 @@ export class XLSheetService {
   }
 
   /** GET xlsheet by id. Will 404 if id not found */
+  // more robust API to refactoring
+  get(id: number, GONG__StackPath: string): Observable<XLSheetDB> {
+	return this.getXLSheet(id, GONG__StackPath)
+  }
   getXLSheet(id: number, GONG__StackPath: string): Observable<XLSheetDB> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -68,6 +76,9 @@ export class XLSheetService {
   }
 
   /** POST: add a new xlsheet to the server */
+  post(xlsheetdb: XLSheetDB, GONG__StackPath: string): Observable<XLSheetDB> {
+    return this.postXLSheet(xlsheetdb, GONG__StackPath)	
+  }
   postXLSheet(xlsheetdb: XLSheetDB, GONG__StackPath: string): Observable<XLSheetDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
@@ -97,6 +108,9 @@ export class XLSheetService {
   }
 
   /** DELETE: delete the xlsheetdb from the server */
+  delete(xlsheetdb: XLSheetDB | number, GONG__StackPath: string): Observable<XLSheetDB> {
+    return this.deleteXLSheet(xlsheetdb, GONG__StackPath)
+  }
   deleteXLSheet(xlsheetdb: XLSheetDB | number, GONG__StackPath: string): Observable<XLSheetDB> {
     const id = typeof xlsheetdb === 'number' ? xlsheetdb : xlsheetdb.ID;
     const url = `${this.xlsheetsUrl}/${id}`;
@@ -114,6 +128,9 @@ export class XLSheetService {
   }
 
   /** PUT: update the xlsheetdb on the server */
+  update(xlsheetdb: XLSheetDB, GONG__StackPath: string): Observable<XLSheetDB> {
+    return this.updateXLSheet(xlsheetdb, GONG__StackPath)
+  }
   updateXLSheet(xlsheetdb: XLSheetDB, GONG__StackPath: string): Observable<XLSheetDB> {
     const id = typeof xlsheetdb === 'number' ? xlsheetdb : xlsheetdb.ID;
     const url = `${this.xlsheetsUrl}/${id}`;

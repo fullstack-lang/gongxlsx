@@ -43,6 +43,10 @@ export class XLRowService {
   }
 
   /** GET xlrows from the server */
+  // gets is more robust to refactoring
+  gets(GONG__StackPath: string): Observable<XLRowDB[]> {
+    return this.getXLRows(GONG__StackPath)
+  }
   getXLRows(GONG__StackPath: string): Observable<XLRowDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -56,6 +60,10 @@ export class XLRowService {
   }
 
   /** GET xlrow by id. Will 404 if id not found */
+  // more robust API to refactoring
+  get(id: number, GONG__StackPath: string): Observable<XLRowDB> {
+	return this.getXLRow(id, GONG__StackPath)
+  }
   getXLRow(id: number, GONG__StackPath: string): Observable<XLRowDB> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -68,6 +76,9 @@ export class XLRowService {
   }
 
   /** POST: add a new xlrow to the server */
+  post(xlrowdb: XLRowDB, GONG__StackPath: string): Observable<XLRowDB> {
+    return this.postXLRow(xlrowdb, GONG__StackPath)	
+  }
   postXLRow(xlrowdb: XLRowDB, GONG__StackPath: string): Observable<XLRowDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
@@ -94,6 +105,9 @@ export class XLRowService {
   }
 
   /** DELETE: delete the xlrowdb from the server */
+  delete(xlrowdb: XLRowDB | number, GONG__StackPath: string): Observable<XLRowDB> {
+    return this.deleteXLRow(xlrowdb, GONG__StackPath)
+  }
   deleteXLRow(xlrowdb: XLRowDB | number, GONG__StackPath: string): Observable<XLRowDB> {
     const id = typeof xlrowdb === 'number' ? xlrowdb : xlrowdb.ID;
     const url = `${this.xlrowsUrl}/${id}`;
@@ -111,6 +125,9 @@ export class XLRowService {
   }
 
   /** PUT: update the xlrowdb on the server */
+  update(xlrowdb: XLRowDB, GONG__StackPath: string): Observable<XLRowDB> {
+    return this.updateXLRow(xlrowdb, GONG__StackPath)
+  }
   updateXLRow(xlrowdb: XLRowDB, GONG__StackPath: string): Observable<XLRowDB> {
     const id = typeof xlrowdb === 'number' ? xlrowdb : xlrowdb.ID;
     const url = `${this.xlrowsUrl}/${id}`;

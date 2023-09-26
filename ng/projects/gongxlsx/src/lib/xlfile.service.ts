@@ -42,6 +42,10 @@ export class XLFileService {
   }
 
   /** GET xlfiles from the server */
+  // gets is more robust to refactoring
+  gets(GONG__StackPath: string): Observable<XLFileDB[]> {
+    return this.getXLFiles(GONG__StackPath)
+  }
   getXLFiles(GONG__StackPath: string): Observable<XLFileDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -55,6 +59,10 @@ export class XLFileService {
   }
 
   /** GET xlfile by id. Will 404 if id not found */
+  // more robust API to refactoring
+  get(id: number, GONG__StackPath: string): Observable<XLFileDB> {
+	return this.getXLFile(id, GONG__StackPath)
+  }
   getXLFile(id: number, GONG__StackPath: string): Observable<XLFileDB> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -67,6 +75,9 @@ export class XLFileService {
   }
 
   /** POST: add a new xlfile to the server */
+  post(xlfiledb: XLFileDB, GONG__StackPath: string): Observable<XLFileDB> {
+    return this.postXLFile(xlfiledb, GONG__StackPath)	
+  }
   postXLFile(xlfiledb: XLFileDB, GONG__StackPath: string): Observable<XLFileDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
@@ -90,6 +101,9 @@ export class XLFileService {
   }
 
   /** DELETE: delete the xlfiledb from the server */
+  delete(xlfiledb: XLFileDB | number, GONG__StackPath: string): Observable<XLFileDB> {
+    return this.deleteXLFile(xlfiledb, GONG__StackPath)
+  }
   deleteXLFile(xlfiledb: XLFileDB | number, GONG__StackPath: string): Observable<XLFileDB> {
     const id = typeof xlfiledb === 'number' ? xlfiledb : xlfiledb.ID;
     const url = `${this.xlfilesUrl}/${id}`;
@@ -107,6 +121,9 @@ export class XLFileService {
   }
 
   /** PUT: update the xlfiledb on the server */
+  update(xlfiledb: XLFileDB, GONG__StackPath: string): Observable<XLFileDB> {
+    return this.updateXLFile(xlfiledb, GONG__StackPath)
+  }
   updateXLFile(xlfiledb: XLFileDB, GONG__StackPath: string): Observable<XLFileDB> {
     const id = typeof xlfiledb === 'number' ? xlfiledb : xlfiledb.ID;
     const url = `${this.xlfilesUrl}/${id}`;

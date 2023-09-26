@@ -44,6 +44,10 @@ export class XLCellService {
   }
 
   /** GET xlcells from the server */
+  // gets is more robust to refactoring
+  gets(GONG__StackPath: string): Observable<XLCellDB[]> {
+    return this.getXLCells(GONG__StackPath)
+  }
   getXLCells(GONG__StackPath: string): Observable<XLCellDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -57,6 +61,10 @@ export class XLCellService {
   }
 
   /** GET xlcell by id. Will 404 if id not found */
+  // more robust API to refactoring
+  get(id: number, GONG__StackPath: string): Observable<XLCellDB> {
+	return this.getXLCell(id, GONG__StackPath)
+  }
   getXLCell(id: number, GONG__StackPath: string): Observable<XLCellDB> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -69,6 +77,9 @@ export class XLCellService {
   }
 
   /** POST: add a new xlcell to the server */
+  post(xlcelldb: XLCellDB, GONG__StackPath: string): Observable<XLCellDB> {
+    return this.postXLCell(xlcelldb, GONG__StackPath)	
+  }
   postXLCell(xlcelldb: XLCellDB, GONG__StackPath: string): Observable<XLCellDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
@@ -95,6 +106,9 @@ export class XLCellService {
   }
 
   /** DELETE: delete the xlcelldb from the server */
+  delete(xlcelldb: XLCellDB | number, GONG__StackPath: string): Observable<XLCellDB> {
+    return this.deleteXLCell(xlcelldb, GONG__StackPath)
+  }
   deleteXLCell(xlcelldb: XLCellDB | number, GONG__StackPath: string): Observable<XLCellDB> {
     const id = typeof xlcelldb === 'number' ? xlcelldb : xlcelldb.ID;
     const url = `${this.xlcellsUrl}/${id}`;
@@ -112,6 +126,9 @@ export class XLCellService {
   }
 
   /** PUT: update the xlcelldb on the server */
+  update(xlcelldb: XLCellDB, GONG__StackPath: string): Observable<XLCellDB> {
+    return this.updateXLCell(xlcelldb, GONG__StackPath)
+  }
   updateXLCell(xlcelldb: XLCellDB, GONG__StackPath: string): Observable<XLCellDB> {
     const id = typeof xlcelldb === 'number' ? xlcelldb : xlcelldb.ID;
     const url = `${this.xlcellsUrl}/${id}`;

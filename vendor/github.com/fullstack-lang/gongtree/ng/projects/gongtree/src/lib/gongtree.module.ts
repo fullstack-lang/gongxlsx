@@ -26,50 +26,10 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { AngularSplitModule, SplitComponent } from 'angular-split';
 
-import {
-	NgxMatDatetimePickerModule,
-	NgxMatNativeDateModule,
-	NgxMatTimepickerModule
-} from '@angular-material-components/datetime-picker';
-
 import { AppRoutingModule } from './app-routing.module';
-
-import { SplitterComponent } from './splitter/splitter.component'
-import { SidebarComponent } from './sidebar/sidebar.component';
-import { GongstructSelectionService } from './gongstruct-selection.service'
-
-// insertion point for imports 
-import { ButtonsTableComponent } from './buttons-table/buttons-table.component'
-import { ButtonSortingComponent } from './button-sorting/button-sorting.component'
-import { ButtonDetailComponent } from './button-detail/button-detail.component'
-
-import { NodesTableComponent } from './nodes-table/nodes-table.component'
-import { NodeSortingComponent } from './node-sorting/node-sorting.component'
-import { NodeDetailComponent } from './node-detail/node-detail.component'
-
-import { TreesTableComponent } from './trees-table/trees-table.component'
-import { TreeSortingComponent } from './tree-sorting/tree-sorting.component'
-import { TreeDetailComponent } from './tree-detail/tree-detail.component'
-
 
 @NgModule({
 	declarations: [
-		// insertion point for declarations 
-		ButtonsTableComponent,
-		ButtonSortingComponent,
-		ButtonDetailComponent,
-
-		NodesTableComponent,
-		NodeSortingComponent,
-		NodeDetailComponent,
-
-		TreesTableComponent,
-		TreeSortingComponent,
-		TreeDetailComponent,
-
-
-		SplitterComponent,
-		SidebarComponent
 	],
 	imports: [
 		FormsModule,
@@ -98,37 +58,12 @@ import { TreeDetailComponent } from './tree-detail/tree-detail.component'
 		MatTreeModule,
 		DragDropModule,
 
-		NgxMatDatetimePickerModule,
-		NgxMatNativeDateModule,
-		NgxMatTimepickerModule,
-
 		AngularSplitModule,
 	],
 	exports: [
-		// insertion point for declarations 
-		ButtonsTableComponent,
-		ButtonSortingComponent,
-		ButtonDetailComponent,
-
-		NodesTableComponent,
-		NodeSortingComponent,
-		NodeDetailComponent,
-
-		TreesTableComponent,
-		TreeSortingComponent,
-		TreeDetailComponent,
-
-
-		SplitterComponent,
-		SidebarComponent,
-
 	],
 	providers: [
-		GongstructSelectionService,
-		{
-			provide: MatDialogRef,
-			useValue: {}
-		},
+		{ provide: MatDialogRef, useValue: { close: () => { } } }
 	],
 })
 export class GongtreeModule { }

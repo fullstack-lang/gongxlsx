@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
+import { Observable, combineLatest, BehaviorSubject, of } from 'rxjs';
 
 // insertion point sub template for services imports 
 import { DisplaySelectionDB } from './displayselection-db'
@@ -133,13 +133,24 @@ export class FrontRepoService {
   }
 
   // typing of observable can be messy in typescript. Therefore, one force the type
-  observableFrontRepo: [ // insertion point sub template 
+  observableFrontRepo: [ 
+    Observable<null>, // see below for the of(null) observable
+    // insertion point sub template 
     Observable<DisplaySelectionDB[]>,
     Observable<XLCellDB[]>,
     Observable<XLFileDB[]>,
     Observable<XLRowDB[]>,
     Observable<XLSheetDB[]>,
-  ] = [ // insertion point sub template
+  ] = [ 
+    // Using "combineLatest" with a placeholder observable.
+    //
+    // This allows the typescript compiler to pass when no GongStruct is present in the front API
+    //
+    // The "of(null)" is a "meaningless" observable that emits a single value (null) and completes.
+    // This is used as a workaround to satisfy TypeScript requirements and the "combineLatest" 
+    // expectation for a non-empty array of observables.
+    of(null), // 
+    // insertion point sub template
       this.displayselectionService.getDisplaySelections(this.GONG__StackPath),
       this.xlcellService.getXLCells(this.GONG__StackPath),
       this.xlfileService.getXLFiles(this.GONG__StackPath),
@@ -157,7 +168,9 @@ export class FrontRepoService {
 
     this.GONG__StackPath = GONG__StackPath
 
-    this.observableFrontRepo = [ // insertion point sub template
+    this.observableFrontRepo = [ 
+      of(null), // see above for justification
+      // insertion point sub template
       this.displayselectionService.getDisplaySelections(this.GONG__StackPath),
       this.xlcellService.getXLCells(this.GONG__StackPath),
       this.xlfileService.getXLFiles(this.GONG__StackPath),
@@ -170,7 +183,9 @@ export class FrontRepoService {
         combineLatest(
           this.observableFrontRepo
         ).subscribe(
-          ([ // insertion point sub template for declarations 
+          ([ 
+            ___of_null, // see above for the explanation about of
+            // insertion point sub template for declarations 
             displayselections_,
             xlcells_,
             xlfiles_,

@@ -8,7 +8,7 @@ import (
 type GongstructDB interface {
 	// insertion point for generic types
 	// "int" is present to handle the case when no struct is present
-	int  | DisplaySelectionDB | XLCellDB | XLFileDB | XLRowDB | XLSheetDB
+	int | DisplaySelectionDB | XLCellDB | XLFileDB | XLRowDB | XLSheetDB
 }
 
 func GetInstanceDBFromInstance[T models.Gongstruct, T2 GongstructDB](
@@ -48,6 +48,44 @@ func GetID[T models.Gongstruct](
 	stage *models.StageStruct,
 	backRepo *BackRepoStruct,
 	instance *T) (id int) {
+
+	switch inst := any(instance).(type) {
+	// insertion point for per struct backup
+	case *models.DisplaySelection:
+		tmp := GetInstanceDBFromInstance[models.DisplaySelection, DisplaySelectionDB](
+			stage, backRepo, inst,
+		)
+		id = int(tmp.ID)
+	case *models.XLCell:
+		tmp := GetInstanceDBFromInstance[models.XLCell, XLCellDB](
+			stage, backRepo, inst,
+		)
+		id = int(tmp.ID)
+	case *models.XLFile:
+		tmp := GetInstanceDBFromInstance[models.XLFile, XLFileDB](
+			stage, backRepo, inst,
+		)
+		id = int(tmp.ID)
+	case *models.XLRow:
+		tmp := GetInstanceDBFromInstance[models.XLRow, XLRowDB](
+			stage, backRepo, inst,
+		)
+		id = int(tmp.ID)
+	case *models.XLSheet:
+		tmp := GetInstanceDBFromInstance[models.XLSheet, XLSheetDB](
+			stage, backRepo, inst,
+		)
+		id = int(tmp.ID)
+	default:
+		_ = inst
+	}
+	return
+}
+
+func GetIDPointer[T models.PointerToGongstruct](
+	stage *models.StageStruct,
+	backRepo *BackRepoStruct,
+	instance T) (id int) {
 
 	switch inst := any(instance).(type) {
 	// insertion point for per struct backup
