@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core'
+import { HttpClient, HttpHeaders } from '@angular/common/http'
 
-import { Observable, combineLatest, BehaviorSubject, of } from 'rxjs';
+import { Observable, combineLatest, BehaviorSubject, of } from 'rxjs'
 
-// insertion point sub template for services imports 
+// insertion point sub template for services imports
 import { DisplaySelectionDB } from './displayselection-db'
 import { DisplaySelectionService } from './displayselection.service'
 
@@ -21,22 +21,67 @@ import { XLSheetService } from './xlsheet.service'
 
 
 // FrontRepo stores all instances in a front repository (design pattern repository)
-export class FrontRepo { // insertion point sub template 
-  DisplaySelections_array = new Array<DisplaySelectionDB>(); // array of repo instances
-  DisplaySelections = new Map<number, DisplaySelectionDB>(); // map of repo instances
-  DisplaySelections_batch = new Map<number, DisplaySelectionDB>(); // same but only in last GET (for finding repo instances to delete)
-  XLCells_array = new Array<XLCellDB>(); // array of repo instances
-  XLCells = new Map<number, XLCellDB>(); // map of repo instances
-  XLCells_batch = new Map<number, XLCellDB>(); // same but only in last GET (for finding repo instances to delete)
-  XLFiles_array = new Array<XLFileDB>(); // array of repo instances
-  XLFiles = new Map<number, XLFileDB>(); // map of repo instances
-  XLFiles_batch = new Map<number, XLFileDB>(); // same but only in last GET (for finding repo instances to delete)
-  XLRows_array = new Array<XLRowDB>(); // array of repo instances
-  XLRows = new Map<number, XLRowDB>(); // map of repo instances
-  XLRows_batch = new Map<number, XLRowDB>(); // same but only in last GET (for finding repo instances to delete)
-  XLSheets_array = new Array<XLSheetDB>(); // array of repo instances
-  XLSheets = new Map<number, XLSheetDB>(); // map of repo instances
-  XLSheets_batch = new Map<number, XLSheetDB>(); // same but only in last GET (for finding repo instances to delete)
+export class FrontRepo { // insertion point sub template
+  DisplaySelections_array = new Array<DisplaySelectionDB>() // array of repo instances
+  DisplaySelections = new Map<number, DisplaySelectionDB>() // map of repo instances
+  DisplaySelections_batch = new Map<number, DisplaySelectionDB>() // same but only in last GET (for finding repo instances to delete)
+
+  XLCells_array = new Array<XLCellDB>() // array of repo instances
+  XLCells = new Map<number, XLCellDB>() // map of repo instances
+  XLCells_batch = new Map<number, XLCellDB>() // same but only in last GET (for finding repo instances to delete)
+
+  XLFiles_array = new Array<XLFileDB>() // array of repo instances
+  XLFiles = new Map<number, XLFileDB>() // map of repo instances
+  XLFiles_batch = new Map<number, XLFileDB>() // same but only in last GET (for finding repo instances to delete)
+
+  XLRows_array = new Array<XLRowDB>() // array of repo instances
+  XLRows = new Map<number, XLRowDB>() // map of repo instances
+  XLRows_batch = new Map<number, XLRowDB>() // same but only in last GET (for finding repo instances to delete)
+
+  XLSheets_array = new Array<XLSheetDB>() // array of repo instances
+  XLSheets = new Map<number, XLSheetDB>() // map of repo instances
+  XLSheets_batch = new Map<number, XLSheetDB>() // same but only in last GET (for finding repo instances to delete)
+
+
+  // getArray allows for a get function that is robust to refactoring of the named struct name
+  // for instance frontRepo.getArray<Astruct>( Astruct.GONGSTRUCT_NAME), is robust to a refactoring of Astruct identifier
+  // contrary to frontRepo.Astructs_array which is not refactored when Astruct identifier is modified
+  getArray<Type>(gongStructName: string): Array<Type> {
+    switch (gongStructName) {
+      // insertion point
+      case 'DisplaySelection':
+        return this.DisplaySelections_array as unknown as Array<Type>
+      case 'XLCell':
+        return this.XLCells_array as unknown as Array<Type>
+      case 'XLFile':
+        return this.XLFiles_array as unknown as Array<Type>
+      case 'XLRow':
+        return this.XLRows_array as unknown as Array<Type>
+      case 'XLSheet':
+        return this.XLSheets_array as unknown as Array<Type>
+      default:
+        throw new Error("Type not recognized");
+    }
+  }
+
+  // getMap allows for a get function that is robust to refactoring of the named struct name
+  getMap<Type>(gongStructName: string): Map<number, Type> {
+    switch (gongStructName) {
+      // insertion point
+      case 'DisplaySelection':
+        return this.DisplaySelections_array as unknown as Map<number, Type>
+      case 'XLCell':
+        return this.XLCells_array as unknown as Map<number, Type>
+      case 'XLFile':
+        return this.XLFiles_array as unknown as Map<number, Type>
+      case 'XLRow':
+        return this.XLRows_array as unknown as Map<number, Type>
+      case 'XLSheet':
+        return this.XLSheets_array as unknown as Map<number, Type>
+      default:
+        throw new Error("Type not recognized");
+    }
+  }
 }
 
 // the table component is called in different ways
@@ -133,7 +178,7 @@ export class FrontRepoService {
   }
 
   // typing of observable can be messy in typescript. Therefore, one force the type
-  observableFrontRepo: [ 
+  observableFrontRepo: [
     Observable<null>, // see below for the of(null) observable
     // insertion point sub template 
     Observable<DisplaySelectionDB[]>,
@@ -141,16 +186,16 @@ export class FrontRepoService {
     Observable<XLFileDB[]>,
     Observable<XLRowDB[]>,
     Observable<XLSheetDB[]>,
-  ] = [ 
-    // Using "combineLatest" with a placeholder observable.
-    //
-    // This allows the typescript compiler to pass when no GongStruct is present in the front API
-    //
-    // The "of(null)" is a "meaningless" observable that emits a single value (null) and completes.
-    // This is used as a workaround to satisfy TypeScript requirements and the "combineLatest" 
-    // expectation for a non-empty array of observables.
-    of(null), // 
-    // insertion point sub template
+  ] = [
+      // Using "combineLatest" with a placeholder observable.
+      //
+      // This allows the typescript compiler to pass when no GongStruct is present in the front API
+      //
+      // The "of(null)" is a "meaningless" observable that emits a single value (null) and completes.
+      // This is used as a workaround to satisfy TypeScript requirements and the "combineLatest" 
+      // expectation for a non-empty array of observables.
+      of(null), // 
+      // insertion point sub template
       this.displayselectionService.getDisplaySelections(this.GONG__StackPath),
       this.xlcellService.getXLCells(this.GONG__StackPath),
       this.xlfileService.getXLFiles(this.GONG__StackPath),
@@ -168,7 +213,7 @@ export class FrontRepoService {
 
     this.GONG__StackPath = GONG__StackPath
 
-    this.observableFrontRepo = [ 
+    this.observableFrontRepo = [
       of(null), // see above for justification
       // insertion point sub template
       this.displayselectionService.getDisplaySelections(this.GONG__StackPath),
@@ -183,7 +228,7 @@ export class FrontRepoService {
         combineLatest(
           this.observableFrontRepo
         ).subscribe(
-          ([ 
+          ([
             ___of_null, // see above for the explanation about of
             // insertion point sub template for declarations 
             displayselections_,
