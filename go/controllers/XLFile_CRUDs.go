@@ -91,8 +91,8 @@ func (controller *Controller) GetXLFiles(c *gin.Context) {
 
 		// insertion point for updating fields
 		xlfileAPI.ID = xlfileDB.ID
-		xlfileDB.CopyBasicFieldsToXLFile(&xlfileAPI.XLFile)
-		xlfileAPI.XLFilePointersEnconding = xlfileDB.XLFilePointersEnconding
+		xlfileDB.CopyBasicFieldsToXLFile_WOP(&xlfileAPI.XLFile_WOP)
+		xlfileAPI.XLFilePointersEncoding = xlfileDB.XLFilePointersEncoding
 		xlfileAPIs = append(xlfileAPIs, xlfileAPI)
 	}
 
@@ -147,8 +147,8 @@ func (controller *Controller) PostXLFile(c *gin.Context) {
 
 	// Create xlfile
 	xlfileDB := orm.XLFileDB{}
-	xlfileDB.XLFilePointersEnconding = input.XLFilePointersEnconding
-	xlfileDB.CopyBasicFieldsFromXLFile(&input.XLFile)
+	xlfileDB.XLFilePointersEncoding = input.XLFilePointersEncoding
+	xlfileDB.CopyBasicFieldsFromXLFile_WOP(&input.XLFile_WOP)
 
 	query := db.Create(&xlfileDB)
 	if query.Error != nil {
@@ -217,8 +217,8 @@ func (controller *Controller) GetXLFile(c *gin.Context) {
 
 	var xlfileAPI orm.XLFileAPI
 	xlfileAPI.ID = xlfileDB.ID
-	xlfileAPI.XLFilePointersEnconding = xlfileDB.XLFilePointersEnconding
-	xlfileDB.CopyBasicFieldsToXLFile(&xlfileAPI.XLFile)
+	xlfileAPI.XLFilePointersEncoding = xlfileDB.XLFilePointersEncoding
+	xlfileDB.CopyBasicFieldsToXLFile_WOP(&xlfileAPI.XLFile_WOP)
 
 	c.JSON(http.StatusOK, xlfileAPI)
 }
@@ -276,8 +276,8 @@ func (controller *Controller) UpdateXLFile(c *gin.Context) {
 	}
 
 	// update
-	xlfileDB.CopyBasicFieldsFromXLFile(&input.XLFile)
-	xlfileDB.XLFilePointersEnconding = input.XLFilePointersEnconding
+	xlfileDB.CopyBasicFieldsFromXLFile_WOP(&input.XLFile_WOP)
+	xlfileDB.XLFilePointersEncoding = input.XLFilePointersEncoding
 
 	query = db.Model(&xlfileDB).Updates(xlfileDB)
 	if query.Error != nil {

@@ -91,8 +91,8 @@ func (controller *Controller) GetXLCells(c *gin.Context) {
 
 		// insertion point for updating fields
 		xlcellAPI.ID = xlcellDB.ID
-		xlcellDB.CopyBasicFieldsToXLCell(&xlcellAPI.XLCell)
-		xlcellAPI.XLCellPointersEnconding = xlcellDB.XLCellPointersEnconding
+		xlcellDB.CopyBasicFieldsToXLCell_WOP(&xlcellAPI.XLCell_WOP)
+		xlcellAPI.XLCellPointersEncoding = xlcellDB.XLCellPointersEncoding
 		xlcellAPIs = append(xlcellAPIs, xlcellAPI)
 	}
 
@@ -147,8 +147,8 @@ func (controller *Controller) PostXLCell(c *gin.Context) {
 
 	// Create xlcell
 	xlcellDB := orm.XLCellDB{}
-	xlcellDB.XLCellPointersEnconding = input.XLCellPointersEnconding
-	xlcellDB.CopyBasicFieldsFromXLCell(&input.XLCell)
+	xlcellDB.XLCellPointersEncoding = input.XLCellPointersEncoding
+	xlcellDB.CopyBasicFieldsFromXLCell_WOP(&input.XLCell_WOP)
 
 	query := db.Create(&xlcellDB)
 	if query.Error != nil {
@@ -217,8 +217,8 @@ func (controller *Controller) GetXLCell(c *gin.Context) {
 
 	var xlcellAPI orm.XLCellAPI
 	xlcellAPI.ID = xlcellDB.ID
-	xlcellAPI.XLCellPointersEnconding = xlcellDB.XLCellPointersEnconding
-	xlcellDB.CopyBasicFieldsToXLCell(&xlcellAPI.XLCell)
+	xlcellAPI.XLCellPointersEncoding = xlcellDB.XLCellPointersEncoding
+	xlcellDB.CopyBasicFieldsToXLCell_WOP(&xlcellAPI.XLCell_WOP)
 
 	c.JSON(http.StatusOK, xlcellAPI)
 }
@@ -276,8 +276,8 @@ func (controller *Controller) UpdateXLCell(c *gin.Context) {
 	}
 
 	// update
-	xlcellDB.CopyBasicFieldsFromXLCell(&input.XLCell)
-	xlcellDB.XLCellPointersEnconding = input.XLCellPointersEnconding
+	xlcellDB.CopyBasicFieldsFromXLCell_WOP(&input.XLCell_WOP)
+	xlcellDB.XLCellPointersEncoding = input.XLCellPointersEncoding
 
 	query = db.Model(&xlcellDB).Updates(xlcellDB)
 	if query.Error != nil {

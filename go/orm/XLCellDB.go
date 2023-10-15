@@ -35,15 +35,15 @@ var dummy_XLCell_sort sort.Float64Slice
 type XLCellAPI struct {
 	gorm.Model
 
-	models.XLCell
+	models.XLCell_WOP
 
 	// encoding of pointers
-	XLCellPointersEnconding
+	XLCellPointersEncoding
 }
 
-// XLCellPointersEnconding encodes pointers to Struct and
+// XLCellPointersEncoding encodes pointers to Struct and
 // reverse pointers of slice of poitners to Struct
-type XLCellPointersEnconding struct {
+type XLCellPointersEncoding struct {
 	// insertion for pointer fields encoding declaration
 
 	// Implementation of a reverse ID for field XLRow{}.Cells []*XLCell
@@ -79,7 +79,7 @@ type XLCellDB struct {
 	// Declation for basic field xlcellDB.Y
 	Y_Data sql.NullInt64
 	// encoding of pointers
-	XLCellPointersEnconding
+	XLCellPointersEncoding
 }
 
 // XLCellDBs arrays xlcellDBs
@@ -174,7 +174,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) CommitDeleteInstance(id uint) (Error
 	xlcellDB := backRepoXLCell.Map_XLCellDBID_XLCellDB[id]
 	query := backRepoXLCell.db.Unscoped().Delete(&xlcellDB)
 	if query.Error != nil {
-		return query.Error
+		log.Fatal(query.Error)
 	}
 
 	// update stores
@@ -200,7 +200,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) CommitPhaseOneInstance(xlcell *model
 
 	query := backRepoXLCell.db.Create(&xlcellDB)
 	if query.Error != nil {
-		return query.Error
+		log.Fatal(query.Error)
 	}
 
 	// update stores
@@ -234,7 +234,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) CommitPhaseTwoInstance(backRepo *Bac
 		// insertion point for translating pointers encodings into actual pointers
 		query := backRepoXLCell.db.Save(&xlcellDB)
 		if query.Error != nil {
-			return query.Error
+			log.Fatalln(query.Error)
 		}
 
 	} else {
@@ -361,7 +361,7 @@ func (backRepo *BackRepoStruct) CheckoutXLCell(xlcell *models.XLCell) {
 			xlcellDB.ID = id
 
 			if err := backRepo.BackRepoXLCell.db.First(&xlcellDB, id).Error; err != nil {
-				log.Panicln("CheckoutXLCell : Problem with getting object with id:", id)
+				log.Fatalln("CheckoutXLCell : Problem with getting object with id:", id)
 			}
 			backRepo.BackRepoXLCell.CheckoutPhaseOneInstance(&xlcellDB)
 			backRepo.BackRepoXLCell.CheckoutPhaseTwoInstance(backRepo, &xlcellDB)
@@ -371,6 +371,20 @@ func (backRepo *BackRepoStruct) CheckoutXLCell(xlcell *models.XLCell) {
 
 // CopyBasicFieldsFromXLCell
 func (xlcellDB *XLCellDB) CopyBasicFieldsFromXLCell(xlcell *models.XLCell) {
+	// insertion point for fields commit
+
+	xlcellDB.Name_Data.String = xlcell.Name
+	xlcellDB.Name_Data.Valid = true
+
+	xlcellDB.X_Data.Int64 = int64(xlcell.X)
+	xlcellDB.X_Data.Valid = true
+
+	xlcellDB.Y_Data.Int64 = int64(xlcell.Y)
+	xlcellDB.Y_Data.Valid = true
+}
+
+// CopyBasicFieldsFromXLCell_WOP
+func (xlcellDB *XLCellDB) CopyBasicFieldsFromXLCell_WOP(xlcell *models.XLCell_WOP) {
 	// insertion point for fields commit
 
 	xlcellDB.Name_Data.String = xlcell.Name
@@ -405,6 +419,14 @@ func (xlcellDB *XLCellDB) CopyBasicFieldsToXLCell(xlcell *models.XLCell) {
 	xlcell.Y = int(xlcellDB.Y_Data.Int64)
 }
 
+// CopyBasicFieldsToXLCell_WOP
+func (xlcellDB *XLCellDB) CopyBasicFieldsToXLCell_WOP(xlcell *models.XLCell_WOP) {
+	// insertion point for checkout of basic fields (back repo to stage)
+	xlcell.Name = xlcellDB.Name_Data.String
+	xlcell.X = int(xlcellDB.X_Data.Int64)
+	xlcell.Y = int(xlcellDB.Y_Data.Int64)
+}
+
 // CopyBasicFieldsToXLCellWOP
 func (xlcellDB *XLCellDB) CopyBasicFieldsToXLCellWOP(xlcell *XLCellWOP) {
 	xlcell.ID = int(xlcellDB.ID)
@@ -433,12 +455,12 @@ func (backRepoXLCell *BackRepoXLCellStruct) Backup(dirPath string) {
 	file, err := json.MarshalIndent(forBackup, "", " ")
 
 	if err != nil {
-		log.Panic("Cannot json XLCell ", filename, " ", err.Error())
+		log.Fatal("Cannot json XLCell ", filename, " ", err.Error())
 	}
 
 	err = ioutil.WriteFile(filename, file, 0644)
 	if err != nil {
-		log.Panic("Cannot write the json XLCell file", err.Error())
+		log.Fatal("Cannot write the json XLCell file", err.Error())
 	}
 }
 
@@ -458,7 +480,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) BackupXL(file *xlsx.File) {
 
 	sh, err := file.AddSheet("XLCell")
 	if err != nil {
-		log.Panic("Cannot add XL file", err.Error())
+		log.Fatal("Cannot add XL file", err.Error())
 	}
 	_ = sh
 
@@ -483,13 +505,13 @@ func (backRepoXLCell *BackRepoXLCellStruct) RestoreXLPhaseOne(file *xlsx.File) {
 	sh, ok := file.Sheet["XLCell"]
 	_ = sh
 	if !ok {
-		log.Panic(errors.New("sheet not found"))
+		log.Fatal(errors.New("sheet not found"))
 	}
 
 	// log.Println("Max row is", sh.MaxRow)
 	err := sh.ForEachRow(backRepoXLCell.rowVisitorXLCell)
 	if err != nil {
-		log.Panic("Err=", err)
+		log.Fatal("Err=", err)
 	}
 }
 
@@ -511,7 +533,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) rowVisitorXLCell(row *xlsx.Row) erro
 		xlcellDB.ID = 0
 		query := backRepoXLCell.db.Create(xlcellDB)
 		if query.Error != nil {
-			log.Panic(query.Error)
+			log.Fatal(query.Error)
 		}
 		backRepoXLCell.Map_XLCellDBID_XLCellDB[xlcellDB.ID] = xlcellDB
 		BackRepoXLCellid_atBckpTime_newID[xlcellDB_ID_atBackupTime] = xlcellDB.ID
@@ -531,7 +553,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) RestorePhaseOne(dirPath string) {
 	jsonFile, err := os.Open(filename)
 	// if we os.Open returns an error then handle it
 	if err != nil {
-		log.Panic("Cannot restore/open the json XLCell file", filename, " ", err.Error())
+		log.Fatal("Cannot restore/open the json XLCell file", filename, " ", err.Error())
 	}
 
 	// read our opened jsonFile as a byte array.
@@ -548,14 +570,14 @@ func (backRepoXLCell *BackRepoXLCellStruct) RestorePhaseOne(dirPath string) {
 		xlcellDB.ID = 0
 		query := backRepoXLCell.db.Create(xlcellDB)
 		if query.Error != nil {
-			log.Panic(query.Error)
+			log.Fatal(query.Error)
 		}
 		backRepoXLCell.Map_XLCellDBID_XLCellDB[xlcellDB.ID] = xlcellDB
 		BackRepoXLCellid_atBckpTime_newID[xlcellDB_ID_atBackupTime] = xlcellDB.ID
 	}
 
 	if err != nil {
-		log.Panic("Cannot restore/unmarshall json XLCell file", err.Error())
+		log.Fatal("Cannot restore/unmarshall json XLCell file", err.Error())
 	}
 }
 
@@ -584,7 +606,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) RestorePhaseTwo() {
 		// update databse with new index encoding
 		query := backRepoXLCell.db.Model(xlcellDB).Updates(*xlcellDB)
 		if query.Error != nil {
-			log.Panic(query.Error)
+			log.Fatal(query.Error)
 		}
 	}
 

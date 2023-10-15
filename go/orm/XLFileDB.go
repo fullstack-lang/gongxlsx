@@ -35,16 +35,19 @@ var dummy_XLFile_sort sort.Float64Slice
 type XLFileAPI struct {
 	gorm.Model
 
-	models.XLFile
+	models.XLFile_WOP
 
 	// encoding of pointers
-	XLFilePointersEnconding
+	XLFilePointersEncoding
 }
 
-// XLFilePointersEnconding encodes pointers to Struct and
+// XLFilePointersEncoding encodes pointers to Struct and
 // reverse pointers of slice of poitners to Struct
-type XLFilePointersEnconding struct {
+type XLFilePointersEncoding struct {
 	// insertion for pointer fields encoding declaration
+
+	// field Sheets is a slice of pointers to another Struct (optional or 0..1)
+	Sheets IntSlice`gorm:"type:TEXT"`
 }
 
 // XLFileDB describes a xlfile in the database
@@ -64,7 +67,7 @@ type XLFileDB struct {
 	// Declation for basic field xlfileDB.NbSheets
 	NbSheets_Data sql.NullInt64
 	// encoding of pointers
-	XLFilePointersEnconding
+	XLFilePointersEncoding
 }
 
 // XLFileDBs arrays xlfileDBs
@@ -156,7 +159,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitDeleteInstance(id uint) (Error
 	xlfileDB := backRepoXLFile.Map_XLFileDBID_XLFileDB[id]
 	query := backRepoXLFile.db.Unscoped().Delete(&xlfileDB)
 	if query.Error != nil {
-		return query.Error
+		log.Fatal(query.Error)
 	}
 
 	// update stores
@@ -182,7 +185,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseOneInstance(xlfile *model
 
 	query := backRepoXLFile.db.Create(&xlfileDB)
 	if query.Error != nil {
-		return query.Error
+		log.Fatal(query.Error)
 	}
 
 	// update stores
@@ -233,9 +236,19 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseTwoInstance(backRepo *Bac
 			}
 		}
 
+		// 1. reset
+		xlfileDB.XLFilePointersEncoding.Sheets = make([]int, 0)
+		// 2. encode
+		for _, xlsheetAssocEnd := range xlfile.Sheets {
+			xlsheetAssocEnd_DB :=
+				backRepo.BackRepoXLSheet.GetXLSheetDBFromXLSheetPtr(xlsheetAssocEnd)
+			xlfileDB.XLFilePointersEncoding.Sheets =
+				append(xlfileDB.XLFilePointersEncoding.Sheets, int(xlsheetAssocEnd_DB.ID))
+		}
+
 		query := backRepoXLFile.db.Save(&xlfileDB)
 		if query.Error != nil {
-			return query.Error
+			log.Fatalln(query.Error)
 		}
 
 	} else {
@@ -389,7 +402,7 @@ func (backRepo *BackRepoStruct) CheckoutXLFile(xlfile *models.XLFile) {
 			xlfileDB.ID = id
 
 			if err := backRepo.BackRepoXLFile.db.First(&xlfileDB, id).Error; err != nil {
-				log.Panicln("CheckoutXLFile : Problem with getting object with id:", id)
+				log.Fatalln("CheckoutXLFile : Problem with getting object with id:", id)
 			}
 			backRepo.BackRepoXLFile.CheckoutPhaseOneInstance(&xlfileDB)
 			backRepo.BackRepoXLFile.CheckoutPhaseTwoInstance(backRepo, &xlfileDB)
@@ -399,6 +412,17 @@ func (backRepo *BackRepoStruct) CheckoutXLFile(xlfile *models.XLFile) {
 
 // CopyBasicFieldsFromXLFile
 func (xlfileDB *XLFileDB) CopyBasicFieldsFromXLFile(xlfile *models.XLFile) {
+	// insertion point for fields commit
+
+	xlfileDB.Name_Data.String = xlfile.Name
+	xlfileDB.Name_Data.Valid = true
+
+	xlfileDB.NbSheets_Data.Int64 = int64(xlfile.NbSheets)
+	xlfileDB.NbSheets_Data.Valid = true
+}
+
+// CopyBasicFieldsFromXLFile_WOP
+func (xlfileDB *XLFileDB) CopyBasicFieldsFromXLFile_WOP(xlfile *models.XLFile_WOP) {
 	// insertion point for fields commit
 
 	xlfileDB.Name_Data.String = xlfile.Name
@@ -421,6 +445,13 @@ func (xlfileDB *XLFileDB) CopyBasicFieldsFromXLFileWOP(xlfile *XLFileWOP) {
 
 // CopyBasicFieldsToXLFile
 func (xlfileDB *XLFileDB) CopyBasicFieldsToXLFile(xlfile *models.XLFile) {
+	// insertion point for checkout of basic fields (back repo to stage)
+	xlfile.Name = xlfileDB.Name_Data.String
+	xlfile.NbSheets = int(xlfileDB.NbSheets_Data.Int64)
+}
+
+// CopyBasicFieldsToXLFile_WOP
+func (xlfileDB *XLFileDB) CopyBasicFieldsToXLFile_WOP(xlfile *models.XLFile_WOP) {
 	// insertion point for checkout of basic fields (back repo to stage)
 	xlfile.Name = xlfileDB.Name_Data.String
 	xlfile.NbSheets = int(xlfileDB.NbSheets_Data.Int64)
@@ -453,12 +484,12 @@ func (backRepoXLFile *BackRepoXLFileStruct) Backup(dirPath string) {
 	file, err := json.MarshalIndent(forBackup, "", " ")
 
 	if err != nil {
-		log.Panic("Cannot json XLFile ", filename, " ", err.Error())
+		log.Fatal("Cannot json XLFile ", filename, " ", err.Error())
 	}
 
 	err = ioutil.WriteFile(filename, file, 0644)
 	if err != nil {
-		log.Panic("Cannot write the json XLFile file", err.Error())
+		log.Fatal("Cannot write the json XLFile file", err.Error())
 	}
 }
 
@@ -478,7 +509,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) BackupXL(file *xlsx.File) {
 
 	sh, err := file.AddSheet("XLFile")
 	if err != nil {
-		log.Panic("Cannot add XL file", err.Error())
+		log.Fatal("Cannot add XL file", err.Error())
 	}
 	_ = sh
 
@@ -503,13 +534,13 @@ func (backRepoXLFile *BackRepoXLFileStruct) RestoreXLPhaseOne(file *xlsx.File) {
 	sh, ok := file.Sheet["XLFile"]
 	_ = sh
 	if !ok {
-		log.Panic(errors.New("sheet not found"))
+		log.Fatal(errors.New("sheet not found"))
 	}
 
 	// log.Println("Max row is", sh.MaxRow)
 	err := sh.ForEachRow(backRepoXLFile.rowVisitorXLFile)
 	if err != nil {
-		log.Panic("Err=", err)
+		log.Fatal("Err=", err)
 	}
 }
 
@@ -531,7 +562,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) rowVisitorXLFile(row *xlsx.Row) erro
 		xlfileDB.ID = 0
 		query := backRepoXLFile.db.Create(xlfileDB)
 		if query.Error != nil {
-			log.Panic(query.Error)
+			log.Fatal(query.Error)
 		}
 		backRepoXLFile.Map_XLFileDBID_XLFileDB[xlfileDB.ID] = xlfileDB
 		BackRepoXLFileid_atBckpTime_newID[xlfileDB_ID_atBackupTime] = xlfileDB.ID
@@ -551,7 +582,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) RestorePhaseOne(dirPath string) {
 	jsonFile, err := os.Open(filename)
 	// if we os.Open returns an error then handle it
 	if err != nil {
-		log.Panic("Cannot restore/open the json XLFile file", filename, " ", err.Error())
+		log.Fatal("Cannot restore/open the json XLFile file", filename, " ", err.Error())
 	}
 
 	// read our opened jsonFile as a byte array.
@@ -568,14 +599,14 @@ func (backRepoXLFile *BackRepoXLFileStruct) RestorePhaseOne(dirPath string) {
 		xlfileDB.ID = 0
 		query := backRepoXLFile.db.Create(xlfileDB)
 		if query.Error != nil {
-			log.Panic(query.Error)
+			log.Fatal(query.Error)
 		}
 		backRepoXLFile.Map_XLFileDBID_XLFileDB[xlfileDB.ID] = xlfileDB
 		BackRepoXLFileid_atBckpTime_newID[xlfileDB_ID_atBackupTime] = xlfileDB.ID
 	}
 
 	if err != nil {
-		log.Panic("Cannot restore/unmarshall json XLFile file", err.Error())
+		log.Fatal("Cannot restore/unmarshall json XLFile file", err.Error())
 	}
 }
 
@@ -592,7 +623,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) RestorePhaseTwo() {
 		// update databse with new index encoding
 		query := backRepoXLFile.db.Model(xlfileDB).Updates(*xlfileDB)
 		if query.Error != nil {
-			log.Panic(query.Error)
+			log.Fatal(query.Error)
 		}
 	}
 

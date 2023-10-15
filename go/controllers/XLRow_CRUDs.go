@@ -91,8 +91,8 @@ func (controller *Controller) GetXLRows(c *gin.Context) {
 
 		// insertion point for updating fields
 		xlrowAPI.ID = xlrowDB.ID
-		xlrowDB.CopyBasicFieldsToXLRow(&xlrowAPI.XLRow)
-		xlrowAPI.XLRowPointersEnconding = xlrowDB.XLRowPointersEnconding
+		xlrowDB.CopyBasicFieldsToXLRow_WOP(&xlrowAPI.XLRow_WOP)
+		xlrowAPI.XLRowPointersEncoding = xlrowDB.XLRowPointersEncoding
 		xlrowAPIs = append(xlrowAPIs, xlrowAPI)
 	}
 
@@ -147,8 +147,8 @@ func (controller *Controller) PostXLRow(c *gin.Context) {
 
 	// Create xlrow
 	xlrowDB := orm.XLRowDB{}
-	xlrowDB.XLRowPointersEnconding = input.XLRowPointersEnconding
-	xlrowDB.CopyBasicFieldsFromXLRow(&input.XLRow)
+	xlrowDB.XLRowPointersEncoding = input.XLRowPointersEncoding
+	xlrowDB.CopyBasicFieldsFromXLRow_WOP(&input.XLRow_WOP)
 
 	query := db.Create(&xlrowDB)
 	if query.Error != nil {
@@ -217,8 +217,8 @@ func (controller *Controller) GetXLRow(c *gin.Context) {
 
 	var xlrowAPI orm.XLRowAPI
 	xlrowAPI.ID = xlrowDB.ID
-	xlrowAPI.XLRowPointersEnconding = xlrowDB.XLRowPointersEnconding
-	xlrowDB.CopyBasicFieldsToXLRow(&xlrowAPI.XLRow)
+	xlrowAPI.XLRowPointersEncoding = xlrowDB.XLRowPointersEncoding
+	xlrowDB.CopyBasicFieldsToXLRow_WOP(&xlrowAPI.XLRow_WOP)
 
 	c.JSON(http.StatusOK, xlrowAPI)
 }
@@ -276,8 +276,8 @@ func (controller *Controller) UpdateXLRow(c *gin.Context) {
 	}
 
 	// update
-	xlrowDB.CopyBasicFieldsFromXLRow(&input.XLRow)
-	xlrowDB.XLRowPointersEnconding = input.XLRowPointersEnconding
+	xlrowDB.CopyBasicFieldsFromXLRow_WOP(&input.XLRow_WOP)
+	xlrowDB.XLRowPointersEncoding = input.XLRowPointersEncoding
 
 	query = db.Model(&xlrowDB).Updates(xlrowDB)
 	if query.Error != nil {

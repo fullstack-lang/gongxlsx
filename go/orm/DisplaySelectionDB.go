@@ -35,15 +35,15 @@ var dummy_DisplaySelection_sort sort.Float64Slice
 type DisplaySelectionAPI struct {
 	gorm.Model
 
-	models.DisplaySelection
+	models.DisplaySelection_WOP
 
 	// encoding of pointers
-	DisplaySelectionPointersEnconding
+	DisplaySelectionPointersEncoding
 }
 
-// DisplaySelectionPointersEnconding encodes pointers to Struct and
+// DisplaySelectionPointersEncoding encodes pointers to Struct and
 // reverse pointers of slice of poitners to Struct
-type DisplaySelectionPointersEnconding struct {
+type DisplaySelectionPointersEncoding struct {
 	// insertion for pointer fields encoding declaration
 
 	// field XLFile is a pointer to another Struct (optional or 0..1)
@@ -69,7 +69,7 @@ type DisplaySelectionDB struct {
 	// Declation for basic field displayselectionDB.Name
 	Name_Data sql.NullString
 	// encoding of pointers
-	DisplaySelectionPointersEnconding
+	DisplaySelectionPointersEncoding
 }
 
 // DisplaySelectionDBs arrays displayselectionDBs
@@ -158,7 +158,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitDeleteInst
 	displayselectionDB := backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[id]
 	query := backRepoDisplaySelection.db.Unscoped().Delete(&displayselectionDB)
 	if query.Error != nil {
-		return query.Error
+		log.Fatal(query.Error)
 	}
 
 	// update stores
@@ -184,7 +184,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseOneIn
 
 	query := backRepoDisplaySelection.db.Create(&displayselectionDB)
 	if query.Error != nil {
-		return query.Error
+		log.Fatal(query.Error)
 	}
 
 	// update stores
@@ -242,7 +242,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseTwoIn
 
 		query := backRepoDisplaySelection.db.Save(&displayselectionDB)
 		if query.Error != nil {
-			return query.Error
+			log.Fatalln(query.Error)
 		}
 
 	} else {
@@ -379,7 +379,7 @@ func (backRepo *BackRepoStruct) CheckoutDisplaySelection(displayselection *model
 			displayselectionDB.ID = id
 
 			if err := backRepo.BackRepoDisplaySelection.db.First(&displayselectionDB, id).Error; err != nil {
-				log.Panicln("CheckoutDisplaySelection : Problem with getting object with id:", id)
+				log.Fatalln("CheckoutDisplaySelection : Problem with getting object with id:", id)
 			}
 			backRepo.BackRepoDisplaySelection.CheckoutPhaseOneInstance(&displayselectionDB)
 			backRepo.BackRepoDisplaySelection.CheckoutPhaseTwoInstance(backRepo, &displayselectionDB)
@@ -389,6 +389,14 @@ func (backRepo *BackRepoStruct) CheckoutDisplaySelection(displayselection *model
 
 // CopyBasicFieldsFromDisplaySelection
 func (displayselectionDB *DisplaySelectionDB) CopyBasicFieldsFromDisplaySelection(displayselection *models.DisplaySelection) {
+	// insertion point for fields commit
+
+	displayselectionDB.Name_Data.String = displayselection.Name
+	displayselectionDB.Name_Data.Valid = true
+}
+
+// CopyBasicFieldsFromDisplaySelection_WOP
+func (displayselectionDB *DisplaySelectionDB) CopyBasicFieldsFromDisplaySelection_WOP(displayselection *models.DisplaySelection_WOP) {
 	// insertion point for fields commit
 
 	displayselectionDB.Name_Data.String = displayselection.Name
@@ -405,6 +413,12 @@ func (displayselectionDB *DisplaySelectionDB) CopyBasicFieldsFromDisplaySelectio
 
 // CopyBasicFieldsToDisplaySelection
 func (displayselectionDB *DisplaySelectionDB) CopyBasicFieldsToDisplaySelection(displayselection *models.DisplaySelection) {
+	// insertion point for checkout of basic fields (back repo to stage)
+	displayselection.Name = displayselectionDB.Name_Data.String
+}
+
+// CopyBasicFieldsToDisplaySelection_WOP
+func (displayselectionDB *DisplaySelectionDB) CopyBasicFieldsToDisplaySelection_WOP(displayselection *models.DisplaySelection_WOP) {
 	// insertion point for checkout of basic fields (back repo to stage)
 	displayselection.Name = displayselectionDB.Name_Data.String
 }
@@ -435,12 +449,12 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) Backup(dirPath s
 	file, err := json.MarshalIndent(forBackup, "", " ")
 
 	if err != nil {
-		log.Panic("Cannot json DisplaySelection ", filename, " ", err.Error())
+		log.Fatal("Cannot json DisplaySelection ", filename, " ", err.Error())
 	}
 
 	err = ioutil.WriteFile(filename, file, 0644)
 	if err != nil {
-		log.Panic("Cannot write the json DisplaySelection file", err.Error())
+		log.Fatal("Cannot write the json DisplaySelection file", err.Error())
 	}
 }
 
@@ -460,7 +474,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) BackupXL(file *x
 
 	sh, err := file.AddSheet("DisplaySelection")
 	if err != nil {
-		log.Panic("Cannot add XL file", err.Error())
+		log.Fatal("Cannot add XL file", err.Error())
 	}
 	_ = sh
 
@@ -485,13 +499,13 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) RestoreXLPhaseOn
 	sh, ok := file.Sheet["DisplaySelection"]
 	_ = sh
 	if !ok {
-		log.Panic(errors.New("sheet not found"))
+		log.Fatal(errors.New("sheet not found"))
 	}
 
 	// log.Println("Max row is", sh.MaxRow)
 	err := sh.ForEachRow(backRepoDisplaySelection.rowVisitorDisplaySelection)
 	if err != nil {
-		log.Panic("Err=", err)
+		log.Fatal("Err=", err)
 	}
 }
 
@@ -513,7 +527,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) rowVisitorDispla
 		displayselectionDB.ID = 0
 		query := backRepoDisplaySelection.db.Create(displayselectionDB)
 		if query.Error != nil {
-			log.Panic(query.Error)
+			log.Fatal(query.Error)
 		}
 		backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[displayselectionDB.ID] = displayselectionDB
 		BackRepoDisplaySelectionid_atBckpTime_newID[displayselectionDB_ID_atBackupTime] = displayselectionDB.ID
@@ -533,7 +547,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) RestorePhaseOne(
 	jsonFile, err := os.Open(filename)
 	// if we os.Open returns an error then handle it
 	if err != nil {
-		log.Panic("Cannot restore/open the json DisplaySelection file", filename, " ", err.Error())
+		log.Fatal("Cannot restore/open the json DisplaySelection file", filename, " ", err.Error())
 	}
 
 	// read our opened jsonFile as a byte array.
@@ -550,14 +564,14 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) RestorePhaseOne(
 		displayselectionDB.ID = 0
 		query := backRepoDisplaySelection.db.Create(displayselectionDB)
 		if query.Error != nil {
-			log.Panic(query.Error)
+			log.Fatal(query.Error)
 		}
 		backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[displayselectionDB.ID] = displayselectionDB
 		BackRepoDisplaySelectionid_atBckpTime_newID[displayselectionDB_ID_atBackupTime] = displayselectionDB.ID
 	}
 
 	if err != nil {
-		log.Panic("Cannot restore/unmarshall json DisplaySelection file", err.Error())
+		log.Fatal("Cannot restore/unmarshall json DisplaySelection file", err.Error())
 	}
 }
 
@@ -586,7 +600,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) RestorePhaseTwo(
 		// update databse with new index encoding
 		query := backRepoDisplaySelection.db.Model(displayselectionDB).Updates(*displayselectionDB)
 		if query.Error != nil {
-			log.Panic(query.Error)
+			log.Fatal(query.Error)
 		}
 	}
 

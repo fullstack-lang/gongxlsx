@@ -91,8 +91,8 @@ func (controller *Controller) GetXLSheets(c *gin.Context) {
 
 		// insertion point for updating fields
 		xlsheetAPI.ID = xlsheetDB.ID
-		xlsheetDB.CopyBasicFieldsToXLSheet(&xlsheetAPI.XLSheet)
-		xlsheetAPI.XLSheetPointersEnconding = xlsheetDB.XLSheetPointersEnconding
+		xlsheetDB.CopyBasicFieldsToXLSheet_WOP(&xlsheetAPI.XLSheet_WOP)
+		xlsheetAPI.XLSheetPointersEncoding = xlsheetDB.XLSheetPointersEncoding
 		xlsheetAPIs = append(xlsheetAPIs, xlsheetAPI)
 	}
 
@@ -147,8 +147,8 @@ func (controller *Controller) PostXLSheet(c *gin.Context) {
 
 	// Create xlsheet
 	xlsheetDB := orm.XLSheetDB{}
-	xlsheetDB.XLSheetPointersEnconding = input.XLSheetPointersEnconding
-	xlsheetDB.CopyBasicFieldsFromXLSheet(&input.XLSheet)
+	xlsheetDB.XLSheetPointersEncoding = input.XLSheetPointersEncoding
+	xlsheetDB.CopyBasicFieldsFromXLSheet_WOP(&input.XLSheet_WOP)
 
 	query := db.Create(&xlsheetDB)
 	if query.Error != nil {
@@ -217,8 +217,8 @@ func (controller *Controller) GetXLSheet(c *gin.Context) {
 
 	var xlsheetAPI orm.XLSheetAPI
 	xlsheetAPI.ID = xlsheetDB.ID
-	xlsheetAPI.XLSheetPointersEnconding = xlsheetDB.XLSheetPointersEnconding
-	xlsheetDB.CopyBasicFieldsToXLSheet(&xlsheetAPI.XLSheet)
+	xlsheetAPI.XLSheetPointersEncoding = xlsheetDB.XLSheetPointersEncoding
+	xlsheetDB.CopyBasicFieldsToXLSheet_WOP(&xlsheetAPI.XLSheet_WOP)
 
 	c.JSON(http.StatusOK, xlsheetAPI)
 }
@@ -276,8 +276,8 @@ func (controller *Controller) UpdateXLSheet(c *gin.Context) {
 	}
 
 	// update
-	xlsheetDB.CopyBasicFieldsFromXLSheet(&input.XLSheet)
-	xlsheetDB.XLSheetPointersEnconding = input.XLSheetPointersEnconding
+	xlsheetDB.CopyBasicFieldsFromXLSheet_WOP(&input.XLSheet_WOP)
+	xlsheetDB.XLSheetPointersEncoding = input.XLSheetPointersEncoding
 
 	query = db.Model(&xlsheetDB).Updates(xlsheetDB)
 	if query.Error != nil {

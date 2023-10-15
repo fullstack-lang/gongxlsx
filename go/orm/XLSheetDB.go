@@ -35,16 +35,22 @@ var dummy_XLSheet_sort sort.Float64Slice
 type XLSheetAPI struct {
 	gorm.Model
 
-	models.XLSheet
+	models.XLSheet_WOP
 
 	// encoding of pointers
-	XLSheetPointersEnconding
+	XLSheetPointersEncoding
 }
 
-// XLSheetPointersEnconding encodes pointers to Struct and
+// XLSheetPointersEncoding encodes pointers to Struct and
 // reverse pointers of slice of poitners to Struct
-type XLSheetPointersEnconding struct {
+type XLSheetPointersEncoding struct {
 	// insertion for pointer fields encoding declaration
+
+	// field Rows is a slice of pointers to another Struct (optional or 0..1)
+	Rows IntSlice`gorm:"type:TEXT"`
+
+	// field SheetCells is a slice of pointers to another Struct (optional or 0..1)
+	SheetCells IntSlice`gorm:"type:TEXT"`
 
 	// Implementation of a reverse ID for field XLFile{}.Sheets []*XLSheet
 	XLFile_SheetsDBID sql.NullInt64
@@ -76,7 +82,7 @@ type XLSheetDB struct {
 	// Declation for basic field xlsheetDB.NbRows
 	NbRows_Data sql.NullInt64
 	// encoding of pointers
-	XLSheetPointersEnconding
+	XLSheetPointersEncoding
 }
 
 // XLSheetDBs arrays xlsheetDBs
@@ -174,7 +180,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitDeleteInstance(id uint) (Err
 	xlsheetDB := backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[id]
 	query := backRepoXLSheet.db.Unscoped().Delete(&xlsheetDB)
 	if query.Error != nil {
-		return query.Error
+		log.Fatal(query.Error)
 	}
 
 	// update stores
@@ -200,7 +206,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseOneInstance(xlsheet *mo
 
 	query := backRepoXLSheet.db.Create(&xlsheetDB)
 	if query.Error != nil {
-		return query.Error
+		log.Fatal(query.Error)
 	}
 
 	// update stores
@@ -251,6 +257,16 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 			}
 		}
 
+		// 1. reset
+		xlsheetDB.XLSheetPointersEncoding.Rows = make([]int, 0)
+		// 2. encode
+		for _, xlrowAssocEnd := range xlsheet.Rows {
+			xlrowAssocEnd_DB :=
+				backRepo.BackRepoXLRow.GetXLRowDBFromXLRowPtr(xlrowAssocEnd)
+			xlsheetDB.XLSheetPointersEncoding.Rows =
+				append(xlsheetDB.XLSheetPointersEncoding.Rows, int(xlrowAssocEnd_DB.ID))
+		}
+
 		// This loop encodes the slice of pointers xlsheet.SheetCells into the back repo.
 		// Each back repo instance at the end of the association encode the ID of the association start
 		// into a dedicated field for coding the association. The back repo instance is then saved to the db
@@ -270,9 +286,19 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 			}
 		}
 
+		// 1. reset
+		xlsheetDB.XLSheetPointersEncoding.SheetCells = make([]int, 0)
+		// 2. encode
+		for _, xlcellAssocEnd := range xlsheet.SheetCells {
+			xlcellAssocEnd_DB :=
+				backRepo.BackRepoXLCell.GetXLCellDBFromXLCellPtr(xlcellAssocEnd)
+			xlsheetDB.XLSheetPointersEncoding.SheetCells =
+				append(xlsheetDB.XLSheetPointersEncoding.SheetCells, int(xlcellAssocEnd_DB.ID))
+		}
+
 		query := backRepoXLSheet.db.Save(&xlsheetDB)
 		if query.Error != nil {
-			return query.Error
+			log.Fatalln(query.Error)
 		}
 
 	} else {
@@ -453,7 +479,7 @@ func (backRepo *BackRepoStruct) CheckoutXLSheet(xlsheet *models.XLSheet) {
 			xlsheetDB.ID = id
 
 			if err := backRepo.BackRepoXLSheet.db.First(&xlsheetDB, id).Error; err != nil {
-				log.Panicln("CheckoutXLSheet : Problem with getting object with id:", id)
+				log.Fatalln("CheckoutXLSheet : Problem with getting object with id:", id)
 			}
 			backRepo.BackRepoXLSheet.CheckoutPhaseOneInstance(&xlsheetDB)
 			backRepo.BackRepoXLSheet.CheckoutPhaseTwoInstance(backRepo, &xlsheetDB)
@@ -463,6 +489,23 @@ func (backRepo *BackRepoStruct) CheckoutXLSheet(xlsheet *models.XLSheet) {
 
 // CopyBasicFieldsFromXLSheet
 func (xlsheetDB *XLSheetDB) CopyBasicFieldsFromXLSheet(xlsheet *models.XLSheet) {
+	// insertion point for fields commit
+
+	xlsheetDB.Name_Data.String = xlsheet.Name
+	xlsheetDB.Name_Data.Valid = true
+
+	xlsheetDB.MaxRow_Data.Int64 = int64(xlsheet.MaxRow)
+	xlsheetDB.MaxRow_Data.Valid = true
+
+	xlsheetDB.MaxCol_Data.Int64 = int64(xlsheet.MaxCol)
+	xlsheetDB.MaxCol_Data.Valid = true
+
+	xlsheetDB.NbRows_Data.Int64 = int64(xlsheet.NbRows)
+	xlsheetDB.NbRows_Data.Valid = true
+}
+
+// CopyBasicFieldsFromXLSheet_WOP
+func (xlsheetDB *XLSheetDB) CopyBasicFieldsFromXLSheet_WOP(xlsheet *models.XLSheet_WOP) {
 	// insertion point for fields commit
 
 	xlsheetDB.Name_Data.String = xlsheet.Name
@@ -504,6 +547,15 @@ func (xlsheetDB *XLSheetDB) CopyBasicFieldsToXLSheet(xlsheet *models.XLSheet) {
 	xlsheet.NbRows = int(xlsheetDB.NbRows_Data.Int64)
 }
 
+// CopyBasicFieldsToXLSheet_WOP
+func (xlsheetDB *XLSheetDB) CopyBasicFieldsToXLSheet_WOP(xlsheet *models.XLSheet_WOP) {
+	// insertion point for checkout of basic fields (back repo to stage)
+	xlsheet.Name = xlsheetDB.Name_Data.String
+	xlsheet.MaxRow = int(xlsheetDB.MaxRow_Data.Int64)
+	xlsheet.MaxCol = int(xlsheetDB.MaxCol_Data.Int64)
+	xlsheet.NbRows = int(xlsheetDB.NbRows_Data.Int64)
+}
+
 // CopyBasicFieldsToXLSheetWOP
 func (xlsheetDB *XLSheetDB) CopyBasicFieldsToXLSheetWOP(xlsheet *XLSheetWOP) {
 	xlsheet.ID = int(xlsheetDB.ID)
@@ -533,12 +585,12 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) Backup(dirPath string) {
 	file, err := json.MarshalIndent(forBackup, "", " ")
 
 	if err != nil {
-		log.Panic("Cannot json XLSheet ", filename, " ", err.Error())
+		log.Fatal("Cannot json XLSheet ", filename, " ", err.Error())
 	}
 
 	err = ioutil.WriteFile(filename, file, 0644)
 	if err != nil {
-		log.Panic("Cannot write the json XLSheet file", err.Error())
+		log.Fatal("Cannot write the json XLSheet file", err.Error())
 	}
 }
 
@@ -558,7 +610,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) BackupXL(file *xlsx.File) {
 
 	sh, err := file.AddSheet("XLSheet")
 	if err != nil {
-		log.Panic("Cannot add XL file", err.Error())
+		log.Fatal("Cannot add XL file", err.Error())
 	}
 	_ = sh
 
@@ -583,13 +635,13 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) RestoreXLPhaseOne(file *xlsx.File)
 	sh, ok := file.Sheet["XLSheet"]
 	_ = sh
 	if !ok {
-		log.Panic(errors.New("sheet not found"))
+		log.Fatal(errors.New("sheet not found"))
 	}
 
 	// log.Println("Max row is", sh.MaxRow)
 	err := sh.ForEachRow(backRepoXLSheet.rowVisitorXLSheet)
 	if err != nil {
-		log.Panic("Err=", err)
+		log.Fatal("Err=", err)
 	}
 }
 
@@ -611,7 +663,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) rowVisitorXLSheet(row *xlsx.Row) e
 		xlsheetDB.ID = 0
 		query := backRepoXLSheet.db.Create(xlsheetDB)
 		if query.Error != nil {
-			log.Panic(query.Error)
+			log.Fatal(query.Error)
 		}
 		backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[xlsheetDB.ID] = xlsheetDB
 		BackRepoXLSheetid_atBckpTime_newID[xlsheetDB_ID_atBackupTime] = xlsheetDB.ID
@@ -631,7 +683,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseOne(dirPath string) {
 	jsonFile, err := os.Open(filename)
 	// if we os.Open returns an error then handle it
 	if err != nil {
-		log.Panic("Cannot restore/open the json XLSheet file", filename, " ", err.Error())
+		log.Fatal("Cannot restore/open the json XLSheet file", filename, " ", err.Error())
 	}
 
 	// read our opened jsonFile as a byte array.
@@ -648,14 +700,14 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseOne(dirPath string) {
 		xlsheetDB.ID = 0
 		query := backRepoXLSheet.db.Create(xlsheetDB)
 		if query.Error != nil {
-			log.Panic(query.Error)
+			log.Fatal(query.Error)
 		}
 		backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[xlsheetDB.ID] = xlsheetDB
 		BackRepoXLSheetid_atBckpTime_newID[xlsheetDB_ID_atBackupTime] = xlsheetDB.ID
 	}
 
 	if err != nil {
-		log.Panic("Cannot restore/unmarshall json XLSheet file", err.Error())
+		log.Fatal("Cannot restore/unmarshall json XLSheet file", err.Error())
 	}
 }
 
@@ -678,7 +730,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseTwo() {
 		// update databse with new index encoding
 		query := backRepoXLSheet.db.Model(xlsheetDB).Updates(*xlsheetDB)
 		if query.Error != nil {
-			log.Panic(query.Error)
+			log.Fatal(query.Error)
 		}
 	}
 

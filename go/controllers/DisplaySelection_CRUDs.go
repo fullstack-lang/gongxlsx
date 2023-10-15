@@ -91,8 +91,8 @@ func (controller *Controller) GetDisplaySelections(c *gin.Context) {
 
 		// insertion point for updating fields
 		displayselectionAPI.ID = displayselectionDB.ID
-		displayselectionDB.CopyBasicFieldsToDisplaySelection(&displayselectionAPI.DisplaySelection)
-		displayselectionAPI.DisplaySelectionPointersEnconding = displayselectionDB.DisplaySelectionPointersEnconding
+		displayselectionDB.CopyBasicFieldsToDisplaySelection_WOP(&displayselectionAPI.DisplaySelection_WOP)
+		displayselectionAPI.DisplaySelectionPointersEncoding = displayselectionDB.DisplaySelectionPointersEncoding
 		displayselectionAPIs = append(displayselectionAPIs, displayselectionAPI)
 	}
 
@@ -147,8 +147,8 @@ func (controller *Controller) PostDisplaySelection(c *gin.Context) {
 
 	// Create displayselection
 	displayselectionDB := orm.DisplaySelectionDB{}
-	displayselectionDB.DisplaySelectionPointersEnconding = input.DisplaySelectionPointersEnconding
-	displayselectionDB.CopyBasicFieldsFromDisplaySelection(&input.DisplaySelection)
+	displayselectionDB.DisplaySelectionPointersEncoding = input.DisplaySelectionPointersEncoding
+	displayselectionDB.CopyBasicFieldsFromDisplaySelection_WOP(&input.DisplaySelection_WOP)
 
 	query := db.Create(&displayselectionDB)
 	if query.Error != nil {
@@ -217,8 +217,8 @@ func (controller *Controller) GetDisplaySelection(c *gin.Context) {
 
 	var displayselectionAPI orm.DisplaySelectionAPI
 	displayselectionAPI.ID = displayselectionDB.ID
-	displayselectionAPI.DisplaySelectionPointersEnconding = displayselectionDB.DisplaySelectionPointersEnconding
-	displayselectionDB.CopyBasicFieldsToDisplaySelection(&displayselectionAPI.DisplaySelection)
+	displayselectionAPI.DisplaySelectionPointersEncoding = displayselectionDB.DisplaySelectionPointersEncoding
+	displayselectionDB.CopyBasicFieldsToDisplaySelection_WOP(&displayselectionAPI.DisplaySelection_WOP)
 
 	c.JSON(http.StatusOK, displayselectionAPI)
 }
@@ -276,8 +276,8 @@ func (controller *Controller) UpdateDisplaySelection(c *gin.Context) {
 	}
 
 	// update
-	displayselectionDB.CopyBasicFieldsFromDisplaySelection(&input.DisplaySelection)
-	displayselectionDB.DisplaySelectionPointersEnconding = input.DisplaySelectionPointersEnconding
+	displayselectionDB.CopyBasicFieldsFromDisplaySelection_WOP(&input.DisplaySelection_WOP)
+	displayselectionDB.DisplaySelectionPointersEncoding = input.DisplaySelectionPointersEncoding
 
 	query = db.Model(&displayselectionDB).Updates(displayselectionDB)
 	if query.Error != nil {
