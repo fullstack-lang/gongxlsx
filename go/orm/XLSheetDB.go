@@ -38,7 +38,7 @@ type XLSheetAPI struct {
 	models.XLSheet_WOP
 
 	// encoding of pointers
-	XLSheetPointersEncoding
+	XLSheetPointersEncoding XLSheetPointersEncoding
 }
 
 // XLSheetPointersEncoding encodes pointers to Struct and
@@ -47,16 +47,10 @@ type XLSheetPointersEncoding struct {
 	// insertion for pointer fields encoding declaration
 
 	// field Rows is a slice of pointers to another Struct (optional or 0..1)
-	Rows IntSlice`gorm:"type:TEXT"`
+	Rows IntSlice `gorm:"type:TEXT"`
 
 	// field SheetCells is a slice of pointers to another Struct (optional or 0..1)
-	SheetCells IntSlice`gorm:"type:TEXT"`
-
-	// Implementation of a reverse ID for field XLFile{}.Sheets []*XLSheet
-	XLFile_SheetsDBID sql.NullInt64
-
-	// implementation of the index of the withing the slice
-	XLFile_SheetsDBID_Index sql.NullInt64
+	SheetCells IntSlice `gorm:"type:TEXT"`
 }
 
 // XLSheetDB describes a xlsheet in the database
@@ -238,25 +232,6 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 		xlsheetDB.CopyBasicFieldsFromXLSheet(xlsheet)
 
 		// insertion point for translating pointers encodings into actual pointers
-		// This loop encodes the slice of pointers xlsheet.Rows into the back repo.
-		// Each back repo instance at the end of the association encode the ID of the association start
-		// into a dedicated field for coding the association. The back repo instance is then saved to the db
-		for idx, xlrowAssocEnd := range xlsheet.Rows {
-
-			// get the back repo instance at the association end
-			xlrowAssocEnd_DB :=
-				backRepo.BackRepoXLRow.GetXLRowDBFromXLRowPtr(xlrowAssocEnd)
-
-			// encode reverse pointer in the association end back repo instance
-			xlrowAssocEnd_DB.XLSheet_RowsDBID.Int64 = int64(xlsheetDB.ID)
-			xlrowAssocEnd_DB.XLSheet_RowsDBID.Valid = true
-			xlrowAssocEnd_DB.XLSheet_RowsDBID_Index.Int64 = int64(idx)
-			xlrowAssocEnd_DB.XLSheet_RowsDBID_Index.Valid = true
-			if q := backRepoXLSheet.db.Save(xlrowAssocEnd_DB); q.Error != nil {
-				return q.Error
-			}
-		}
-
 		// 1. reset
 		xlsheetDB.XLSheetPointersEncoding.Rows = make([]int, 0)
 		// 2. encode
@@ -265,25 +240,6 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 				backRepo.BackRepoXLRow.GetXLRowDBFromXLRowPtr(xlrowAssocEnd)
 			xlsheetDB.XLSheetPointersEncoding.Rows =
 				append(xlsheetDB.XLSheetPointersEncoding.Rows, int(xlrowAssocEnd_DB.ID))
-		}
-
-		// This loop encodes the slice of pointers xlsheet.SheetCells into the back repo.
-		// Each back repo instance at the end of the association encode the ID of the association start
-		// into a dedicated field for coding the association. The back repo instance is then saved to the db
-		for idx, xlcellAssocEnd := range xlsheet.SheetCells {
-
-			// get the back repo instance at the association end
-			xlcellAssocEnd_DB :=
-				backRepo.BackRepoXLCell.GetXLCellDBFromXLCellPtr(xlcellAssocEnd)
-
-			// encode reverse pointer in the association end back repo instance
-			xlcellAssocEnd_DB.XLSheet_SheetCellsDBID.Int64 = int64(xlsheetDB.ID)
-			xlcellAssocEnd_DB.XLSheet_SheetCellsDBID.Valid = true
-			xlcellAssocEnd_DB.XLSheet_SheetCellsDBID_Index.Int64 = int64(idx)
-			xlcellAssocEnd_DB.XLSheet_SheetCellsDBID_Index.Valid = true
-			if q := backRepoXLSheet.db.Save(xlcellAssocEnd_DB); q.Error != nil {
-				return q.Error
-			}
 		}
 
 		// 1. reset
@@ -408,54 +364,18 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseTwoInstance(backRepo 
 	// it appends the stage instance
 	// 1. reset the slice
 	xlsheet.Rows = xlsheet.Rows[:0]
-	// 2. loop all instances in the type in the association end
-	for _, xlrowDB_AssocEnd := range backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB {
-		// 3. Does the ID encoding at the end and the ID at the start matches ?
-		if xlrowDB_AssocEnd.XLSheet_RowsDBID.Int64 == int64(xlsheetDB.ID) {
-			// 4. fetch the associated instance in the stage
-			xlrow_AssocEnd := backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr[xlrowDB_AssocEnd.ID]
-			// 5. append it the association slice
-			xlsheet.Rows = append(xlsheet.Rows, xlrow_AssocEnd)
-		}
+	for _, _XLRowid := range xlsheetDB.XLSheetPointersEncoding.Rows {
+		xlsheet.Rows = append(xlsheet.Rows, backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr[uint(_XLRowid)])
 	}
-
-	// sort the array according to the order
-	sort.Slice(xlsheet.Rows, func(i, j int) bool {
-		xlrowDB_i_ID := backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID[xlsheet.Rows[i]]
-		xlrowDB_j_ID := backRepo.BackRepoXLRow.Map_XLRowPtr_XLRowDBID[xlsheet.Rows[j]]
-
-		xlrowDB_i := backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB[xlrowDB_i_ID]
-		xlrowDB_j := backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowDB[xlrowDB_j_ID]
-
-		return xlrowDB_i.XLSheet_RowsDBID_Index.Int64 < xlrowDB_j.XLSheet_RowsDBID_Index.Int64
-	})
 
 	// This loop redeem xlsheet.SheetCells in the stage from the encode in the back repo
 	// It parses all XLCellDB in the back repo and if the reverse pointer encoding matches the back repo ID
 	// it appends the stage instance
 	// 1. reset the slice
 	xlsheet.SheetCells = xlsheet.SheetCells[:0]
-	// 2. loop all instances in the type in the association end
-	for _, xlcellDB_AssocEnd := range backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB {
-		// 3. Does the ID encoding at the end and the ID at the start matches ?
-		if xlcellDB_AssocEnd.XLSheet_SheetCellsDBID.Int64 == int64(xlsheetDB.ID) {
-			// 4. fetch the associated instance in the stage
-			xlcell_AssocEnd := backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr[xlcellDB_AssocEnd.ID]
-			// 5. append it the association slice
-			xlsheet.SheetCells = append(xlsheet.SheetCells, xlcell_AssocEnd)
-		}
+	for _, _XLCellid := range xlsheetDB.XLSheetPointersEncoding.SheetCells {
+		xlsheet.SheetCells = append(xlsheet.SheetCells, backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr[uint(_XLCellid)])
 	}
-
-	// sort the array according to the order
-	sort.Slice(xlsheet.SheetCells, func(i, j int) bool {
-		xlcellDB_i_ID := backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID[xlsheet.SheetCells[i]]
-		xlcellDB_j_ID := backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID[xlsheet.SheetCells[j]]
-
-		xlcellDB_i := backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB[xlcellDB_i_ID]
-		xlcellDB_j := backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB[xlcellDB_j_ID]
-
-		return xlcellDB_i.XLSheet_SheetCellsDBID_Index.Int64 < xlcellDB_j.XLSheet_SheetCellsDBID_Index.Int64
-	})
 
 	return
 }
@@ -721,12 +641,6 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseTwo() {
 		_ = xlsheetDB
 
 		// insertion point for reindexing pointers encoding
-		// This reindex xlsheet.Sheets
-		if xlsheetDB.XLFile_SheetsDBID.Int64 != 0 {
-			xlsheetDB.XLFile_SheetsDBID.Int64 =
-				int64(BackRepoXLFileid_atBckpTime_newID[uint(xlsheetDB.XLFile_SheetsDBID.Int64)])
-		}
-
 		// update databse with new index encoding
 		query := backRepoXLSheet.db.Model(xlsheetDB).Updates(*xlsheetDB)
 		if query.Error != nil {
@@ -754,15 +668,6 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) ResetReversePointersInstance(backR
 		_ = xlsheetDB // to avoid unused variable error if there are no reverse to reset
 
 		// insertion point for reverse pointers reset
-		if xlsheetDB.XLFile_SheetsDBID.Int64 != 0 {
-			xlsheetDB.XLFile_SheetsDBID.Int64 = 0
-			xlsheetDB.XLFile_SheetsDBID.Valid = true
-
-			// save the reset
-			if q := backRepoXLSheet.db.Save(xlsheetDB); q.Error != nil {
-				return q.Error
-			}
-		}
 		// end of insertion point for reverse pointers reset
 	}
 

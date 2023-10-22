@@ -48,6 +48,8 @@ type StageStruct struct {
 	DisplaySelections           map[*DisplaySelection]any
 	DisplaySelections_mapString map[string]*DisplaySelection
 
+	// insertion point for slice of pointers maps
+
 	OnAfterDisplaySelectionCreateCallback OnAfterCreateInterface[DisplaySelection]
 	OnAfterDisplaySelectionUpdateCallback OnAfterUpdateInterface[DisplaySelection]
 	OnAfterDisplaySelectionDeleteCallback OnAfterDeleteInterface[DisplaySelection]
@@ -55,6 +57,8 @@ type StageStruct struct {
 
 	XLCells           map[*XLCell]any
 	XLCells_mapString map[string]*XLCell
+
+	// insertion point for slice of pointers maps
 
 	OnAfterXLCellCreateCallback OnAfterCreateInterface[XLCell]
 	OnAfterXLCellUpdateCallback OnAfterUpdateInterface[XLCell]
@@ -64,6 +68,9 @@ type StageStruct struct {
 	XLFiles           map[*XLFile]any
 	XLFiles_mapString map[string]*XLFile
 
+	// insertion point for slice of pointers maps
+	XLFile_Sheets_reverseMap map[*XLSheet]*XLFile
+
 	OnAfterXLFileCreateCallback OnAfterCreateInterface[XLFile]
 	OnAfterXLFileUpdateCallback OnAfterUpdateInterface[XLFile]
 	OnAfterXLFileDeleteCallback OnAfterDeleteInterface[XLFile]
@@ -72,6 +79,9 @@ type StageStruct struct {
 	XLRows           map[*XLRow]any
 	XLRows_mapString map[string]*XLRow
 
+	// insertion point for slice of pointers maps
+	XLRow_Cells_reverseMap map[*XLCell]*XLRow
+
 	OnAfterXLRowCreateCallback OnAfterCreateInterface[XLRow]
 	OnAfterXLRowUpdateCallback OnAfterUpdateInterface[XLRow]
 	OnAfterXLRowDeleteCallback OnAfterDeleteInterface[XLRow]
@@ -79,6 +89,10 @@ type StageStruct struct {
 
 	XLSheets           map[*XLSheet]any
 	XLSheets_mapString map[string]*XLSheet
+
+	// insertion point for slice of pointers maps
+	XLSheet_Rows_reverseMap map[*XLRow]*XLSheet
+	XLSheet_SheetCells_reverseMap map[*XLCell]*XLSheet
 
 	OnAfterXLSheetCreateCallback OnAfterCreateInterface[XLSheet]
 	OnAfterXLSheetUpdateCallback OnAfterUpdateInterface[XLSheet]
@@ -207,6 +221,8 @@ func (stage *StageStruct) CommitWithSuspendedCallbacks() {
 }
 
 func (stage *StageStruct) Commit() {
+	stage.ComputeReverseMaps()
+
 	if stage.BackRepo != nil {
 		stage.BackRepo.Commit(stage)
 	}
@@ -225,6 +241,7 @@ func (stage *StageStruct) Checkout() {
 		stage.BackRepo.Checkout(stage)
 	}
 
+	stage.ComputeReverseMaps()
 	// insertion point for computing the map of number of instances per gongstruct
 	stage.Map_GongStructName_InstancesNb["DisplaySelection"] = len(stage.DisplaySelections)
 	stage.Map_GongStructName_InstancesNb["XLCell"] = len(stage.XLCells)

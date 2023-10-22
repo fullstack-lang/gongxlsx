@@ -38,7 +38,7 @@ type DisplaySelectionAPI struct {
 	models.DisplaySelection_WOP
 
 	// encoding of pointers
-	DisplaySelectionPointersEncoding
+	DisplaySelectionPointersEncoding DisplaySelectionPointersEncoding
 }
 
 // DisplaySelectionPointersEncoding encodes pointers to Struct and

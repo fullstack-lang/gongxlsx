@@ -38,25 +38,13 @@ type XLCellAPI struct {
 	models.XLCell_WOP
 
 	// encoding of pointers
-	XLCellPointersEncoding
+	XLCellPointersEncoding XLCellPointersEncoding
 }
 
 // XLCellPointersEncoding encodes pointers to Struct and
 // reverse pointers of slice of poitners to Struct
 type XLCellPointersEncoding struct {
 	// insertion for pointer fields encoding declaration
-
-	// Implementation of a reverse ID for field XLRow{}.Cells []*XLCell
-	XLRow_CellsDBID sql.NullInt64
-
-	// implementation of the index of the withing the slice
-	XLRow_CellsDBID_Index sql.NullInt64
-
-	// Implementation of a reverse ID for field XLSheet{}.SheetCells []*XLCell
-	XLSheet_SheetCellsDBID sql.NullInt64
-
-	// implementation of the index of the withing the slice
-	XLSheet_SheetCellsDBID_Index sql.NullInt64
 }
 
 // XLCellDB describes a xlcell in the database
@@ -591,18 +579,6 @@ func (backRepoXLCell *BackRepoXLCellStruct) RestorePhaseTwo() {
 		_ = xlcellDB
 
 		// insertion point for reindexing pointers encoding
-		// This reindex xlcell.Cells
-		if xlcellDB.XLRow_CellsDBID.Int64 != 0 {
-			xlcellDB.XLRow_CellsDBID.Int64 =
-				int64(BackRepoXLRowid_atBckpTime_newID[uint(xlcellDB.XLRow_CellsDBID.Int64)])
-		}
-
-		// This reindex xlcell.SheetCells
-		if xlcellDB.XLSheet_SheetCellsDBID.Int64 != 0 {
-			xlcellDB.XLSheet_SheetCellsDBID.Int64 =
-				int64(BackRepoXLSheetid_atBckpTime_newID[uint(xlcellDB.XLSheet_SheetCellsDBID.Int64)])
-		}
-
 		// update databse with new index encoding
 		query := backRepoXLCell.db.Model(xlcellDB).Updates(*xlcellDB)
 		if query.Error != nil {
@@ -630,24 +606,6 @@ func (backRepoXLCell *BackRepoXLCellStruct) ResetReversePointersInstance(backRep
 		_ = xlcellDB // to avoid unused variable error if there are no reverse to reset
 
 		// insertion point for reverse pointers reset
-		if xlcellDB.XLRow_CellsDBID.Int64 != 0 {
-			xlcellDB.XLRow_CellsDBID.Int64 = 0
-			xlcellDB.XLRow_CellsDBID.Valid = true
-
-			// save the reset
-			if q := backRepoXLCell.db.Save(xlcellDB); q.Error != nil {
-				return q.Error
-			}
-		}
-		if xlcellDB.XLSheet_SheetCellsDBID.Int64 != 0 {
-			xlcellDB.XLSheet_SheetCellsDBID.Int64 = 0
-			xlcellDB.XLSheet_SheetCellsDBID.Valid = true
-
-			// save the reset
-			if q := backRepoXLCell.db.Save(xlcellDB); q.Error != nil {
-				return q.Error
-			}
-		}
 		// end of insertion point for reverse pointers reset
 	}
 

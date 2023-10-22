@@ -12,10 +12,9 @@ import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { XLCellDB } from './xlcell-db';
+import { FrontRepo, FrontRepoService } from './front-repo.service';
 
 // insertion point for imports
-import { XLRowDB } from './xlrow-db'
-import { XLSheetDB } from './xlsheet-db'
 
 @Injectable({
   providedIn: 'root'
@@ -45,10 +44,10 @@ export class XLCellService {
 
   /** GET xlcells from the server */
   // gets is more robust to refactoring
-  gets(GONG__StackPath: string): Observable<XLCellDB[]> {
-    return this.getXLCells(GONG__StackPath)
+  gets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB[]> {
+    return this.getXLCells(GONG__StackPath, frontRepo)
   }
-  getXLCells(GONG__StackPath: string): Observable<XLCellDB[]> {
+  getXLCells(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -62,10 +61,10 @@ export class XLCellService {
 
   /** GET xlcell by id. Will 404 if id not found */
   // more robust API to refactoring
-  get(id: number, GONG__StackPath: string): Observable<XLCellDB> {
-	return this.getXLCell(id, GONG__StackPath)
+  get(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB> {
+    return this.getXLCell(id, GONG__StackPath, frontRepo)
   }
-  getXLCell(id: number, GONG__StackPath: string): Observable<XLCellDB> {
+  getXLCell(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -77,16 +76,12 @@ export class XLCellService {
   }
 
   /** POST: add a new xlcell to the server */
-  post(xlcelldb: XLCellDB, GONG__StackPath: string): Observable<XLCellDB> {
-    return this.postXLCell(xlcelldb, GONG__StackPath)	
+  post(xlcelldb: XLCellDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB> {
+    return this.postXLCell(xlcelldb, GONG__StackPath, frontRepo)
   }
-  postXLCell(xlcelldb: XLCellDB, GONG__StackPath: string): Observable<XLCellDB> {
+  postXLCell(xlcelldb: XLCellDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
-    let _XLRow_Cells_reverse = xlcelldb.XLRow_Cells_reverse
-    xlcelldb.XLRow_Cells_reverse = new XLRowDB
-    let _XLSheet_SheetCells_reverse = xlcelldb.XLSheet_SheetCells_reverse
-    xlcelldb.XLSheet_SheetCells_reverse = new XLSheetDB
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -97,8 +92,6 @@ export class XLCellService {
     return this.http.post<XLCellDB>(this.xlcellsUrl, xlcelldb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
-        xlcelldb.XLRow_Cells_reverse = _XLRow_Cells_reverse
-        xlcelldb.XLSheet_SheetCells_reverse = _XLSheet_SheetCells_reverse
         // this.log(`posted xlcelldb id=${xlcelldb.ID}`)
       }),
       catchError(this.handleError<XLCellDB>('postXLCell'))
@@ -126,18 +119,15 @@ export class XLCellService {
   }
 
   /** PUT: update the xlcelldb on the server */
-  update(xlcelldb: XLCellDB, GONG__StackPath: string): Observable<XLCellDB> {
-    return this.updateXLCell(xlcelldb, GONG__StackPath)
+  update(xlcelldb: XLCellDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB> {
+    return this.updateXLCell(xlcelldb, GONG__StackPath, frontRepo)
   }
-  updateXLCell(xlcelldb: XLCellDB, GONG__StackPath: string): Observable<XLCellDB> {
+  updateXLCell(xlcelldb: XLCellDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB> {
     const id = typeof xlcelldb === 'number' ? xlcelldb : xlcelldb.ID;
     const url = `${this.xlcellsUrl}/${id}`;
 
-    // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
-    let _XLRow_Cells_reverse = xlcelldb.XLRow_Cells_reverse
-    xlcelldb.XLRow_Cells_reverse = new XLRowDB
-    let _XLSheet_SheetCells_reverse = xlcelldb.XLSheet_SheetCells_reverse
-    xlcelldb.XLSheet_SheetCells_reverse = new XLSheetDB
+    // insertion point for reset of pointers (to avoid circular JSON)
+	// and encoding of pointers
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -148,8 +138,6 @@ export class XLCellService {
     return this.http.put<XLCellDB>(url, xlcelldb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
-        xlcelldb.XLRow_Cells_reverse = _XLRow_Cells_reverse
-        xlcelldb.XLSheet_SheetCells_reverse = _XLSheet_SheetCells_reverse
         // this.log(`updated xlcelldb id=${xlcelldb.ID}`)
       }),
       catchError(this.handleError<XLCellDB>('updateXLCell'))
@@ -177,6 +165,6 @@ export class XLCellService {
   }
 
   private log(message: string) {
-      console.log(message)
+    console.log(message)
   }
 }

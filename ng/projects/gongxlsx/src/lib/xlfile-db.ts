@@ -16,6 +16,13 @@ export class XLFileDB {
 	Name: string = ""
 	NbSheets: number = 0
 
-	// insertion point for other declarations
-	Sheets?: Array<XLSheetDB>
+	// insertion point for pointers and slices of pointers declarations
+	Sheets: Array<XLSheetDB> = []
+
+	XLFilePointersEncoding: XLFilePointersEncoding = new XLFilePointersEncoding
+}
+
+export class XLFilePointersEncoding {
+	// insertion point for pointers and slices of pointers encoding fields
+	Sheets: number[] = []
 }

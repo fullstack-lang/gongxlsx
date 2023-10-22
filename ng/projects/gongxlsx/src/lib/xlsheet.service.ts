@@ -12,9 +12,11 @@ import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { XLSheetDB } from './xlsheet-db';
+import { FrontRepo, FrontRepoService } from './front-repo.service';
 
 // insertion point for imports
-import { XLFileDB } from './xlfile-db'
+import { XLRowDB } from './xlrow-db'
+import { XLCellDB } from './xlcell-db'
 
 @Injectable({
   providedIn: 'root'
@@ -44,10 +46,10 @@ export class XLSheetService {
 
   /** GET xlsheets from the server */
   // gets is more robust to refactoring
-  gets(GONG__StackPath: string): Observable<XLSheetDB[]> {
-    return this.getXLSheets(GONG__StackPath)
+  gets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB[]> {
+    return this.getXLSheets(GONG__StackPath, frontRepo)
   }
-  getXLSheets(GONG__StackPath: string): Observable<XLSheetDB[]> {
+  getXLSheets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -61,10 +63,10 @@ export class XLSheetService {
 
   /** GET xlsheet by id. Will 404 if id not found */
   // more robust API to refactoring
-  get(id: number, GONG__StackPath: string): Observable<XLSheetDB> {
-	return this.getXLSheet(id, GONG__StackPath)
+  get(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
+    return this.getXLSheet(id, GONG__StackPath, frontRepo)
   }
-  getXLSheet(id: number, GONG__StackPath: string): Observable<XLSheetDB> {
+  getXLSheet(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -76,18 +78,20 @@ export class XLSheetService {
   }
 
   /** POST: add a new xlsheet to the server */
-  post(xlsheetdb: XLSheetDB, GONG__StackPath: string): Observable<XLSheetDB> {
-    return this.postXLSheet(xlsheetdb, GONG__StackPath)	
+  post(xlsheetdb: XLSheetDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
+    return this.postXLSheet(xlsheetdb, GONG__StackPath, frontRepo)
   }
-  postXLSheet(xlsheetdb: XLSheetDB, GONG__StackPath: string): Observable<XLSheetDB> {
+  postXLSheet(xlsheetdb: XLSheetDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
-    let Rows = xlsheetdb.Rows
+    for (let _xlrow of xlsheetdb.Rows) {
+      xlsheetdb.XLSheetPointersEncoding.Rows.push(_xlrow.ID)
+    }
     xlsheetdb.Rows = []
-    let SheetCells = xlsheetdb.SheetCells
+    for (let _xlcell of xlsheetdb.SheetCells) {
+      xlsheetdb.XLSheetPointersEncoding.SheetCells.push(_xlcell.ID)
+    }
     xlsheetdb.SheetCells = []
-    let _XLFile_Sheets_reverse = xlsheetdb.XLFile_Sheets_reverse
-    xlsheetdb.XLFile_Sheets_reverse = new XLFileDB
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -98,9 +102,20 @@ export class XLSheetService {
     return this.http.post<XLSheetDB>(this.xlsheetsUrl, xlsheetdb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
-	      xlsheetdb.Rows = Rows
-	      xlsheetdb.SheetCells = SheetCells
-        xlsheetdb.XLFile_Sheets_reverse = _XLFile_Sheets_reverse
+        xlsheetdb.Rows = new Array<XLRowDB>()
+        for (let _id of xlsheetdb.XLSheetPointersEncoding.Rows) {
+          let _xlrow = frontRepo.XLRows.get(_id)
+          if (_xlrow != undefined) {
+            xlsheetdb.Rows.push(_xlrow!)
+          }
+        }
+        xlsheetdb.SheetCells = new Array<XLCellDB>()
+        for (let _id of xlsheetdb.XLSheetPointersEncoding.SheetCells) {
+          let _xlcell = frontRepo.XLCells.get(_id)
+          if (_xlcell != undefined) {
+            xlsheetdb.SheetCells.push(_xlcell!)
+          }
+        }
         // this.log(`posted xlsheetdb id=${xlsheetdb.ID}`)
       }),
       catchError(this.handleError<XLSheetDB>('postXLSheet'))
@@ -128,20 +143,23 @@ export class XLSheetService {
   }
 
   /** PUT: update the xlsheetdb on the server */
-  update(xlsheetdb: XLSheetDB, GONG__StackPath: string): Observable<XLSheetDB> {
-    return this.updateXLSheet(xlsheetdb, GONG__StackPath)
+  update(xlsheetdb: XLSheetDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
+    return this.updateXLSheet(xlsheetdb, GONG__StackPath, frontRepo)
   }
-  updateXLSheet(xlsheetdb: XLSheetDB, GONG__StackPath: string): Observable<XLSheetDB> {
+  updateXLSheet(xlsheetdb: XLSheetDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
     const id = typeof xlsheetdb === 'number' ? xlsheetdb : xlsheetdb.ID;
     const url = `${this.xlsheetsUrl}/${id}`;
 
-    // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
-    let Rows = xlsheetdb.Rows
+    // insertion point for reset of pointers (to avoid circular JSON)
+	// and encoding of pointers
+    for (let _xlrow of xlsheetdb.Rows) {
+      xlsheetdb.XLSheetPointersEncoding.Rows.push(_xlrow.ID)
+    }
     xlsheetdb.Rows = []
-    let SheetCells = xlsheetdb.SheetCells
+    for (let _xlcell of xlsheetdb.SheetCells) {
+      xlsheetdb.XLSheetPointersEncoding.SheetCells.push(_xlcell.ID)
+    }
     xlsheetdb.SheetCells = []
-    let _XLFile_Sheets_reverse = xlsheetdb.XLFile_Sheets_reverse
-    xlsheetdb.XLFile_Sheets_reverse = new XLFileDB
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -152,9 +170,20 @@ export class XLSheetService {
     return this.http.put<XLSheetDB>(url, xlsheetdb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
-	      xlsheetdb.Rows = Rows
-	      xlsheetdb.SheetCells = SheetCells
-        xlsheetdb.XLFile_Sheets_reverse = _XLFile_Sheets_reverse
+        xlsheetdb.Rows = new Array<XLRowDB>()
+        for (let _id of xlsheetdb.XLSheetPointersEncoding.Rows) {
+          let _xlrow = frontRepo.XLRows.get(_id)
+          if (_xlrow != undefined) {
+            xlsheetdb.Rows.push(_xlrow!)
+          }
+        }
+        xlsheetdb.SheetCells = new Array<XLCellDB>()
+        for (let _id of xlsheetdb.XLSheetPointersEncoding.SheetCells) {
+          let _xlcell = frontRepo.XLCells.get(_id)
+          if (_xlcell != undefined) {
+            xlsheetdb.SheetCells.push(_xlcell!)
+          }
+        }
         // this.log(`updated xlsheetdb id=${xlsheetdb.ID}`)
       }),
       catchError(this.handleError<XLSheetDB>('updateXLSheet'))
@@ -182,6 +211,6 @@ export class XLSheetService {
   }
 
   private log(message: string) {
-      console.log(message)
+    console.log(message)
   }
 }

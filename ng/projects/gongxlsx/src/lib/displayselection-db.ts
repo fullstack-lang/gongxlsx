@@ -16,11 +16,19 @@ export class DisplaySelectionDB {
 	// insertion point for basic fields declarations
 	Name: string = ""
 
-	// insertion point for other declarations
+	// insertion point for pointers and slices of pointers declarations
 	XLFile?: XLFileDB
-	XLFileID: NullInt64 = new NullInt64 // if pointer is null, XLFile.ID = 0
 
 	XLSheet?: XLSheetDB
+
+
+	DisplaySelectionPointersEncoding: DisplaySelectionPointersEncoding = new DisplaySelectionPointersEncoding
+}
+
+export class DisplaySelectionPointersEncoding {
+	// insertion point for pointers and slices of pointers encoding fields
+	XLFileID: NullInt64 = new NullInt64 // if pointer is null, XLFile.ID = 0
+
 	XLSheetID: NullInt64 = new NullInt64 // if pointer is null, XLSheet.ID = 0
 
 }

@@ -1,7 +1,6 @@
 // insertion point for imports
 import { XLRowDB } from './xlrow-db'
 import { XLCellDB } from './xlcell-db'
-import { XLFileDB } from './xlfile-db'
 
 // usefull for managing pointer ID values that can be nullable
 import { NullInt64 } from './null-int64'
@@ -20,11 +19,15 @@ export class XLSheetDB {
 	MaxCol: number = 0
 	NbRows: number = 0
 
-	// insertion point for other declarations
-	Rows?: Array<XLRowDB>
-	SheetCells?: Array<XLCellDB>
-	XLFile_SheetsDBID: NullInt64 = new NullInt64
-	XLFile_SheetsDBID_Index: NullInt64  = new NullInt64 // store the index of the xlsheet instance in XLFile.Sheets
-	XLFile_Sheets_reverse?: XLFileDB 
+	// insertion point for pointers and slices of pointers declarations
+	Rows: Array<XLRowDB> = []
+	SheetCells: Array<XLCellDB> = []
 
+	XLSheetPointersEncoding: XLSheetPointersEncoding = new XLSheetPointersEncoding
+}
+
+export class XLSheetPointersEncoding {
+	// insertion point for pointers and slices of pointers encoding fields
+	Rows: number[] = []
+	SheetCells: number[] = []
 }

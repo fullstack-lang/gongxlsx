@@ -57,19 +57,15 @@ func GetReverseFieldOwnerName[T models.Gongstruct](
 		case "XLRow":
 			switch reverseField.Fieldname {
 			case "Cells":
-				if tmp != nil && tmp.XLRow_CellsDBID.Int64 != 0 {
-					id := uint(tmp.XLRow_CellsDBID.Int64)
-					reservePointerTarget := backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr[id]
-					res = reservePointerTarget.Name
+				if _xlrow, ok := stage.XLRow_Cells_reverseMap[inst]; ok {
+					res = _xlrow.Name
 				}
 			}
 		case "XLSheet":
 			switch reverseField.Fieldname {
 			case "SheetCells":
-				if tmp != nil && tmp.XLSheet_SheetCellsDBID.Int64 != 0 {
-					id := uint(tmp.XLSheet_SheetCellsDBID.Int64)
-					reservePointerTarget := backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[id]
-					res = reservePointerTarget.Name
+				if _xlsheet, ok := stage.XLSheet_SheetCells_reverseMap[inst]; ok {
+					res = _xlsheet.Name
 				}
 			}
 		}
@@ -120,10 +116,8 @@ func GetReverseFieldOwnerName[T models.Gongstruct](
 		case "XLSheet":
 			switch reverseField.Fieldname {
 			case "Rows":
-				if tmp != nil && tmp.XLSheet_RowsDBID.Int64 != 0 {
-					id := uint(tmp.XLSheet_RowsDBID.Int64)
-					reservePointerTarget := backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[id]
-					res = reservePointerTarget.Name
+				if _xlsheet, ok := stage.XLSheet_Rows_reverseMap[inst]; ok {
+					res = _xlsheet.Name
 				}
 			}
 		}
@@ -144,10 +138,8 @@ func GetReverseFieldOwnerName[T models.Gongstruct](
 		case "XLFile":
 			switch reverseField.Fieldname {
 			case "Sheets":
-				if tmp != nil && tmp.XLFile_SheetsDBID.Int64 != 0 {
-					id := uint(tmp.XLFile_SheetsDBID.Int64)
-					reservePointerTarget := backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr[id]
-					res = reservePointerTarget.Name
+				if _xlfile, ok := stage.XLFile_Sheets_reverseMap[inst]; ok {
+					res = _xlfile.Name
 				}
 			}
 		case "XLRow":
@@ -196,7 +188,7 @@ func GetReverseFieldOwner[T models.Gongstruct](
 			switch reverseField.Fieldname {
 			}
 		}
-	
+
 	case *models.XLCell:
 		tmp := GetInstanceDBFromInstance[models.XLCell, XLCellDB](
 			stage, backRepo, inst,
@@ -216,23 +208,15 @@ func GetReverseFieldOwner[T models.Gongstruct](
 		case "XLRow":
 			switch reverseField.Fieldname {
 			case "Cells":
-				if tmp != nil && tmp.XLRow_CellsDBID.Int64 != 0 {
-					id := uint(tmp.XLRow_CellsDBID.Int64)
-					reservePointerTarget := backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr[id]
-					res = reservePointerTarget
-				}
+				res = stage.XLRow_Cells_reverseMap[inst]
 			}
 		case "XLSheet":
 			switch reverseField.Fieldname {
 			case "SheetCells":
-				if tmp != nil && tmp.XLSheet_SheetCellsDBID.Int64 != 0 {
-					id := uint(tmp.XLSheet_SheetCellsDBID.Int64)
-					reservePointerTarget := backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[id]
-					res = reservePointerTarget
-				}
+				res = stage.XLSheet_SheetCells_reverseMap[inst]
 			}
 		}
-	
+
 	case *models.XLFile:
 		tmp := GetInstanceDBFromInstance[models.XLFile, XLFileDB](
 			stage, backRepo, inst,
@@ -256,7 +240,7 @@ func GetReverseFieldOwner[T models.Gongstruct](
 			switch reverseField.Fieldname {
 			}
 		}
-	
+
 	case *models.XLRow:
 		tmp := GetInstanceDBFromInstance[models.XLRow, XLRowDB](
 			stage, backRepo, inst,
@@ -279,14 +263,10 @@ func GetReverseFieldOwner[T models.Gongstruct](
 		case "XLSheet":
 			switch reverseField.Fieldname {
 			case "Rows":
-				if tmp != nil && tmp.XLSheet_RowsDBID.Int64 != 0 {
-					id := uint(tmp.XLSheet_RowsDBID.Int64)
-					reservePointerTarget := backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[id]
-					res = reservePointerTarget
-				}
+				res = stage.XLSheet_Rows_reverseMap[inst]
 			}
 		}
-	
+
 	case *models.XLSheet:
 		tmp := GetInstanceDBFromInstance[models.XLSheet, XLSheetDB](
 			stage, backRepo, inst,
@@ -303,11 +283,7 @@ func GetReverseFieldOwner[T models.Gongstruct](
 		case "XLFile":
 			switch reverseField.Fieldname {
 			case "Sheets":
-				if tmp != nil && tmp.XLFile_SheetsDBID.Int64 != 0 {
-					id := uint(tmp.XLFile_SheetsDBID.Int64)
-					reservePointerTarget := backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr[id]
-					res = reservePointerTarget
-				}
+				res = stage.XLFile_Sheets_reverseMap[inst]
 			}
 		case "XLRow":
 			switch reverseField.Fieldname {
@@ -316,7 +292,7 @@ func GetReverseFieldOwner[T models.Gongstruct](
 			switch reverseField.Fieldname {
 			}
 		}
-	
+
 	default:
 		_ = inst
 	}

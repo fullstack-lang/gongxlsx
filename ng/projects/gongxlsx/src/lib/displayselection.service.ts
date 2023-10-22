@@ -12,6 +12,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { DisplaySelectionDB } from './displayselection-db';
+import { FrontRepo, FrontRepoService } from './front-repo.service';
 
 // insertion point for imports
 import { XLFileDB } from './xlfile-db'
@@ -45,10 +46,10 @@ export class DisplaySelectionService {
 
   /** GET displayselections from the server */
   // gets is more robust to refactoring
-  gets(GONG__StackPath: string): Observable<DisplaySelectionDB[]> {
-    return this.getDisplaySelections(GONG__StackPath)
+  gets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB[]> {
+    return this.getDisplaySelections(GONG__StackPath, frontRepo)
   }
-  getDisplaySelections(GONG__StackPath: string): Observable<DisplaySelectionDB[]> {
+  getDisplaySelections(GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -62,10 +63,10 @@ export class DisplaySelectionService {
 
   /** GET displayselection by id. Will 404 if id not found */
   // more robust API to refactoring
-  get(id: number, GONG__StackPath: string): Observable<DisplaySelectionDB> {
-	return this.getDisplaySelection(id, GONG__StackPath)
+  get(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB> {
+    return this.getDisplaySelection(id, GONG__StackPath, frontRepo)
   }
-  getDisplaySelection(id: number, GONG__StackPath: string): Observable<DisplaySelectionDB> {
+  getDisplaySelection(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -77,16 +78,22 @@ export class DisplaySelectionService {
   }
 
   /** POST: add a new displayselection to the server */
-  post(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string): Observable<DisplaySelectionDB> {
-    return this.postDisplaySelection(displayselectiondb, GONG__StackPath)	
+  post(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB> {
+    return this.postDisplaySelection(displayselectiondb, GONG__StackPath, frontRepo)
   }
-  postDisplaySelection(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string): Observable<DisplaySelectionDB> {
+  postDisplaySelection(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
-    let XLFile = displayselectiondb.XLFile
-    displayselectiondb.XLFile = new XLFileDB
-    let XLSheet = displayselectiondb.XLSheet
-    displayselectiondb.XLSheet = new XLSheetDB
+    if (displayselectiondb.XLFile != undefined) {
+      displayselectiondb.DisplaySelectionPointersEncoding.XLFileID.Int64 = displayselectiondb.XLFile.ID
+      displayselectiondb.DisplaySelectionPointersEncoding.XLFileID.Valid = true
+    }
+    displayselectiondb.XLFile = undefined
+    if (displayselectiondb.XLSheet != undefined) {
+      displayselectiondb.DisplaySelectionPointersEncoding.XLSheetID.Int64 = displayselectiondb.XLSheet.ID
+      displayselectiondb.DisplaySelectionPointersEncoding.XLSheetID.Valid = true
+    }
+    displayselectiondb.XLSheet = undefined
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -97,6 +104,8 @@ export class DisplaySelectionService {
     return this.http.post<DisplaySelectionDB>(this.displayselectionsUrl, displayselectiondb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
+        displayselectiondb.XLFile = frontRepo.XLFiles.get(displayselectiondb.DisplaySelectionPointersEncoding.XLFileID.Int64)
+        displayselectiondb.XLSheet = frontRepo.XLSheets.get(displayselectiondb.DisplaySelectionPointersEncoding.XLSheetID.Int64)
         // this.log(`posted displayselectiondb id=${displayselectiondb.ID}`)
       }),
       catchError(this.handleError<DisplaySelectionDB>('postDisplaySelection'))
@@ -124,18 +133,25 @@ export class DisplaySelectionService {
   }
 
   /** PUT: update the displayselectiondb on the server */
-  update(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string): Observable<DisplaySelectionDB> {
-    return this.updateDisplaySelection(displayselectiondb, GONG__StackPath)
+  update(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB> {
+    return this.updateDisplaySelection(displayselectiondb, GONG__StackPath, frontRepo)
   }
-  updateDisplaySelection(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string): Observable<DisplaySelectionDB> {
+  updateDisplaySelection(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB> {
     const id = typeof displayselectiondb === 'number' ? displayselectiondb : displayselectiondb.ID;
     const url = `${this.displayselectionsUrl}/${id}`;
 
-    // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
-    let XLFile = displayselectiondb.XLFile
-    displayselectiondb.XLFile = new XLFileDB
-    let XLSheet = displayselectiondb.XLSheet
-    displayselectiondb.XLSheet = new XLSheetDB
+    // insertion point for reset of pointers (to avoid circular JSON)
+	// and encoding of pointers
+    if (displayselectiondb.XLFile != undefined) {
+      displayselectiondb.DisplaySelectionPointersEncoding.XLFileID.Int64 = displayselectiondb.XLFile.ID
+      displayselectiondb.DisplaySelectionPointersEncoding.XLFileID.Valid = true
+    }
+    displayselectiondb.XLFile = undefined
+    if (displayselectiondb.XLSheet != undefined) {
+      displayselectiondb.DisplaySelectionPointersEncoding.XLSheetID.Int64 = displayselectiondb.XLSheet.ID
+      displayselectiondb.DisplaySelectionPointersEncoding.XLSheetID.Valid = true
+    }
+    displayselectiondb.XLSheet = undefined
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -146,6 +162,8 @@ export class DisplaySelectionService {
     return this.http.put<DisplaySelectionDB>(url, displayselectiondb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
+        displayselectiondb.XLFile = frontRepo.XLFiles.get(displayselectiondb.DisplaySelectionPointersEncoding.XLFileID.Int64)
+        displayselectiondb.XLSheet = frontRepo.XLSheets.get(displayselectiondb.DisplaySelectionPointersEncoding.XLSheetID.Int64)
         // this.log(`updated displayselectiondb id=${displayselectiondb.ID}`)
       }),
       catchError(this.handleError<DisplaySelectionDB>('updateDisplaySelection'))
@@ -173,6 +191,6 @@ export class DisplaySelectionService {
   }
 
   private log(message: string) {
-      console.log(message)
+    console.log(message)
   }
 }

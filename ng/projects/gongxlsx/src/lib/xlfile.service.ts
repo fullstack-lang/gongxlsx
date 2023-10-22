@@ -12,8 +12,10 @@ import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { XLFileDB } from './xlfile-db';
+import { FrontRepo, FrontRepoService } from './front-repo.service';
 
 // insertion point for imports
+import { XLSheetDB } from './xlsheet-db'
 
 @Injectable({
   providedIn: 'root'
@@ -43,10 +45,10 @@ export class XLFileService {
 
   /** GET xlfiles from the server */
   // gets is more robust to refactoring
-  gets(GONG__StackPath: string): Observable<XLFileDB[]> {
-    return this.getXLFiles(GONG__StackPath)
+  gets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB[]> {
+    return this.getXLFiles(GONG__StackPath, frontRepo)
   }
-  getXLFiles(GONG__StackPath: string): Observable<XLFileDB[]> {
+  getXLFiles(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -60,10 +62,10 @@ export class XLFileService {
 
   /** GET xlfile by id. Will 404 if id not found */
   // more robust API to refactoring
-  get(id: number, GONG__StackPath: string): Observable<XLFileDB> {
-	return this.getXLFile(id, GONG__StackPath)
+  get(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
+    return this.getXLFile(id, GONG__StackPath, frontRepo)
   }
-  getXLFile(id: number, GONG__StackPath: string): Observable<XLFileDB> {
+  getXLFile(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -75,13 +77,15 @@ export class XLFileService {
   }
 
   /** POST: add a new xlfile to the server */
-  post(xlfiledb: XLFileDB, GONG__StackPath: string): Observable<XLFileDB> {
-    return this.postXLFile(xlfiledb, GONG__StackPath)	
+  post(xlfiledb: XLFileDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
+    return this.postXLFile(xlfiledb, GONG__StackPath, frontRepo)
   }
-  postXLFile(xlfiledb: XLFileDB, GONG__StackPath: string): Observable<XLFileDB> {
+  postXLFile(xlfiledb: XLFileDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
-    let Sheets = xlfiledb.Sheets
+    for (let _xlsheet of xlfiledb.Sheets) {
+      xlfiledb.XLFilePointersEncoding.Sheets.push(_xlsheet.ID)
+    }
     xlfiledb.Sheets = []
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -93,7 +97,13 @@ export class XLFileService {
     return this.http.post<XLFileDB>(this.xlfilesUrl, xlfiledb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
-	      xlfiledb.Sheets = Sheets
+        xlfiledb.Sheets = new Array<XLSheetDB>()
+        for (let _id of xlfiledb.XLFilePointersEncoding.Sheets) {
+          let _xlsheet = frontRepo.XLSheets.get(_id)
+          if (_xlsheet != undefined) {
+            xlfiledb.Sheets.push(_xlsheet!)
+          }
+        }
         // this.log(`posted xlfiledb id=${xlfiledb.ID}`)
       }),
       catchError(this.handleError<XLFileDB>('postXLFile'))
@@ -121,15 +131,18 @@ export class XLFileService {
   }
 
   /** PUT: update the xlfiledb on the server */
-  update(xlfiledb: XLFileDB, GONG__StackPath: string): Observable<XLFileDB> {
-    return this.updateXLFile(xlfiledb, GONG__StackPath)
+  update(xlfiledb: XLFileDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
+    return this.updateXLFile(xlfiledb, GONG__StackPath, frontRepo)
   }
-  updateXLFile(xlfiledb: XLFileDB, GONG__StackPath: string): Observable<XLFileDB> {
+  updateXLFile(xlfiledb: XLFileDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
     const id = typeof xlfiledb === 'number' ? xlfiledb : xlfiledb.ID;
     const url = `${this.xlfilesUrl}/${id}`;
 
-    // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
-    let Sheets = xlfiledb.Sheets
+    // insertion point for reset of pointers (to avoid circular JSON)
+	// and encoding of pointers
+    for (let _xlsheet of xlfiledb.Sheets) {
+      xlfiledb.XLFilePointersEncoding.Sheets.push(_xlsheet.ID)
+    }
     xlfiledb.Sheets = []
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
@@ -141,7 +154,13 @@ export class XLFileService {
     return this.http.put<XLFileDB>(url, xlfiledb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
-	      xlfiledb.Sheets = Sheets
+        xlfiledb.Sheets = new Array<XLSheetDB>()
+        for (let _id of xlfiledb.XLFilePointersEncoding.Sheets) {
+          let _xlsheet = frontRepo.XLSheets.get(_id)
+          if (_xlsheet != undefined) {
+            xlfiledb.Sheets.push(_xlsheet!)
+          }
+        }
         // this.log(`updated xlfiledb id=${xlfiledb.ID}`)
       }),
       catchError(this.handleError<XLFileDB>('updateXLFile'))
@@ -169,6 +188,6 @@ export class XLFileService {
   }
 
   private log(message: string) {
-      console.log(message)
+    console.log(message)
   }
 }

@@ -196,11 +196,11 @@ export class FrontRepoService {
       // expectation for a non-empty array of observables.
       of(null), // 
       // insertion point sub template
-      this.displayselectionService.getDisplaySelections(this.GONG__StackPath),
-      this.xlcellService.getXLCells(this.GONG__StackPath),
-      this.xlfileService.getXLFiles(this.GONG__StackPath),
-      this.xlrowService.getXLRows(this.GONG__StackPath),
-      this.xlsheetService.getXLSheets(this.GONG__StackPath),
+      this.displayselectionService.getDisplaySelections(this.GONG__StackPath, this.frontRepo),
+      this.xlcellService.getXLCells(this.GONG__StackPath, this.frontRepo),
+      this.xlfileService.getXLFiles(this.GONG__StackPath, this.frontRepo),
+      this.xlrowService.getXLRows(this.GONG__StackPath, this.frontRepo),
+      this.xlsheetService.getXLSheets(this.GONG__StackPath, this.frontRepo),
     ];
 
   //
@@ -216,11 +216,11 @@ export class FrontRepoService {
     this.observableFrontRepo = [
       of(null), // see above for justification
       // insertion point sub template
-      this.displayselectionService.getDisplaySelections(this.GONG__StackPath),
-      this.xlcellService.getXLCells(this.GONG__StackPath),
-      this.xlfileService.getXLFiles(this.GONG__StackPath),
-      this.xlrowService.getXLRows(this.GONG__StackPath),
-      this.xlsheetService.getXLSheets(this.GONG__StackPath),
+      this.displayselectionService.getDisplaySelections(this.GONG__StackPath, this.frontRepo),
+      this.xlcellService.getXLCells(this.GONG__StackPath, this.frontRepo),
+      this.xlfileService.getXLFiles(this.GONG__StackPath, this.frontRepo),
+      this.xlrowService.getXLRows(this.GONG__StackPath, this.frontRepo),
+      this.xlsheetService.getXLSheets(this.GONG__StackPath, this.frontRepo),
     ]
 
     return new Observable<FrontRepo>(
@@ -420,85 +420,56 @@ export class FrontRepoService {
 
 
             // 
-            // Second Step: redeem pointers between instances (thanks to maps in the First Step)
+            // Second Step: reddeem slice of pointers fields
             // insertion point sub template for redeem 
             displayselections.forEach(
               displayselection => {
                 // insertion point sub sub template for ONE-/ZERO-ONE associations pointers redeeming
                 // insertion point for pointer field XLFile redeeming
                 {
-                  let _xlfile = this.frontRepo.XLFiles.get(displayselection.XLFileID.Int64)
+                  let _xlfile = this.frontRepo.XLFiles.get(displayselection.DisplaySelectionPointersEncoding.XLFileID.Int64)
                   if (_xlfile) {
                     displayselection.XLFile = _xlfile
                   }
                 }
                 // insertion point for pointer field XLSheet redeeming
                 {
-                  let _xlsheet = this.frontRepo.XLSheets.get(displayselection.XLSheetID.Int64)
+                  let _xlsheet = this.frontRepo.XLSheets.get(displayselection.DisplaySelectionPointersEncoding.XLSheetID.Int64)
                   if (_xlsheet) {
                     displayselection.XLSheet = _xlsheet
                   }
                 }
-
-                // insertion point for redeeming ONE-MANY associations
+                // insertion point for pointers decoding
               }
             )
             xlcells.forEach(
               xlcell => {
                 // insertion point sub sub template for ONE-/ZERO-ONE associations pointers redeeming
-
-                // insertion point for redeeming ONE-MANY associations
-                // insertion point for slice of pointer field XLRow.Cells redeeming
-                {
-                  let _xlrow = this.frontRepo.XLRows.get(xlcell.XLRow_CellsDBID.Int64)
-                  if (_xlrow) {
-                    if (_xlrow.Cells == undefined) {
-                      _xlrow.Cells = new Array<XLCellDB>()
-                    }
-                    _xlrow.Cells.push(xlcell)
-                    if (xlcell.XLRow_Cells_reverse == undefined) {
-                      xlcell.XLRow_Cells_reverse = _xlrow
-                    }
-                  }
-                }
-                // insertion point for slice of pointer field XLSheet.SheetCells redeeming
-                {
-                  let _xlsheet = this.frontRepo.XLSheets.get(xlcell.XLSheet_SheetCellsDBID.Int64)
-                  if (_xlsheet) {
-                    if (_xlsheet.SheetCells == undefined) {
-                      _xlsheet.SheetCells = new Array<XLCellDB>()
-                    }
-                    _xlsheet.SheetCells.push(xlcell)
-                    if (xlcell.XLSheet_SheetCells_reverse == undefined) {
-                      xlcell.XLSheet_SheetCells_reverse = _xlsheet
-                    }
-                  }
-                }
+                // insertion point for pointers decoding
               }
             )
             xlfiles.forEach(
               xlfile => {
                 // insertion point sub sub template for ONE-/ZERO-ONE associations pointers redeeming
-
-                // insertion point for redeeming ONE-MANY associations
+                // insertion point for pointers decoding
+                xlfile.Sheets = new Array<XLSheetDB>()
+                for (let _id of xlfile.XLFilePointersEncoding.Sheets) {
+                  let _xlsheet = this.frontRepo.XLSheets.get(_id)
+                  if (_xlsheet != undefined) {
+                    xlfile.Sheets.push(_xlsheet!)
+                  }
+                }
               }
             )
             xlrows.forEach(
               xlrow => {
                 // insertion point sub sub template for ONE-/ZERO-ONE associations pointers redeeming
-
-                // insertion point for redeeming ONE-MANY associations
-                // insertion point for slice of pointer field XLSheet.Rows redeeming
-                {
-                  let _xlsheet = this.frontRepo.XLSheets.get(xlrow.XLSheet_RowsDBID.Int64)
-                  if (_xlsheet) {
-                    if (_xlsheet.Rows == undefined) {
-                      _xlsheet.Rows = new Array<XLRowDB>()
-                    }
-                    _xlsheet.Rows.push(xlrow)
-                    if (xlrow.XLSheet_Rows_reverse == undefined) {
-                      xlrow.XLSheet_Rows_reverse = _xlsheet
-                    }
+                // insertion point for pointers decoding
+                xlrow.Cells = new Array<XLCellDB>()
+                for (let _id of xlrow.XLRowPointersEncoding.Cells) {
+                  let _xlcell = this.frontRepo.XLCells.get(_id)
+                  if (_xlcell != undefined) {
+                    xlrow.Cells.push(_xlcell!)
                   }
                 }
               }
@@ -506,90 +477,21 @@ export class FrontRepoService {
             xlsheets.forEach(
               xlsheet => {
                 // insertion point sub sub template for ONE-/ZERO-ONE associations pointers redeeming
-
-                // insertion point for redeeming ONE-MANY associations
-                // insertion point for slice of pointer field XLFile.Sheets redeeming
-                {
-                  let _xlfile = this.frontRepo.XLFiles.get(xlsheet.XLFile_SheetsDBID.Int64)
-                  if (_xlfile) {
-                    if (_xlfile.Sheets == undefined) {
-                      _xlfile.Sheets = new Array<XLSheetDB>()
-                    }
-                    _xlfile.Sheets.push(xlsheet)
-                    if (xlsheet.XLFile_Sheets_reverse == undefined) {
-                      xlsheet.XLFile_Sheets_reverse = _xlfile
-                    }
+                // insertion point for pointers decoding
+                xlsheet.Rows = new Array<XLRowDB>()
+                for (let _id of xlsheet.XLSheetPointersEncoding.Rows) {
+                  let _xlrow = this.frontRepo.XLRows.get(_id)
+                  if (_xlrow != undefined) {
+                    xlsheet.Rows.push(_xlrow!)
                   }
                 }
-              }
-            )
-
-            // 
-            // Third Step: sort arrays (slices in go) according to their index
-            // insertion point sub template for redeem 
-            displayselections.forEach(
-              displayselection => {
-                // insertion point for sorting
-              }
-            )
-            xlcells.forEach(
-              xlcell => {
-                // insertion point for sorting
-              }
-            )
-            xlfiles.forEach(
-              xlfile => {
-                // insertion point for sorting
-                xlfile.Sheets?.sort((t1, t2) => {
-                  if (t1.XLFile_SheetsDBID_Index.Int64 > t2.XLFile_SheetsDBID_Index.Int64) {
-                    return 1;
+                xlsheet.SheetCells = new Array<XLCellDB>()
+                for (let _id of xlsheet.XLSheetPointersEncoding.SheetCells) {
+                  let _xlcell = this.frontRepo.XLCells.get(_id)
+                  if (_xlcell != undefined) {
+                    xlsheet.SheetCells.push(_xlcell!)
                   }
-                  if (t1.XLFile_SheetsDBID_Index.Int64 < t2.XLFile_SheetsDBID_Index.Int64) {
-                    return -1;
-                  }
-                  return 0;
-                })
-
-              }
-            )
-            xlrows.forEach(
-              xlrow => {
-                // insertion point for sorting
-                xlrow.Cells?.sort((t1, t2) => {
-                  if (t1.XLRow_CellsDBID_Index.Int64 > t2.XLRow_CellsDBID_Index.Int64) {
-                    return 1;
-                  }
-                  if (t1.XLRow_CellsDBID_Index.Int64 < t2.XLRow_CellsDBID_Index.Int64) {
-                    return -1;
-                  }
-                  return 0;
-                })
-
-              }
-            )
-            xlsheets.forEach(
-              xlsheet => {
-                // insertion point for sorting
-                xlsheet.Rows?.sort((t1, t2) => {
-                  if (t1.XLSheet_RowsDBID_Index.Int64 > t2.XLSheet_RowsDBID_Index.Int64) {
-                    return 1;
-                  }
-                  if (t1.XLSheet_RowsDBID_Index.Int64 < t2.XLSheet_RowsDBID_Index.Int64) {
-                    return -1;
-                  }
-                  return 0;
-                })
-
-                xlsheet.SheetCells?.sort((t1, t2) => {
-                  if (t1.XLSheet_SheetCellsDBID_Index.Int64 > t2.XLSheet_SheetCellsDBID_Index.Int64) {
-                    return 1;
-                  }
-                  if (t1.XLSheet_SheetCellsDBID_Index.Int64 < t2.XLSheet_SheetCellsDBID_Index.Int64) {
-                    return -1;
-                  }
-                  return 0;
-                })
-
+                }
               }
             )
 
@@ -608,7 +510,7 @@ export class FrontRepoService {
     return new Observable<FrontRepo>(
       (observer) => {
         combineLatest([
-          this.displayselectionService.getDisplaySelections(this.GONG__StackPath)
+          this.displayselectionService.getDisplaySelections(this.GONG__StackPath, this.frontRepo)
         ]).subscribe(
           ([ // insertion point sub template 
             displayselections,
@@ -630,20 +532,18 @@ export class FrontRepoService {
                 // insertion point for redeeming ONE/ZERO-ONE associations
                 // insertion point for pointer field XLFile redeeming
                 {
-                  let _xlfile = this.frontRepo.XLFiles.get(displayselection.XLFileID.Int64)
+                  let _xlfile = this.frontRepo.XLFiles.get(displayselection.DisplaySelectionPointersEncoding.XLFileID.Int64)
                   if (_xlfile) {
                     displayselection.XLFile = _xlfile
                   }
                 }
                 // insertion point for pointer field XLSheet redeeming
                 {
-                  let _xlsheet = this.frontRepo.XLSheets.get(displayselection.XLSheetID.Int64)
+                  let _xlsheet = this.frontRepo.XLSheets.get(displayselection.DisplaySelectionPointersEncoding.XLSheetID.Int64)
                   if (_xlsheet) {
                     displayselection.XLSheet = _xlsheet
                   }
                 }
-
-                // insertion point for redeeming ONE-MANY associations
               }
             )
 
@@ -673,7 +573,7 @@ export class FrontRepoService {
     return new Observable<FrontRepo>(
       (observer) => {
         combineLatest([
-          this.xlcellService.getXLCells(this.GONG__StackPath)
+          this.xlcellService.getXLCells(this.GONG__StackPath, this.frontRepo)
         ]).subscribe(
           ([ // insertion point sub template 
             xlcells,
@@ -693,34 +593,6 @@ export class FrontRepoService {
                 this.frontRepo.XLCells_batch.set(xlcell.ID, xlcell)
 
                 // insertion point for redeeming ONE/ZERO-ONE associations
-
-                // insertion point for redeeming ONE-MANY associations
-                // insertion point for slice of pointer field XLRow.Cells redeeming
-                {
-                  let _xlrow = this.frontRepo.XLRows.get(xlcell.XLRow_CellsDBID.Int64)
-                  if (_xlrow) {
-                    if (_xlrow.Cells == undefined) {
-                      _xlrow.Cells = new Array<XLCellDB>()
-                    }
-                    _xlrow.Cells.push(xlcell)
-                    if (xlcell.XLRow_Cells_reverse == undefined) {
-                      xlcell.XLRow_Cells_reverse = _xlrow
-                    }
-                  }
-                }
-                // insertion point for slice of pointer field XLSheet.SheetCells redeeming
-                {
-                  let _xlsheet = this.frontRepo.XLSheets.get(xlcell.XLSheet_SheetCellsDBID.Int64)
-                  if (_xlsheet) {
-                    if (_xlsheet.SheetCells == undefined) {
-                      _xlsheet.SheetCells = new Array<XLCellDB>()
-                    }
-                    _xlsheet.SheetCells.push(xlcell)
-                    if (xlcell.XLSheet_SheetCells_reverse == undefined) {
-                      xlcell.XLSheet_SheetCells_reverse = _xlsheet
-                    }
-                  }
-                }
               }
             )
 
@@ -750,7 +622,7 @@ export class FrontRepoService {
     return new Observable<FrontRepo>(
       (observer) => {
         combineLatest([
-          this.xlfileService.getXLFiles(this.GONG__StackPath)
+          this.xlfileService.getXLFiles(this.GONG__StackPath, this.frontRepo)
         ]).subscribe(
           ([ // insertion point sub template 
             xlfiles,
@@ -770,8 +642,6 @@ export class FrontRepoService {
                 this.frontRepo.XLFiles_batch.set(xlfile.ID, xlfile)
 
                 // insertion point for redeeming ONE/ZERO-ONE associations
-
-                // insertion point for redeeming ONE-MANY associations
               }
             )
 
@@ -801,7 +671,7 @@ export class FrontRepoService {
     return new Observable<FrontRepo>(
       (observer) => {
         combineLatest([
-          this.xlrowService.getXLRows(this.GONG__StackPath)
+          this.xlrowService.getXLRows(this.GONG__StackPath, this.frontRepo)
         ]).subscribe(
           ([ // insertion point sub template 
             xlrows,
@@ -821,21 +691,6 @@ export class FrontRepoService {
                 this.frontRepo.XLRows_batch.set(xlrow.ID, xlrow)
 
                 // insertion point for redeeming ONE/ZERO-ONE associations
-
-                // insertion point for redeeming ONE-MANY associations
-                // insertion point for slice of pointer field XLSheet.Rows redeeming
-                {
-                  let _xlsheet = this.frontRepo.XLSheets.get(xlrow.XLSheet_RowsDBID.Int64)
-                  if (_xlsheet) {
-                    if (_xlsheet.Rows == undefined) {
-                      _xlsheet.Rows = new Array<XLRowDB>()
-                    }
-                    _xlsheet.Rows.push(xlrow)
-                    if (xlrow.XLSheet_Rows_reverse == undefined) {
-                      xlrow.XLSheet_Rows_reverse = _xlsheet
-                    }
-                  }
-                }
               }
             )
 
@@ -865,7 +720,7 @@ export class FrontRepoService {
     return new Observable<FrontRepo>(
       (observer) => {
         combineLatest([
-          this.xlsheetService.getXLSheets(this.GONG__StackPath)
+          this.xlsheetService.getXLSheets(this.GONG__StackPath, this.frontRepo)
         ]).subscribe(
           ([ // insertion point sub template 
             xlsheets,
@@ -885,21 +740,6 @@ export class FrontRepoService {
                 this.frontRepo.XLSheets_batch.set(xlsheet.ID, xlsheet)
 
                 // insertion point for redeeming ONE/ZERO-ONE associations
-
-                // insertion point for redeeming ONE-MANY associations
-                // insertion point for slice of pointer field XLFile.Sheets redeeming
-                {
-                  let _xlfile = this.frontRepo.XLFiles.get(xlsheet.XLFile_SheetsDBID.Int64)
-                  if (_xlfile) {
-                    if (_xlfile.Sheets == undefined) {
-                      _xlfile.Sheets = new Array<XLSheetDB>()
-                    }
-                    _xlfile.Sheets.push(xlsheet)
-                    if (xlsheet.XLFile_Sheets_reverse == undefined) {
-                      xlsheet.XLFile_Sheets_reverse = _xlfile
-                    }
-                  }
-                }
               }
             )
 

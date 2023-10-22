@@ -12,9 +12,10 @@ import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { XLRowDB } from './xlrow-db';
+import { FrontRepo, FrontRepoService } from './front-repo.service';
 
 // insertion point for imports
-import { XLSheetDB } from './xlsheet-db'
+import { XLCellDB } from './xlcell-db'
 
 @Injectable({
   providedIn: 'root'
@@ -44,10 +45,10 @@ export class XLRowService {
 
   /** GET xlrows from the server */
   // gets is more robust to refactoring
-  gets(GONG__StackPath: string): Observable<XLRowDB[]> {
-    return this.getXLRows(GONG__StackPath)
+  gets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLRowDB[]> {
+    return this.getXLRows(GONG__StackPath, frontRepo)
   }
-  getXLRows(GONG__StackPath: string): Observable<XLRowDB[]> {
+  getXLRows(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLRowDB[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -61,10 +62,10 @@ export class XLRowService {
 
   /** GET xlrow by id. Will 404 if id not found */
   // more robust API to refactoring
-  get(id: number, GONG__StackPath: string): Observable<XLRowDB> {
-	return this.getXLRow(id, GONG__StackPath)
+  get(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLRowDB> {
+    return this.getXLRow(id, GONG__StackPath, frontRepo)
   }
-  getXLRow(id: number, GONG__StackPath: string): Observable<XLRowDB> {
+  getXLRow(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLRowDB> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
@@ -76,16 +77,16 @@ export class XLRowService {
   }
 
   /** POST: add a new xlrow to the server */
-  post(xlrowdb: XLRowDB, GONG__StackPath: string): Observable<XLRowDB> {
-    return this.postXLRow(xlrowdb, GONG__StackPath)	
+  post(xlrowdb: XLRowDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLRowDB> {
+    return this.postXLRow(xlrowdb, GONG__StackPath, frontRepo)
   }
-  postXLRow(xlrowdb: XLRowDB, GONG__StackPath: string): Observable<XLRowDB> {
+  postXLRow(xlrowdb: XLRowDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLRowDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
-    let Cells = xlrowdb.Cells
+    for (let _xlcell of xlrowdb.Cells) {
+      xlrowdb.XLRowPointersEncoding.Cells.push(_xlcell.ID)
+    }
     xlrowdb.Cells = []
-    let _XLSheet_Rows_reverse = xlrowdb.XLSheet_Rows_reverse
-    xlrowdb.XLSheet_Rows_reverse = new XLSheetDB
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -96,8 +97,13 @@ export class XLRowService {
     return this.http.post<XLRowDB>(this.xlrowsUrl, xlrowdb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
-	      xlrowdb.Cells = Cells
-        xlrowdb.XLSheet_Rows_reverse = _XLSheet_Rows_reverse
+        xlrowdb.Cells = new Array<XLCellDB>()
+        for (let _id of xlrowdb.XLRowPointersEncoding.Cells) {
+          let _xlcell = frontRepo.XLCells.get(_id)
+          if (_xlcell != undefined) {
+            xlrowdb.Cells.push(_xlcell!)
+          }
+        }
         // this.log(`posted xlrowdb id=${xlrowdb.ID}`)
       }),
       catchError(this.handleError<XLRowDB>('postXLRow'))
@@ -125,18 +131,19 @@ export class XLRowService {
   }
 
   /** PUT: update the xlrowdb on the server */
-  update(xlrowdb: XLRowDB, GONG__StackPath: string): Observable<XLRowDB> {
-    return this.updateXLRow(xlrowdb, GONG__StackPath)
+  update(xlrowdb: XLRowDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLRowDB> {
+    return this.updateXLRow(xlrowdb, GONG__StackPath, frontRepo)
   }
-  updateXLRow(xlrowdb: XLRowDB, GONG__StackPath: string): Observable<XLRowDB> {
+  updateXLRow(xlrowdb: XLRowDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLRowDB> {
     const id = typeof xlrowdb === 'number' ? xlrowdb : xlrowdb.ID;
     const url = `${this.xlrowsUrl}/${id}`;
 
-    // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
-    let Cells = xlrowdb.Cells
+    // insertion point for reset of pointers (to avoid circular JSON)
+	// and encoding of pointers
+    for (let _xlcell of xlrowdb.Cells) {
+      xlrowdb.XLRowPointersEncoding.Cells.push(_xlcell.ID)
+    }
     xlrowdb.Cells = []
-    let _XLSheet_Rows_reverse = xlrowdb.XLSheet_Rows_reverse
-    xlrowdb.XLSheet_Rows_reverse = new XLSheetDB
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -147,8 +154,13 @@ export class XLRowService {
     return this.http.put<XLRowDB>(url, xlrowdb, httpOptions).pipe(
       tap(_ => {
         // insertion point for restoration of reverse pointers
-	      xlrowdb.Cells = Cells
-        xlrowdb.XLSheet_Rows_reverse = _XLSheet_Rows_reverse
+        xlrowdb.Cells = new Array<XLCellDB>()
+        for (let _id of xlrowdb.XLRowPointersEncoding.Cells) {
+          let _xlcell = frontRepo.XLCells.get(_id)
+          if (_xlcell != undefined) {
+            xlrowdb.Cells.push(_xlcell!)
+          }
+        }
         // this.log(`updated xlrowdb id=${xlrowdb.ID}`)
       }),
       catchError(this.handleError<XLRowDB>('updateXLRow'))
@@ -176,6 +188,6 @@ export class XLRowService {
   }
 
   private log(message: string) {
-      console.log(message)
+    console.log(message)
   }
 }

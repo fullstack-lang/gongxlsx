@@ -38,7 +38,7 @@ type XLRowAPI struct {
 	models.XLRow_WOP
 
 	// encoding of pointers
-	XLRowPointersEncoding
+	XLRowPointersEncoding XLRowPointersEncoding
 }
 
 // XLRowPointersEncoding encodes pointers to Struct and
@@ -47,13 +47,7 @@ type XLRowPointersEncoding struct {
 	// insertion for pointer fields encoding declaration
 
 	// field Cells is a slice of pointers to another Struct (optional or 0..1)
-	Cells IntSlice`gorm:"type:TEXT"`
-
-	// Implementation of a reverse ID for field XLSheet{}.Rows []*XLRow
-	XLSheet_RowsDBID sql.NullInt64
-
-	// implementation of the index of the withing the slice
-	XLSheet_RowsDBID_Index sql.NullInt64
+	Cells IntSlice `gorm:"type:TEXT"`
 }
 
 // XLRowDB describes a xlrow in the database
@@ -223,25 +217,6 @@ func (backRepoXLRow *BackRepoXLRowStruct) CommitPhaseTwoInstance(backRepo *BackR
 		xlrowDB.CopyBasicFieldsFromXLRow(xlrow)
 
 		// insertion point for translating pointers encodings into actual pointers
-		// This loop encodes the slice of pointers xlrow.Cells into the back repo.
-		// Each back repo instance at the end of the association encode the ID of the association start
-		// into a dedicated field for coding the association. The back repo instance is then saved to the db
-		for idx, xlcellAssocEnd := range xlrow.Cells {
-
-			// get the back repo instance at the association end
-			xlcellAssocEnd_DB :=
-				backRepo.BackRepoXLCell.GetXLCellDBFromXLCellPtr(xlcellAssocEnd)
-
-			// encode reverse pointer in the association end back repo instance
-			xlcellAssocEnd_DB.XLRow_CellsDBID.Int64 = int64(xlrowDB.ID)
-			xlcellAssocEnd_DB.XLRow_CellsDBID.Valid = true
-			xlcellAssocEnd_DB.XLRow_CellsDBID_Index.Int64 = int64(idx)
-			xlcellAssocEnd_DB.XLRow_CellsDBID_Index.Valid = true
-			if q := backRepoXLRow.db.Save(xlcellAssocEnd_DB); q.Error != nil {
-				return q.Error
-			}
-		}
-
 		// 1. reset
 		xlrowDB.XLRowPointersEncoding.Cells = make([]int, 0)
 		// 2. encode
@@ -364,27 +339,9 @@ func (backRepoXLRow *BackRepoXLRowStruct) CheckoutPhaseTwoInstance(backRepo *Bac
 	// it appends the stage instance
 	// 1. reset the slice
 	xlrow.Cells = xlrow.Cells[:0]
-	// 2. loop all instances in the type in the association end
-	for _, xlcellDB_AssocEnd := range backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB {
-		// 3. Does the ID encoding at the end and the ID at the start matches ?
-		if xlcellDB_AssocEnd.XLRow_CellsDBID.Int64 == int64(xlrowDB.ID) {
-			// 4. fetch the associated instance in the stage
-			xlcell_AssocEnd := backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr[xlcellDB_AssocEnd.ID]
-			// 5. append it the association slice
-			xlrow.Cells = append(xlrow.Cells, xlcell_AssocEnd)
-		}
+	for _, _XLCellid := range xlrowDB.XLRowPointersEncoding.Cells {
+		xlrow.Cells = append(xlrow.Cells, backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr[uint(_XLCellid)])
 	}
-
-	// sort the array according to the order
-	sort.Slice(xlrow.Cells, func(i, j int) bool {
-		xlcellDB_i_ID := backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID[xlrow.Cells[i]]
-		xlcellDB_j_ID := backRepo.BackRepoXLCell.Map_XLCellPtr_XLCellDBID[xlrow.Cells[j]]
-
-		xlcellDB_i := backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB[xlcellDB_i_ID]
-		xlcellDB_j := backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellDB[xlcellDB_j_ID]
-
-		return xlcellDB_i.XLRow_CellsDBID_Index.Int64 < xlcellDB_j.XLRow_CellsDBID_Index.Int64
-	})
 
 	return
 }
@@ -626,12 +583,6 @@ func (backRepoXLRow *BackRepoXLRowStruct) RestorePhaseTwo() {
 		_ = xlrowDB
 
 		// insertion point for reindexing pointers encoding
-		// This reindex xlrow.Rows
-		if xlrowDB.XLSheet_RowsDBID.Int64 != 0 {
-			xlrowDB.XLSheet_RowsDBID.Int64 =
-				int64(BackRepoXLSheetid_atBckpTime_newID[uint(xlrowDB.XLSheet_RowsDBID.Int64)])
-		}
-
 		// update databse with new index encoding
 		query := backRepoXLRow.db.Model(xlrowDB).Updates(*xlrowDB)
 		if query.Error != nil {
@@ -659,15 +610,6 @@ func (backRepoXLRow *BackRepoXLRowStruct) ResetReversePointersInstance(backRepo 
 		_ = xlrowDB // to avoid unused variable error if there are no reverse to reset
 
 		// insertion point for reverse pointers reset
-		if xlrowDB.XLSheet_RowsDBID.Int64 != 0 {
-			xlrowDB.XLSheet_RowsDBID.Int64 = 0
-			xlrowDB.XLSheet_RowsDBID.Valid = true
-
-			// save the reset
-			if q := backRepoXLRow.db.Save(xlrowDB); q.Error != nil {
-				return q.Error
-			}
-		}
 		// end of insertion point for reverse pointers reset
 	}
 
