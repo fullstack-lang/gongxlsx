@@ -55,7 +55,6 @@ export class XLFileService {
     return this.http.get<XLFileDB[]>(this.xlfilesUrl, { params: params })
       .pipe(
         tap(),
-		// tap(_ => this.log('fetched xlfiles')),
         catchError(this.handleError<XLFileDB[]>('getXLFiles', []))
       );
   }
@@ -83,6 +82,7 @@ export class XLFileService {
   postXLFile(xlfiledb: XLFileDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    xlfiledb.XLFilePointersEncoding.Sheets = []
     for (let _xlsheet of xlfiledb.Sheets) {
       xlfiledb.XLFilePointersEncoding.Sheets.push(_xlsheet.ID)
     }
@@ -139,7 +139,8 @@ export class XLFileService {
     const url = `${this.xlfilesUrl}/${id}`;
 
     // insertion point for reset of pointers (to avoid circular JSON)
-	// and encoding of pointers
+    // and encoding of pointers
+    xlfiledb.XLFilePointersEncoding.Sheets = []
     for (let _xlsheet of xlfiledb.Sheets) {
       xlfiledb.XLFilePointersEncoding.Sheets.push(_xlsheet.ID)
     }

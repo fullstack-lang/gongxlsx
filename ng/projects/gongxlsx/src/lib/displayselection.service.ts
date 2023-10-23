@@ -56,7 +56,6 @@ export class DisplaySelectionService {
     return this.http.get<DisplaySelectionDB[]>(this.displayselectionsUrl, { params: params })
       .pipe(
         tap(),
-		// tap(_ => this.log('fetched displayselections')),
         catchError(this.handleError<DisplaySelectionDB[]>('getDisplaySelections', []))
       );
   }
@@ -141,7 +140,7 @@ export class DisplaySelectionService {
     const url = `${this.displayselectionsUrl}/${id}`;
 
     // insertion point for reset of pointers (to avoid circular JSON)
-	// and encoding of pointers
+    // and encoding of pointers
     if (displayselectiondb.XLFile != undefined) {
       displayselectiondb.DisplaySelectionPointersEncoding.XLFileID.Int64 = displayselectiondb.XLFile.ID
       displayselectiondb.DisplaySelectionPointersEncoding.XLFileID.Valid = true

@@ -56,7 +56,6 @@ export class XLSheetService {
     return this.http.get<XLSheetDB[]>(this.xlsheetsUrl, { params: params })
       .pipe(
         tap(),
-		// tap(_ => this.log('fetched xlsheets')),
         catchError(this.handleError<XLSheetDB[]>('getXLSheets', []))
       );
   }
@@ -84,10 +83,12 @@ export class XLSheetService {
   postXLSheet(xlsheetdb: XLSheetDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    xlsheetdb.XLSheetPointersEncoding.Rows = []
     for (let _xlrow of xlsheetdb.Rows) {
       xlsheetdb.XLSheetPointersEncoding.Rows.push(_xlrow.ID)
     }
     xlsheetdb.Rows = []
+    xlsheetdb.XLSheetPointersEncoding.SheetCells = []
     for (let _xlcell of xlsheetdb.SheetCells) {
       xlsheetdb.XLSheetPointersEncoding.SheetCells.push(_xlcell.ID)
     }
@@ -151,11 +152,13 @@ export class XLSheetService {
     const url = `${this.xlsheetsUrl}/${id}`;
 
     // insertion point for reset of pointers (to avoid circular JSON)
-	// and encoding of pointers
+    // and encoding of pointers
+    xlsheetdb.XLSheetPointersEncoding.Rows = []
     for (let _xlrow of xlsheetdb.Rows) {
       xlsheetdb.XLSheetPointersEncoding.Rows.push(_xlrow.ID)
     }
     xlsheetdb.Rows = []
+    xlsheetdb.XLSheetPointersEncoding.SheetCells = []
     for (let _xlcell of xlsheetdb.SheetCells) {
       xlsheetdb.XLSheetPointersEncoding.SheetCells.push(_xlcell.ID)
     }

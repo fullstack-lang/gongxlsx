@@ -55,7 +55,6 @@ export class XLRowService {
     return this.http.get<XLRowDB[]>(this.xlrowsUrl, { params: params })
       .pipe(
         tap(),
-		// tap(_ => this.log('fetched xlrows')),
         catchError(this.handleError<XLRowDB[]>('getXLRows', []))
       );
   }
@@ -83,6 +82,7 @@ export class XLRowService {
   postXLRow(xlrowdb: XLRowDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLRowDB> {
 
     // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
+    xlrowdb.XLRowPointersEncoding.Cells = []
     for (let _xlcell of xlrowdb.Cells) {
       xlrowdb.XLRowPointersEncoding.Cells.push(_xlcell.ID)
     }
@@ -139,7 +139,8 @@ export class XLRowService {
     const url = `${this.xlrowsUrl}/${id}`;
 
     // insertion point for reset of pointers (to avoid circular JSON)
-	// and encoding of pointers
+    // and encoding of pointers
+    xlrowdb.XLRowPointersEncoding.Cells = []
     for (let _xlcell of xlrowdb.Cells) {
       xlrowdb.XLRowPointersEncoding.Cells.push(_xlcell.ID)
     }
