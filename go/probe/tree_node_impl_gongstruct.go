@@ -12,17 +12,17 @@ import (
 
 type TreeNodeImplGongstruct struct {
 	gongStruct *gong_models.GongStruct
-	playground *Playground
+	probe *Probe
 }
 
 func NewTreeNodeImplGongstruct(
 	gongStruct *gong_models.GongStruct,
-	playground *Playground,
+	probe *Probe,
 ) (nodeImplGongstruct *TreeNodeImplGongstruct) {
 
 	nodeImplGongstruct = new(TreeNodeImplGongstruct)
 	nodeImplGongstruct.gongStruct = gongStruct
-	nodeImplGongstruct.playground = playground
+	nodeImplGongstruct.probe = probe
 	return
 }
 
@@ -53,19 +53,19 @@ func (nodeImplGongstruct *TreeNodeImplGongstruct) OnAfterUpdate(
 
 	// insertion point
 	if nodeImplGongstruct.gongStruct.GetName() == "DisplaySelection" {
-		fillUpTable[models.DisplaySelection](nodeImplGongstruct.playground)
+		fillUpTable[models.DisplaySelection](nodeImplGongstruct.probe)
 	}
 	if nodeImplGongstruct.gongStruct.GetName() == "XLCell" {
-		fillUpTable[models.XLCell](nodeImplGongstruct.playground)
+		fillUpTable[models.XLCell](nodeImplGongstruct.probe)
 	}
 	if nodeImplGongstruct.gongStruct.GetName() == "XLFile" {
-		fillUpTable[models.XLFile](nodeImplGongstruct.playground)
+		fillUpTable[models.XLFile](nodeImplGongstruct.probe)
 	}
 	if nodeImplGongstruct.gongStruct.GetName() == "XLRow" {
-		fillUpTable[models.XLRow](nodeImplGongstruct.playground)
+		fillUpTable[models.XLRow](nodeImplGongstruct.probe)
 	}
 	if nodeImplGongstruct.gongStruct.GetName() == "XLSheet" {
-		fillUpTable[models.XLSheet](nodeImplGongstruct.playground)
+		fillUpTable[models.XLSheet](nodeImplGongstruct.probe)
 	}
 
 	// set color for node and reset all other nodes color
@@ -75,5 +75,5 @@ func (nodeImplGongstruct *TreeNodeImplGongstruct) OnAfterUpdate(
 	stagedNode.BackgroundColor = "lightgrey"
 	gongtreeStage.Commit()
 
-	nodeImplGongstruct.playground.tableStage.Commit()
+	nodeImplGongstruct.probe.tableStage.Commit()
 }

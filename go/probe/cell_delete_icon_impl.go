@@ -11,17 +11,17 @@ import (
 
 func NewCellDeleteIconImpl[T models.Gongstruct](
 	Instance *T,
-	playground *Playground,
+	probe *Probe,
 ) (cellDeleteIconImpl *CellDeleteIconImpl[T]) {
 	cellDeleteIconImpl = new(CellDeleteIconImpl[T])
 	cellDeleteIconImpl.Instance = Instance
-	cellDeleteIconImpl.playground = playground
+	cellDeleteIconImpl.probe = probe
 	return
 }
 
 type CellDeleteIconImpl[T models.Gongstruct] struct {
 	Instance   *T
-	playground *Playground
+	probe *Probe
 }
 
 func (cellDeleteIconImpl *CellDeleteIconImpl[T]) CellIconUpdated(stage *gongtable.StageStruct,
@@ -31,22 +31,22 @@ func (cellDeleteIconImpl *CellDeleteIconImpl[T]) CellIconUpdated(stage *gongtabl
 	switch instancesTyped := any(cellDeleteIconImpl.Instance).(type) {
 	// insertion point
 	case *models.DisplaySelection:
-		instancesTyped.Unstage(cellDeleteIconImpl.playground.stageOfInterest)
+		instancesTyped.Unstage(cellDeleteIconImpl.probe.stageOfInterest)
 	case *models.XLCell:
-		instancesTyped.Unstage(cellDeleteIconImpl.playground.stageOfInterest)
+		instancesTyped.Unstage(cellDeleteIconImpl.probe.stageOfInterest)
 	case *models.XLFile:
-		instancesTyped.Unstage(cellDeleteIconImpl.playground.stageOfInterest)
+		instancesTyped.Unstage(cellDeleteIconImpl.probe.stageOfInterest)
 	case *models.XLRow:
-		instancesTyped.Unstage(cellDeleteIconImpl.playground.stageOfInterest)
+		instancesTyped.Unstage(cellDeleteIconImpl.probe.stageOfInterest)
 	case *models.XLSheet:
-		instancesTyped.Unstage(cellDeleteIconImpl.playground.stageOfInterest)
+		instancesTyped.Unstage(cellDeleteIconImpl.probe.stageOfInterest)
 	default:
 		_ = instancesTyped
 	}
-	cellDeleteIconImpl.playground.stageOfInterest.Commit()
+	cellDeleteIconImpl.probe.stageOfInterest.Commit()
 
-	fillUpTable[T](cellDeleteIconImpl.playground)
-	fillUpTree(cellDeleteIconImpl.playground)
-	cellDeleteIconImpl.playground.tableStage.Commit()
+	fillUpTable[T](cellDeleteIconImpl.probe)
+	fillUpTree(cellDeleteIconImpl.probe)
+	cellDeleteIconImpl.probe.tableStage.Commit()
 }
 

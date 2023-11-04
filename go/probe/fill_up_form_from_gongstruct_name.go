@@ -8,11 +8,11 @@ import (
 )
 
 func FillUpFormFromGongstructName(
-	playground *Playground,
+	probe *Probe,
 	gongstructName string,
 	isNewInstance bool,
 ) {
-	formStage := playground.formStage
+	formStage := probe.formStage
 	formStage.Reset()
 	formStage.Commit()
 
@@ -32,55 +32,55 @@ func FillUpFormFromGongstructName(
 			Label: prefix + " DisplaySelection Form",
 			OnSave: __gong__New__DisplaySelectionFormCallback(
 				nil,
-				playground,
+				probe,
 			),
 		}).Stage(formStage)
 		displayselection := new(models.DisplaySelection)
-		FillUpForm(displayselection, formGroup, playground)
+		FillUpForm(displayselection, formGroup, probe)
 	case "XLCell":
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
 			Label: prefix + " XLCell Form",
 			OnSave: __gong__New__XLCellFormCallback(
 				nil,
-				playground,
+				probe,
 			),
 		}).Stage(formStage)
 		xlcell := new(models.XLCell)
-		FillUpForm(xlcell, formGroup, playground)
+		FillUpForm(xlcell, formGroup, probe)
 	case "XLFile":
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
 			Label: prefix + " XLFile Form",
 			OnSave: __gong__New__XLFileFormCallback(
 				nil,
-				playground,
+				probe,
 			),
 		}).Stage(formStage)
 		xlfile := new(models.XLFile)
-		FillUpForm(xlfile, formGroup, playground)
+		FillUpForm(xlfile, formGroup, probe)
 	case "XLRow":
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
 			Label: prefix + " XLRow Form",
 			OnSave: __gong__New__XLRowFormCallback(
 				nil,
-				playground,
+				probe,
 			),
 		}).Stage(formStage)
 		xlrow := new(models.XLRow)
-		FillUpForm(xlrow, formGroup, playground)
+		FillUpForm(xlrow, formGroup, probe)
 	case "XLSheet":
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
 			Label: prefix + " XLSheet Form",
 			OnSave: __gong__New__XLSheetFormCallback(
 				nil,
-				playground,
+				probe,
 			),
 		}).Stage(formStage)
 		xlsheet := new(models.XLSheet)
-		FillUpForm(xlsheet, formGroup, playground)
+		FillUpForm(xlsheet, formGroup, probe)
 	}
 	formStage.Commit()
 }

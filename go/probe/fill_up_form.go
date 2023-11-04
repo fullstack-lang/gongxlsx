@@ -13,42 +13,42 @@ var __dummy_orm_fillup_form = orm.BackRepoStruct{}
 func FillUpForm[T models.Gongstruct](
 	instance *T,
 	formGroup *form.FormGroup,
-	playground *Playground,
+	probe *Probe,
 ) {
 
 	switch instanceWithInferedType := any(instance).(type) {
 	// insertion point
 	case *models.DisplaySelection:
 		// insertion point
-		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, playground.formStage, formGroup, false)
-		AssociationFieldToForm("XLFile", instanceWithInferedType.XLFile, formGroup, playground)
-		AssociationFieldToForm("XLSheet", instanceWithInferedType.XLSheet, formGroup, playground)
+		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, false)
+		AssociationFieldToForm("XLFile", instanceWithInferedType.XLFile, formGroup, probe)
+		AssociationFieldToForm("XLSheet", instanceWithInferedType.XLSheet, formGroup, probe)
 
 	case *models.XLCell:
 		// insertion point
-		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, playground.formStage, formGroup, false)
-		BasicFieldtoForm("X", instanceWithInferedType.X, instanceWithInferedType, playground.formStage, formGroup, false)
-		BasicFieldtoForm("Y", instanceWithInferedType.Y, instanceWithInferedType, playground.formStage, formGroup, false)
+		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("X", instanceWithInferedType.X, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("Y", instanceWithInferedType.Y, instanceWithInferedType, probe.formStage, formGroup, false)
 		{
 			var rf models.ReverseField
 			_ = rf
 			rf.GongstructName = "XLRow"
 			rf.Fieldname = "Cells"
-			reverseFieldOwner := orm.GetReverseFieldOwner(playground.stageOfInterest, playground.backRepoOfInterest, instanceWithInferedType, &rf)
+			reverseFieldOwner := orm.GetReverseFieldOwner(probe.stageOfInterest, probe.backRepoOfInterest, instanceWithInferedType, &rf)
 			if reverseFieldOwner != nil {
 				AssociationReverseFieldToForm(
 					reverseFieldOwner.(*models.XLRow),
 					"Cells",
 					instanceWithInferedType,
 					formGroup,
-					playground)
+					probe)
 			} else {
 				AssociationReverseFieldToForm[*models.XLRow, *models.XLCell](
 					nil,
 					"Cells",
 					instanceWithInferedType,
 					formGroup,
-					playground)
+					probe)
 			}	
 		}
 		{
@@ -56,86 +56,86 @@ func FillUpForm[T models.Gongstruct](
 			_ = rf
 			rf.GongstructName = "XLSheet"
 			rf.Fieldname = "SheetCells"
-			reverseFieldOwner := orm.GetReverseFieldOwner(playground.stageOfInterest, playground.backRepoOfInterest, instanceWithInferedType, &rf)
+			reverseFieldOwner := orm.GetReverseFieldOwner(probe.stageOfInterest, probe.backRepoOfInterest, instanceWithInferedType, &rf)
 			if reverseFieldOwner != nil {
 				AssociationReverseFieldToForm(
 					reverseFieldOwner.(*models.XLSheet),
 					"SheetCells",
 					instanceWithInferedType,
 					formGroup,
-					playground)
+					probe)
 			} else {
 				AssociationReverseFieldToForm[*models.XLSheet, *models.XLCell](
 					nil,
 					"SheetCells",
 					instanceWithInferedType,
 					formGroup,
-					playground)
+					probe)
 			}	
 		}
 
 	case *models.XLFile:
 		// insertion point
-		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, playground.formStage, formGroup, false)
-		BasicFieldtoForm("NbSheets", instanceWithInferedType.NbSheets, instanceWithInferedType, playground.formStage, formGroup, false)
-		AssociationSliceToForm("Sheets", instanceWithInferedType, &instanceWithInferedType.Sheets, formGroup, playground)
+		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("NbSheets", instanceWithInferedType.NbSheets, instanceWithInferedType, probe.formStage, formGroup, false)
+		AssociationSliceToForm("Sheets", instanceWithInferedType, &instanceWithInferedType.Sheets, formGroup, probe)
 
 	case *models.XLRow:
 		// insertion point
-		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, playground.formStage, formGroup, false)
-		BasicFieldtoForm("RowIndex", instanceWithInferedType.RowIndex, instanceWithInferedType, playground.formStage, formGroup, false)
-		AssociationSliceToForm("Cells", instanceWithInferedType, &instanceWithInferedType.Cells, formGroup, playground)
+		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("RowIndex", instanceWithInferedType.RowIndex, instanceWithInferedType, probe.formStage, formGroup, false)
+		AssociationSliceToForm("Cells", instanceWithInferedType, &instanceWithInferedType.Cells, formGroup, probe)
 		{
 			var rf models.ReverseField
 			_ = rf
 			rf.GongstructName = "XLSheet"
 			rf.Fieldname = "Rows"
-			reverseFieldOwner := orm.GetReverseFieldOwner(playground.stageOfInterest, playground.backRepoOfInterest, instanceWithInferedType, &rf)
+			reverseFieldOwner := orm.GetReverseFieldOwner(probe.stageOfInterest, probe.backRepoOfInterest, instanceWithInferedType, &rf)
 			if reverseFieldOwner != nil {
 				AssociationReverseFieldToForm(
 					reverseFieldOwner.(*models.XLSheet),
 					"Rows",
 					instanceWithInferedType,
 					formGroup,
-					playground)
+					probe)
 			} else {
 				AssociationReverseFieldToForm[*models.XLSheet, *models.XLRow](
 					nil,
 					"Rows",
 					instanceWithInferedType,
 					formGroup,
-					playground)
+					probe)
 			}	
 		}
 
 	case *models.XLSheet:
 		// insertion point
-		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, playground.formStage, formGroup, false)
-		BasicFieldtoForm("MaxRow", instanceWithInferedType.MaxRow, instanceWithInferedType, playground.formStage, formGroup, false)
-		BasicFieldtoForm("MaxCol", instanceWithInferedType.MaxCol, instanceWithInferedType, playground.formStage, formGroup, false)
-		BasicFieldtoForm("NbRows", instanceWithInferedType.NbRows, instanceWithInferedType, playground.formStage, formGroup, false)
-		AssociationSliceToForm("Rows", instanceWithInferedType, &instanceWithInferedType.Rows, formGroup, playground)
-		AssociationSliceToForm("SheetCells", instanceWithInferedType, &instanceWithInferedType.SheetCells, formGroup, playground)
+		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("MaxRow", instanceWithInferedType.MaxRow, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("MaxCol", instanceWithInferedType.MaxCol, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("NbRows", instanceWithInferedType.NbRows, instanceWithInferedType, probe.formStage, formGroup, false)
+		AssociationSliceToForm("Rows", instanceWithInferedType, &instanceWithInferedType.Rows, formGroup, probe)
+		AssociationSliceToForm("SheetCells", instanceWithInferedType, &instanceWithInferedType.SheetCells, formGroup, probe)
 		{
 			var rf models.ReverseField
 			_ = rf
 			rf.GongstructName = "XLFile"
 			rf.Fieldname = "Sheets"
-			reverseFieldOwner := orm.GetReverseFieldOwner(playground.stageOfInterest, playground.backRepoOfInterest, instanceWithInferedType, &rf)
+			reverseFieldOwner := orm.GetReverseFieldOwner(probe.stageOfInterest, probe.backRepoOfInterest, instanceWithInferedType, &rf)
 			if reverseFieldOwner != nil {
 				AssociationReverseFieldToForm(
 					reverseFieldOwner.(*models.XLFile),
 					"Sheets",
 					instanceWithInferedType,
 					formGroup,
-					playground)
+					probe)
 			} else {
 				AssociationReverseFieldToForm[*models.XLFile, *models.XLSheet](
 					nil,
 					"Sheets",
 					instanceWithInferedType,
 					formGroup,
-					playground)
+					probe)
 			}	
 		}
 
