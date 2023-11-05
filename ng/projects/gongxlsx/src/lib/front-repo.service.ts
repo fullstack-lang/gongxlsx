@@ -19,6 +19,7 @@ import { XLRowService } from './xlrow.service'
 import { XLSheetDB } from './xlsheet-db'
 import { XLSheetService } from './xlsheet.service'
 
+export const StackType = "github.com/fullstack-lang/gongxlsx/go/models"
 
 // FrontRepo stores all instances in a front repository (design pattern repository)
 export class FrontRepo { // insertion point sub template
