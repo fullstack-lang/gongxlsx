@@ -70,15 +70,15 @@ export class FrontRepo { // insertion point sub template
     switch (gongStructName) {
       // insertion point
       case 'DisplaySelection':
-        return this.DisplaySelections_array as unknown as Map<number, Type>
+        return this.DisplaySelections as unknown as Map<number, Type>
       case 'XLCell':
-        return this.XLCells_array as unknown as Map<number, Type>
+        return this.XLCells as unknown as Map<number, Type>
       case 'XLFile':
-        return this.XLFiles_array as unknown as Map<number, Type>
+        return this.XLFiles as unknown as Map<number, Type>
       case 'XLRow':
-        return this.XLRows_array as unknown as Map<number, Type>
+        return this.XLRows as unknown as Map<number, Type>
       case 'XLSheet':
-        return this.XLSheets_array as unknown as Map<number, Type>
+        return this.XLSheets as unknown as Map<number, Type>
       default:
         throw new Error("Type not recognized");
     }

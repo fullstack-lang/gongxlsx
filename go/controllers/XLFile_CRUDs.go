@@ -293,6 +293,9 @@ func (controller *Controller) UpdateXLFile(c *gin.Context) {
 	xlfileNew := new(models.XLFile)
 	xlfileDB.CopyBasicFieldsToXLFile(xlfileNew)
 
+	// redeem pointers
+	xlfileDB.DecodePointers(backRepo, xlfileNew)
+
 	// get stage instance from DB instance, and call callback function
 	xlfileOld := backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr[xlfileDB.ID]
 	if xlfileOld != nil {

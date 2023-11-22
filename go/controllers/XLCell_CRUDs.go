@@ -293,6 +293,9 @@ func (controller *Controller) UpdateXLCell(c *gin.Context) {
 	xlcellNew := new(models.XLCell)
 	xlcellDB.CopyBasicFieldsToXLCell(xlcellNew)
 
+	// redeem pointers
+	xlcellDB.DecodePointers(backRepo, xlcellNew)
+
 	// get stage instance from DB instance, and call callback function
 	xlcellOld := backRepo.BackRepoXLCell.Map_XLCellDBID_XLCellPtr[xlcellDB.ID]
 	if xlcellOld != nil {

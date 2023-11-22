@@ -293,6 +293,9 @@ func (controller *Controller) UpdateDisplaySelection(c *gin.Context) {
 	displayselectionNew := new(models.DisplaySelection)
 	displayselectionDB.CopyBasicFieldsToDisplaySelection(displayselectionNew)
 
+	// redeem pointers
+	displayselectionDB.DecodePointers(backRepo, displayselectionNew)
+
 	// get stage instance from DB instance, and call callback function
 	displayselectionOld := backRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr[displayselectionDB.ID]
 	if displayselectionOld != nil {

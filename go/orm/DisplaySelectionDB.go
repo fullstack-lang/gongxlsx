@@ -344,7 +344,13 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseTwo
 func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseTwoInstance(backRepo *BackRepoStruct, displayselectionDB *DisplaySelectionDB) (Error error) {
 
 	displayselection := backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionPtr[displayselectionDB.ID]
-	_ = displayselection // sometimes, there is no code generated. This lines voids the "unused variable" compilation error
+
+	displayselectionDB.DecodePointers(backRepo, displayselection)
+
+	return
+}
+
+func (displayselectionDB *DisplaySelectionDB) DecodePointers(backRepo *BackRepoStruct, displayselection *models.DisplaySelection) {
 
 	// insertion point for checkout of pointer encoding
 	// XLFile field
@@ -617,7 +623,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) ResetReversePoin
 	return
 }
 
-func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) ResetReversePointersInstance(backRepo *BackRepoStruct, idx uint, astruct *models.DisplaySelection) (Error error) {
+func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) ResetReversePointersInstance(backRepo *BackRepoStruct, idx uint, displayselection *models.DisplaySelection) (Error error) {
 
 	// fetch matching displayselectionDB
 	if displayselectionDB, ok := backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[idx]; ok {

@@ -293,6 +293,9 @@ func (controller *Controller) UpdateXLSheet(c *gin.Context) {
 	xlsheetNew := new(models.XLSheet)
 	xlsheetDB.CopyBasicFieldsToXLSheet(xlsheetNew)
 
+	// redeem pointers
+	xlsheetDB.DecodePointers(backRepo, xlsheetNew)
+
 	// get stage instance from DB instance, and call callback function
 	xlsheetOld := backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[xlsheetDB.ID]
 	if xlsheetOld != nil {

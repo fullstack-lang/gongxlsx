@@ -293,6 +293,9 @@ func (controller *Controller) UpdateXLRow(c *gin.Context) {
 	xlrowNew := new(models.XLRow)
 	xlrowDB.CopyBasicFieldsToXLRow(xlrowNew)
 
+	// redeem pointers
+	xlrowDB.DecodePointers(backRepo, xlrowNew)
+
 	// get stage instance from DB instance, and call callback function
 	xlrowOld := backRepo.BackRepoXLRow.Map_XLRowDBID_XLRowPtr[xlrowDB.ID]
 	if xlrowOld != nil {
