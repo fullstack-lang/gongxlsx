@@ -295,7 +295,7 @@ func NewDiagramInjection(stage *models.StageStruct) {
 	__GongStructShape__000000_NewDiagram_DisplaySelection.ShowNbInstances = true
 	__GongStructShape__000000_NewDiagram_DisplaySelection.NbInstances = 0
 	__GongStructShape__000000_NewDiagram_DisplaySelection.Width = 240.000000
-	__GongStructShape__000000_NewDiagram_DisplaySelection.Heigth = 78.000000
+	__GongStructShape__000000_NewDiagram_DisplaySelection.Height = 78.000000
 	__GongStructShape__000000_NewDiagram_DisplaySelection.IsSelected = false
 
 	// GongStructShape values setup
@@ -308,7 +308,7 @@ func NewDiagramInjection(stage *models.StageStruct) {
 	__GongStructShape__000001_NewDiagram_XLCell.ShowNbInstances = true
 	__GongStructShape__000001_NewDiagram_XLCell.NbInstances = 0
 	__GongStructShape__000001_NewDiagram_XLCell.Width = 240.000000
-	__GongStructShape__000001_NewDiagram_XLCell.Heigth = 108.000000
+	__GongStructShape__000001_NewDiagram_XLCell.Height = 108.000000
 	__GongStructShape__000001_NewDiagram_XLCell.IsSelected = false
 
 	// GongStructShape values setup
@@ -321,7 +321,7 @@ func NewDiagramInjection(stage *models.StageStruct) {
 	__GongStructShape__000002_NewDiagram_XLFile.ShowNbInstances = true
 	__GongStructShape__000002_NewDiagram_XLFile.NbInstances = 0
 	__GongStructShape__000002_NewDiagram_XLFile.Width = 240.000000
-	__GongStructShape__000002_NewDiagram_XLFile.Heigth = 93.000000
+	__GongStructShape__000002_NewDiagram_XLFile.Height = 93.000000
 	__GongStructShape__000002_NewDiagram_XLFile.IsSelected = false
 
 	// GongStructShape values setup
@@ -334,7 +334,7 @@ func NewDiagramInjection(stage *models.StageStruct) {
 	__GongStructShape__000003_NewDiagram_XLRow.ShowNbInstances = true
 	__GongStructShape__000003_NewDiagram_XLRow.NbInstances = 0
 	__GongStructShape__000003_NewDiagram_XLRow.Width = 240.000000
-	__GongStructShape__000003_NewDiagram_XLRow.Heigth = 93.000000
+	__GongStructShape__000003_NewDiagram_XLRow.Height = 93.000000
 	__GongStructShape__000003_NewDiagram_XLRow.IsSelected = false
 
 	// GongStructShape values setup
@@ -347,7 +347,7 @@ func NewDiagramInjection(stage *models.StageStruct) {
 	__GongStructShape__000004_NewDiagram_XLSheet.ShowNbInstances = true
 	__GongStructShape__000004_NewDiagram_XLSheet.NbInstances = 0
 	__GongStructShape__000004_NewDiagram_XLSheet.Width = 240.000000
-	__GongStructShape__000004_NewDiagram_XLSheet.Heigth = 123.000000
+	__GongStructShape__000004_NewDiagram_XLSheet.Height = 123.000000
 	__GongStructShape__000004_NewDiagram_XLSheet.IsSelected = false
 
 	// Link values setup
@@ -597,5 +597,3 @@ func NewDiagramInjection(stage *models.StageStruct) {
 	__Link__000004_XLFile.Middlevertice = __Vertice__000000_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_DisplaySelection_and_NewDiagram_XLFile
 	__Link__000005_XLSheet.Middlevertice = __Vertice__000001_Verticle_in_class_diagram_NewDiagram_in_middle_between_NewDiagram_DisplaySelection_and_NewDiagram_XLSheet
 }
-
-
