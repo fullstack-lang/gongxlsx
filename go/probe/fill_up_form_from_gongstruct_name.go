@@ -19,9 +19,9 @@ func FillUpFormFromGongstructName(
 	var prefix string
 
 	if isNewInstance {
-		prefix = "New"
+		prefix = ""
 	} else {
-		prefix = "Update"
+		prefix = ""
 	}
 
 	switch gongstructName {
@@ -29,57 +29,67 @@ func FillUpFormFromGongstructName(
 	case "DisplaySelection":
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
-			Label: prefix + " DisplaySelection Form",
-			OnSave: __gong__New__DisplaySelectionFormCallback(
-				nil,
-				probe,
-			),
+			Label: prefix + "DisplaySelection Form",
 		}).Stage(formStage)
+		formGroup.OnSave = __gong__New__DisplaySelectionFormCallback(
+			nil,
+			probe,
+			formGroup,
+		)
 		displayselection := new(models.DisplaySelection)
+		formGroup.HasSuppressButton = !isNewInstance
 		FillUpForm(displayselection, formGroup, probe)
 	case "XLCell":
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
-			Label: prefix + " XLCell Form",
-			OnSave: __gong__New__XLCellFormCallback(
-				nil,
-				probe,
-			),
+			Label: prefix + "XLCell Form",
 		}).Stage(formStage)
+		formGroup.OnSave = __gong__New__XLCellFormCallback(
+			nil,
+			probe,
+			formGroup,
+		)
 		xlcell := new(models.XLCell)
+		formGroup.HasSuppressButton = !isNewInstance
 		FillUpForm(xlcell, formGroup, probe)
 	case "XLFile":
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
-			Label: prefix + " XLFile Form",
-			OnSave: __gong__New__XLFileFormCallback(
-				nil,
-				probe,
-			),
+			Label: prefix + "XLFile Form",
 		}).Stage(formStage)
+		formGroup.OnSave = __gong__New__XLFileFormCallback(
+			nil,
+			probe,
+			formGroup,
+		)
 		xlfile := new(models.XLFile)
+		formGroup.HasSuppressButton = !isNewInstance
 		FillUpForm(xlfile, formGroup, probe)
 	case "XLRow":
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
-			Label: prefix + " XLRow Form",
-			OnSave: __gong__New__XLRowFormCallback(
-				nil,
-				probe,
-			),
+			Label: prefix + "XLRow Form",
 		}).Stage(formStage)
+		formGroup.OnSave = __gong__New__XLRowFormCallback(
+			nil,
+			probe,
+			formGroup,
+		)
 		xlrow := new(models.XLRow)
+		formGroup.HasSuppressButton = !isNewInstance
 		FillUpForm(xlrow, formGroup, probe)
 	case "XLSheet":
 		formGroup := (&form.FormGroup{
 			Name:  form.FormGroupDefaultName.ToString(),
-			Label: prefix + " XLSheet Form",
-			OnSave: __gong__New__XLSheetFormCallback(
-				nil,
-				probe,
-			),
+			Label: prefix + "XLSheet Form",
 		}).Stage(formStage)
+		formGroup.OnSave = __gong__New__XLSheetFormCallback(
+			nil,
+			probe,
+			formGroup,
+		)
 		xlsheet := new(models.XLSheet)
+		formGroup.HasSuppressButton = !isNewInstance
 		FillUpForm(xlsheet, formGroup, probe)
 	}
 	formStage.Commit()

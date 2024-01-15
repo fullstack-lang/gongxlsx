@@ -223,6 +223,14 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseTwoInstance(backRepo *Bac
 		for _, xlsheetAssocEnd := range xlfile.Sheets {
 			xlsheetAssocEnd_DB :=
 				backRepo.BackRepoXLSheet.GetXLSheetDBFromXLSheetPtr(xlsheetAssocEnd)
+			
+			// the stage might be inconsistant, meaning that the xlsheetAssocEnd_DB might
+			// be missing from the stage. In this case, the commit operation is robust
+			// An alternative would be to crash here to reveal the missing element.
+			if xlsheetAssocEnd_DB == nil {
+				continue
+			}
+			
 			xlfileDB.XLFilePointersEncoding.Sheets =
 				append(xlfileDB.XLFilePointersEncoding.Sheets, int(xlsheetAssocEnd_DB.ID))
 		}

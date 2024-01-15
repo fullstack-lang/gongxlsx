@@ -223,6 +223,14 @@ func (backRepoXLRow *BackRepoXLRowStruct) CommitPhaseTwoInstance(backRepo *BackR
 		for _, xlcellAssocEnd := range xlrow.Cells {
 			xlcellAssocEnd_DB :=
 				backRepo.BackRepoXLCell.GetXLCellDBFromXLCellPtr(xlcellAssocEnd)
+			
+			// the stage might be inconsistant, meaning that the xlcellAssocEnd_DB might
+			// be missing from the stage. In this case, the commit operation is robust
+			// An alternative would be to crash here to reveal the missing element.
+			if xlcellAssocEnd_DB == nil {
+				continue
+			}
+			
 			xlrowDB.XLRowPointersEncoding.Cells =
 				append(xlrowDB.XLRowPointersEncoding.Cells, int(xlcellAssocEnd_DB.ID))
 		}

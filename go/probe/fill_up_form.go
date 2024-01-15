@@ -20,15 +20,19 @@ func FillUpForm[T models.Gongstruct](
 	// insertion point
 	case *models.DisplaySelection:
 		// insertion point
-		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup,
+			false, false, 0, false, 0)
 		AssociationFieldToForm("XLFile", instanceWithInferedType.XLFile, formGroup, probe)
 		AssociationFieldToForm("XLSheet", instanceWithInferedType.XLSheet, formGroup, probe)
 
 	case *models.XLCell:
 		// insertion point
-		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, false)
-		BasicFieldtoForm("X", instanceWithInferedType.X, instanceWithInferedType, probe.formStage, formGroup, false)
-		BasicFieldtoForm("Y", instanceWithInferedType.Y, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup,
+			false, false, 0, false, 0)
+		BasicFieldtoForm("X", instanceWithInferedType.X, instanceWithInferedType, probe.formStage, formGroup,
+			false, false, 0, false, 0)
+		BasicFieldtoForm("Y", instanceWithInferedType.Y, instanceWithInferedType, probe.formStage, formGroup,
+			false, false, 0, false, 0)
 		{
 			var rf models.ReverseField
 			_ = rf
@@ -49,7 +53,7 @@ func FillUpForm[T models.Gongstruct](
 					instanceWithInferedType,
 					formGroup,
 					probe)
-			}	
+			}
 		}
 		{
 			var rf models.ReverseField
@@ -71,19 +75,23 @@ func FillUpForm[T models.Gongstruct](
 					instanceWithInferedType,
 					formGroup,
 					probe)
-			}	
+			}
 		}
 
 	case *models.XLFile:
 		// insertion point
-		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, false)
-		BasicFieldtoForm("NbSheets", instanceWithInferedType.NbSheets, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup,
+			false, false, 0, false, 0)
+		BasicFieldtoForm("NbSheets", instanceWithInferedType.NbSheets, instanceWithInferedType, probe.formStage, formGroup,
+			false, false, 0, false, 0)
 		AssociationSliceToForm("Sheets", instanceWithInferedType, &instanceWithInferedType.Sheets, formGroup, probe)
 
 	case *models.XLRow:
 		// insertion point
-		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, false)
-		BasicFieldtoForm("RowIndex", instanceWithInferedType.RowIndex, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup,
+			false, false, 0, false, 0)
+		BasicFieldtoForm("RowIndex", instanceWithInferedType.RowIndex, instanceWithInferedType, probe.formStage, formGroup,
+			false, false, 0, false, 0)
 		AssociationSliceToForm("Cells", instanceWithInferedType, &instanceWithInferedType.Cells, formGroup, probe)
 		{
 			var rf models.ReverseField
@@ -105,15 +113,19 @@ func FillUpForm[T models.Gongstruct](
 					instanceWithInferedType,
 					formGroup,
 					probe)
-			}	
+			}
 		}
 
 	case *models.XLSheet:
 		// insertion point
-		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, false)
-		BasicFieldtoForm("MaxRow", instanceWithInferedType.MaxRow, instanceWithInferedType, probe.formStage, formGroup, false)
-		BasicFieldtoForm("MaxCol", instanceWithInferedType.MaxCol, instanceWithInferedType, probe.formStage, formGroup, false)
-		BasicFieldtoForm("NbRows", instanceWithInferedType.NbRows, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup,
+			false, false, 0, false, 0)
+		BasicFieldtoForm("MaxRow", instanceWithInferedType.MaxRow, instanceWithInferedType, probe.formStage, formGroup,
+			false, false, 0, false, 0)
+		BasicFieldtoForm("MaxCol", instanceWithInferedType.MaxCol, instanceWithInferedType, probe.formStage, formGroup,
+			false, false, 0, false, 0)
+		BasicFieldtoForm("NbRows", instanceWithInferedType.NbRows, instanceWithInferedType, probe.formStage, formGroup,
+			false, false, 0, false, 0)
 		AssociationSliceToForm("Rows", instanceWithInferedType, &instanceWithInferedType.Rows, formGroup, probe)
 		AssociationSliceToForm("SheetCells", instanceWithInferedType, &instanceWithInferedType.SheetCells, formGroup, probe)
 		{
@@ -136,7 +148,7 @@ func FillUpForm[T models.Gongstruct](
 					instanceWithInferedType,
 					formGroup,
 					probe)
-			}	
+			}
 		}
 
 	default:
