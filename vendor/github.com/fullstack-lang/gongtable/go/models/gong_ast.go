@@ -15,6 +15,7 @@ import (
 )
 
 var dummy_strconv_import strconv.NumError
+var dummy_time_import time.Time
 
 // swagger:ignore
 type GONG__ExpressionType string
@@ -38,9 +39,9 @@ func ParseAstFile(stage *StageStruct, pathToFile string) error {
 	}
 
 	fset := token.NewFileSet()
-	startParser := time.Now()
+	// startParser := time.Now()
 	inFile, errParser := parser.ParseFile(fset, fileOfInterest, nil, parser.ParseComments)
-	log.Printf("Parser took %s", time.Since(startParser))
+	// log.Printf("Parser took %s", time.Since(startParser))
 
 	if errParser != nil {
 		return errors.New("Unable to parser " + errParser.Error())
@@ -1067,6 +1068,13 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 						log.Fatalln(err)
 					}
 					__gong__map_FormField[identifier].BespokeWidthPx = int(exprSign) * int(fielValue)
+				case "BespokeHeightPx":
+					// convert string to int
+					fielValue, err := strconv.ParseInt(basicLit.Value, 10, 64)
+					if err != nil {
+						log.Fatalln(err)
+					}
+					__gong__map_FormField[identifier].BespokeHeightPx = int(exprSign) * int(fielValue)
 				}
 			case "FormFieldDate":
 				switch fieldName {
@@ -1352,6 +1360,13 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 						log.Fatalln(err)
 					}
 					__gong__map_FormField[identifier].HasBespokeWidth = fielValue
+				case "HasBespokeHeight":
+					// convert string to boolean
+					fielValue, err := strconv.ParseBool(ident.Name)
+					if err != nil {
+						log.Fatalln(err)
+					}
+					__gong__map_FormField[identifier].HasBespokeHeight = fielValue
 				}
 			case "FormFieldDate":
 				switch fieldName {
@@ -1429,6 +1444,20 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 			case "FormGroup":
 				switch fieldName {
 				// insertion point for field dependant code
+				case "HasSuppressButton":
+					// convert string to boolean
+					fielValue, err := strconv.ParseBool(ident.Name)
+					if err != nil {
+						log.Fatalln(err)
+					}
+					__gong__map_FormGroup[identifier].HasSuppressButton = fielValue
+				case "HasSuppressButtonBeenPressed":
+					// convert string to boolean
+					fielValue, err := strconv.ParseBool(ident.Name)
+					if err != nil {
+						log.Fatalln(err)
+					}
+					__gong__map_FormGroup[identifier].HasSuppressButtonBeenPressed = fielValue
 				}
 			case "FormSortAssocButton":
 				switch fieldName {
