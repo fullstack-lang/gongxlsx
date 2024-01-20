@@ -7,11 +7,13 @@ import { DOCUMENT, Location } from '@angular/common'
 /*
  * Behavior subject
  */
-import { BehaviorSubject } from 'rxjs';
-import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs'
+import { Observable, of } from 'rxjs'
+import { catchError, map, tap } from 'rxjs/operators'
 
-import { DisplaySelectionDB } from './displayselection-db';
+import { DisplaySelectionDB } from './displayselection-db'
+import { DisplaySelection, CopyDisplaySelectionToDisplaySelectionDB } from './displayselection'
+
 import { FrontRepo, FrontRepoService } from './front-repo.service';
 
 // insertion point for imports
@@ -128,6 +130,25 @@ export class DisplaySelectionService {
     return this.http.delete<DisplaySelectionDB>(url, httpOptions).pipe(
       tap(_ => this.log(`deleted displayselectiondb id=${id}`)),
       catchError(this.handleError<DisplaySelectionDB>('deleteDisplaySelection'))
+    );
+  }
+
+  // updateFront copy displayselection to a version with encoded pointers and update to the back
+  updateFront(displayselection: DisplaySelection, GONG__StackPath: string): Observable<DisplaySelectionDB> {
+    let displayselectionDB = new DisplaySelectionDB
+    CopyDisplaySelectionToDisplaySelectionDB(displayselection, displayselectionDB)
+    const id = typeof displayselectionDB === 'number' ? displayselectionDB : displayselectionDB.ID
+    const url = `${this.displayselectionsUrl}/${id}`;
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    }
+
+    return this.http.put<DisplaySelectionDB>(url, displayselectionDB, httpOptions).pipe(
+      tap(_ => {
+      }),
+      catchError(this.handleError<DisplaySelectionDB>('updateDisplaySelection'))
     );
   }
 

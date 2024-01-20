@@ -7,11 +7,13 @@ import { DOCUMENT, Location } from '@angular/common'
 /*
  * Behavior subject
  */
-import { BehaviorSubject } from 'rxjs';
-import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs'
+import { Observable, of } from 'rxjs'
+import { catchError, map, tap } from 'rxjs/operators'
 
-import { XLSheetDB } from './xlsheet-db';
+import { XLSheetDB } from './xlsheet-db'
+import { XLSheet, CopyXLSheetToXLSheetDB } from './xlsheet'
+
 import { FrontRepo, FrontRepoService } from './front-repo.service';
 
 // insertion point for imports
@@ -140,6 +142,25 @@ export class XLSheetService {
     return this.http.delete<XLSheetDB>(url, httpOptions).pipe(
       tap(_ => this.log(`deleted xlsheetdb id=${id}`)),
       catchError(this.handleError<XLSheetDB>('deleteXLSheet'))
+    );
+  }
+
+  // updateFront copy xlsheet to a version with encoded pointers and update to the back
+  updateFront(xlsheet: XLSheet, GONG__StackPath: string): Observable<XLSheetDB> {
+    let xlsheetDB = new XLSheetDB
+    CopyXLSheetToXLSheetDB(xlsheet, xlsheetDB)
+    const id = typeof xlsheetDB === 'number' ? xlsheetDB : xlsheetDB.ID
+    const url = `${this.xlsheetsUrl}/${id}`;
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    }
+
+    return this.http.put<XLSheetDB>(url, xlsheetDB, httpOptions).pipe(
+      tap(_ => {
+      }),
+      catchError(this.handleError<XLSheetDB>('updateXLSheet'))
     );
   }
 

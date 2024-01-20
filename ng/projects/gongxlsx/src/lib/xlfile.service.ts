@@ -7,11 +7,13 @@ import { DOCUMENT, Location } from '@angular/common'
 /*
  * Behavior subject
  */
-import { BehaviorSubject } from 'rxjs';
-import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs'
+import { Observable, of } from 'rxjs'
+import { catchError, map, tap } from 'rxjs/operators'
 
-import { XLFileDB } from './xlfile-db';
+import { XLFileDB } from './xlfile-db'
+import { XLFile, CopyXLFileToXLFileDB } from './xlfile'
+
 import { FrontRepo, FrontRepoService } from './front-repo.service';
 
 // insertion point for imports
@@ -127,6 +129,25 @@ export class XLFileService {
     return this.http.delete<XLFileDB>(url, httpOptions).pipe(
       tap(_ => this.log(`deleted xlfiledb id=${id}`)),
       catchError(this.handleError<XLFileDB>('deleteXLFile'))
+    );
+  }
+
+  // updateFront copy xlfile to a version with encoded pointers and update to the back
+  updateFront(xlfile: XLFile, GONG__StackPath: string): Observable<XLFileDB> {
+    let xlfileDB = new XLFileDB
+    CopyXLFileToXLFileDB(xlfile, xlfileDB)
+    const id = typeof xlfileDB === 'number' ? xlfileDB : xlfileDB.ID
+    const url = `${this.xlfilesUrl}/${id}`;
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    }
+
+    return this.http.put<XLFileDB>(url, xlfileDB, httpOptions).pipe(
+      tap(_ => {
+      }),
+      catchError(this.handleError<XLFileDB>('updateXLFile'))
     );
   }
 

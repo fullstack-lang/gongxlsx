@@ -12,18 +12,23 @@ export * from './lib/push_from_front_nb.service'
 
 
 export * from './lib/displayselection-db'
+export * from './lib/displayselection'
 export * from './lib/displayselection.service'
 
 export * from './lib/xlcell-db'
+export * from './lib/xlcell'
 export * from './lib/xlcell.service'
 
 export * from './lib/xlfile-db'
+export * from './lib/xlfile'
 export * from './lib/xlfile.service'
 
 export * from './lib/xlrow-db'
+export * from './lib/xlrow'
 export * from './lib/xlrow.service'
 
 export * from './lib/xlsheet-db'
+export * from './lib/xlsheet'
 export * from './lib/xlsheet.service'
 
 

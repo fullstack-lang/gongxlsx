@@ -5,18 +5,23 @@ import { Observable, combineLatest, BehaviorSubject, of } from 'rxjs'
 
 // insertion point sub template for services imports
 import { DisplaySelectionDB } from './displayselection-db'
+import { DisplaySelection, CopyDisplaySelectionDBToDisplaySelection } from './displayselection'
 import { DisplaySelectionService } from './displayselection.service'
 
 import { XLCellDB } from './xlcell-db'
+import { XLCell, CopyXLCellDBToXLCell } from './xlcell'
 import { XLCellService } from './xlcell.service'
 
 import { XLFileDB } from './xlfile-db'
+import { XLFile, CopyXLFileDBToXLFile } from './xlfile'
 import { XLFileService } from './xlfile.service'
 
 import { XLRowDB } from './xlrow-db'
+import { XLRow, CopyXLRowDBToXLRow } from './xlrow'
 import { XLRowService } from './xlrow.service'
 
 import { XLSheetDB } from './xlsheet-db'
+import { XLSheet, CopyXLSheetDBToXLSheet } from './xlsheet'
 import { XLSheetService } from './xlsheet.service'
 
 export const StackType = "github.com/fullstack-lang/gongxlsx/go/models"
@@ -27,28 +32,43 @@ export class FrontRepo { // insertion point sub template
   DisplaySelections = new Map<number, DisplaySelectionDB>() // map of repo instances
   DisplaySelections_batch = new Map<number, DisplaySelectionDB>() // same but only in last GET (for finding repo instances to delete)
 
+  array_DisplaySelections = new Array<DisplaySelection>() // array of front instances
+  map_ID_DisplaySelection = new Map<number, DisplaySelection>() // map of front instances
+
   XLCells_array = new Array<XLCellDB>() // array of repo instances
   XLCells = new Map<number, XLCellDB>() // map of repo instances
   XLCells_batch = new Map<number, XLCellDB>() // same but only in last GET (for finding repo instances to delete)
+
+  array_XLCells = new Array<XLCell>() // array of front instances
+  map_ID_XLCell = new Map<number, XLCell>() // map of front instances
 
   XLFiles_array = new Array<XLFileDB>() // array of repo instances
   XLFiles = new Map<number, XLFileDB>() // map of repo instances
   XLFiles_batch = new Map<number, XLFileDB>() // same but only in last GET (for finding repo instances to delete)
 
+  array_XLFiles = new Array<XLFile>() // array of front instances
+  map_ID_XLFile = new Map<number, XLFile>() // map of front instances
+
   XLRows_array = new Array<XLRowDB>() // array of repo instances
   XLRows = new Map<number, XLRowDB>() // map of repo instances
   XLRows_batch = new Map<number, XLRowDB>() // same but only in last GET (for finding repo instances to delete)
 
+  array_XLRows = new Array<XLRow>() // array of front instances
+  map_ID_XLRow = new Map<number, XLRow>() // map of front instances
+
   XLSheets_array = new Array<XLSheetDB>() // array of repo instances
   XLSheets = new Map<number, XLSheetDB>() // map of repo instances
   XLSheets_batch = new Map<number, XLSheetDB>() // same but only in last GET (for finding repo instances to delete)
+
+  array_XLSheets = new Array<XLSheet>() // array of front instances
+  map_ID_XLSheet = new Map<number, XLSheet>() // map of front instances
 
 
   // getArray allows for a get function that is robust to refactoring of the named struct name
   // for instance frontRepo.getArray<Astruct>( Astruct.GONGSTRUCT_NAME), is robust to a refactoring of Astruct identifier
   // contrary to frontRepo.Astructs_array which is not refactored when Astruct identifier is modified
   getArray<Type>(gongStructName: string): Array<Type> {
-    switch (gongStructName) {
+    switch (gongStructName) { // deprecated
       // insertion point
       case 'DisplaySelection':
         return this.DisplaySelections_array as unknown as Array<Type>
@@ -65,8 +85,26 @@ export class FrontRepo { // insertion point sub template
     }
   }
 
+  getFrontArray<Type>(gongStructName: string): Array<Type> {
+    switch (gongStructName) {
+      // insertion point
+      case 'DisplaySelection':
+        return this.array_DisplaySelections as unknown as Array<Type>
+      case 'XLCell':
+        return this.array_XLCells as unknown as Array<Type>
+      case 'XLFile':
+        return this.array_XLFiles as unknown as Array<Type>
+      case 'XLRow':
+        return this.array_XLRows as unknown as Array<Type>
+      case 'XLSheet':
+        return this.array_XLSheets as unknown as Array<Type>
+      default:
+        throw new Error("Type not recognized");
+    }
+  }
+
   // getMap allows for a get function that is robust to refactoring of the named struct name
-  getMap<Type>(gongStructName: string): Map<number, Type> {
+  getMap<Type>(gongStructName: string): Map<number, Type> { // deprecated
     switch (gongStructName) {
       // insertion point
       case 'DisplaySelection':
@@ -79,6 +117,24 @@ export class FrontRepo { // insertion point sub template
         return this.XLRows as unknown as Map<number, Type>
       case 'XLSheet':
         return this.XLSheets as unknown as Map<number, Type>
+      default:
+        throw new Error("Type not recognized");
+    }
+  }
+  
+  getFrontMap<Type>(gongStructName: string): Map<number, Type> {
+    switch (gongStructName) {
+      // insertion point
+      case 'DisplaySelection':
+        return this.map_ID_DisplaySelection as unknown as Map<number, Type>
+      case 'XLCell':
+        return this.map_ID_XLCell as unknown as Map<number, Type>
+      case 'XLFile':
+        return this.map_ID_XLFile as unknown as Map<number, Type>
+      case 'XLRow':
+        return this.map_ID_XLRow as unknown as Map<number, Type>
+      case 'XLSheet':
+        return this.map_ID_XLSheet as unknown as Map<number, Type>
       default:
         throw new Error("Type not recognized");
     }
@@ -261,17 +317,17 @@ export class FrontRepoService {
             this.frontRepo.DisplaySelections_batch.clear()
 
             displayselections.forEach(
-              displayselection => {
-                this.frontRepo.DisplaySelections.set(displayselection.ID, displayselection)
-                this.frontRepo.DisplaySelections_batch.set(displayselection.ID, displayselection)
+              displayselectionDB => {
+                this.frontRepo.DisplaySelections.set(displayselectionDB.ID, displayselectionDB)
+                this.frontRepo.DisplaySelections_batch.set(displayselectionDB.ID, displayselectionDB)
               }
             )
 
             // clear displayselections that are absent from the batch
             this.frontRepo.DisplaySelections.forEach(
-              displayselection => {
-                if (this.frontRepo.DisplaySelections_batch.get(displayselection.ID) == undefined) {
-                  this.frontRepo.DisplaySelections.delete(displayselection.ID)
+              displayselectionDB => {
+                if (this.frontRepo.DisplaySelections_batch.get(displayselectionDB.ID) == undefined) {
+                  this.frontRepo.DisplaySelections.delete(displayselectionDB.ID)
                 }
               }
             )
@@ -294,17 +350,17 @@ export class FrontRepoService {
             this.frontRepo.XLCells_batch.clear()
 
             xlcells.forEach(
-              xlcell => {
-                this.frontRepo.XLCells.set(xlcell.ID, xlcell)
-                this.frontRepo.XLCells_batch.set(xlcell.ID, xlcell)
+              xlcellDB => {
+                this.frontRepo.XLCells.set(xlcellDB.ID, xlcellDB)
+                this.frontRepo.XLCells_batch.set(xlcellDB.ID, xlcellDB)
               }
             )
 
             // clear xlcells that are absent from the batch
             this.frontRepo.XLCells.forEach(
-              xlcell => {
-                if (this.frontRepo.XLCells_batch.get(xlcell.ID) == undefined) {
-                  this.frontRepo.XLCells.delete(xlcell.ID)
+              xlcellDB => {
+                if (this.frontRepo.XLCells_batch.get(xlcellDB.ID) == undefined) {
+                  this.frontRepo.XLCells.delete(xlcellDB.ID)
                 }
               }
             )
@@ -327,17 +383,17 @@ export class FrontRepoService {
             this.frontRepo.XLFiles_batch.clear()
 
             xlfiles.forEach(
-              xlfile => {
-                this.frontRepo.XLFiles.set(xlfile.ID, xlfile)
-                this.frontRepo.XLFiles_batch.set(xlfile.ID, xlfile)
+              xlfileDB => {
+                this.frontRepo.XLFiles.set(xlfileDB.ID, xlfileDB)
+                this.frontRepo.XLFiles_batch.set(xlfileDB.ID, xlfileDB)
               }
             )
 
             // clear xlfiles that are absent from the batch
             this.frontRepo.XLFiles.forEach(
-              xlfile => {
-                if (this.frontRepo.XLFiles_batch.get(xlfile.ID) == undefined) {
-                  this.frontRepo.XLFiles.delete(xlfile.ID)
+              xlfileDB => {
+                if (this.frontRepo.XLFiles_batch.get(xlfileDB.ID) == undefined) {
+                  this.frontRepo.XLFiles.delete(xlfileDB.ID)
                 }
               }
             )
@@ -360,17 +416,17 @@ export class FrontRepoService {
             this.frontRepo.XLRows_batch.clear()
 
             xlrows.forEach(
-              xlrow => {
-                this.frontRepo.XLRows.set(xlrow.ID, xlrow)
-                this.frontRepo.XLRows_batch.set(xlrow.ID, xlrow)
+              xlrowDB => {
+                this.frontRepo.XLRows.set(xlrowDB.ID, xlrowDB)
+                this.frontRepo.XLRows_batch.set(xlrowDB.ID, xlrowDB)
               }
             )
 
             // clear xlrows that are absent from the batch
             this.frontRepo.XLRows.forEach(
-              xlrow => {
-                if (this.frontRepo.XLRows_batch.get(xlrow.ID) == undefined) {
-                  this.frontRepo.XLRows.delete(xlrow.ID)
+              xlrowDB => {
+                if (this.frontRepo.XLRows_batch.get(xlrowDB.ID) == undefined) {
+                  this.frontRepo.XLRows.delete(xlrowDB.ID)
                 }
               }
             )
@@ -393,17 +449,17 @@ export class FrontRepoService {
             this.frontRepo.XLSheets_batch.clear()
 
             xlsheets.forEach(
-              xlsheet => {
-                this.frontRepo.XLSheets.set(xlsheet.ID, xlsheet)
-                this.frontRepo.XLSheets_batch.set(xlsheet.ID, xlsheet)
+              xlsheetDB => {
+                this.frontRepo.XLSheets.set(xlsheetDB.ID, xlsheetDB)
+                this.frontRepo.XLSheets_batch.set(xlsheetDB.ID, xlsheetDB)
               }
             )
 
             // clear xlsheets that are absent from the batch
             this.frontRepo.XLSheets.forEach(
-              xlsheet => {
-                if (this.frontRepo.XLSheets_batch.get(xlsheet.ID) == undefined) {
-                  this.frontRepo.XLSheets.delete(xlsheet.ID)
+              xlsheetDB => {
+                if (this.frontRepo.XLSheets_batch.get(xlsheetDB.ID) == undefined) {
+                  this.frontRepo.XLSheets.delete(xlsheetDB.ID)
                 }
               }
             )
@@ -495,6 +551,76 @@ export class FrontRepoService {
                 }
               }
             )
+
+            // 
+            // Third Step: reddeem front objects
+            // insertion point sub template for redeem 
+            
+            // init front objects
+            this.frontRepo.array_DisplaySelections = []
+            this.frontRepo.map_ID_DisplaySelection.clear()
+            this.frontRepo.DisplaySelections_array.forEach(
+              displayselectionDB => {
+                let displayselection = new DisplaySelection
+                CopyDisplaySelectionDBToDisplaySelection(displayselectionDB, displayselection, this.frontRepo)
+                this.frontRepo.array_DisplaySelections.push(displayselection)
+                this.frontRepo.map_ID_DisplaySelection.set(displayselection.ID, displayselection)
+              }
+            )
+
+            
+            // init front objects
+            this.frontRepo.array_XLCells = []
+            this.frontRepo.map_ID_XLCell.clear()
+            this.frontRepo.XLCells_array.forEach(
+              xlcellDB => {
+                let xlcell = new XLCell
+                CopyXLCellDBToXLCell(xlcellDB, xlcell, this.frontRepo)
+                this.frontRepo.array_XLCells.push(xlcell)
+                this.frontRepo.map_ID_XLCell.set(xlcell.ID, xlcell)
+              }
+            )
+
+            
+            // init front objects
+            this.frontRepo.array_XLFiles = []
+            this.frontRepo.map_ID_XLFile.clear()
+            this.frontRepo.XLFiles_array.forEach(
+              xlfileDB => {
+                let xlfile = new XLFile
+                CopyXLFileDBToXLFile(xlfileDB, xlfile, this.frontRepo)
+                this.frontRepo.array_XLFiles.push(xlfile)
+                this.frontRepo.map_ID_XLFile.set(xlfile.ID, xlfile)
+              }
+            )
+
+            
+            // init front objects
+            this.frontRepo.array_XLRows = []
+            this.frontRepo.map_ID_XLRow.clear()
+            this.frontRepo.XLRows_array.forEach(
+              xlrowDB => {
+                let xlrow = new XLRow
+                CopyXLRowDBToXLRow(xlrowDB, xlrow, this.frontRepo)
+                this.frontRepo.array_XLRows.push(xlrow)
+                this.frontRepo.map_ID_XLRow.set(xlrow.ID, xlrow)
+              }
+            )
+
+            
+            // init front objects
+            this.frontRepo.array_XLSheets = []
+            this.frontRepo.map_ID_XLSheet.clear()
+            this.frontRepo.XLSheets_array.forEach(
+              xlsheetDB => {
+                let xlsheet = new XLSheet
+                CopyXLSheetDBToXLSheet(xlsheetDB, xlsheet, this.frontRepo)
+                this.frontRepo.array_XLSheets.push(xlsheet)
+                this.frontRepo.map_ID_XLSheet.set(xlsheet.ID, xlsheet)
+              }
+            )
+
+
 
             // hand over control flow to observer
             observer.next(this.frontRepo)
