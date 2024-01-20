@@ -78,6 +78,25 @@ export class XLSheetService {
     );
   }
 
+  // postFront copy xlsheet to a version with encoded pointers and post to the back
+  postFront(xlsheet: XLSheet, GONG__StackPath: string): Observable<XLSheetDB> {
+    let xlsheetDB = new XLSheetDB
+    CopyXLSheetToXLSheetDB(xlsheet, xlsheetDB)
+    const id = typeof xlsheetDB === 'number' ? xlsheetDB : xlsheetDB.ID
+    const url = `${this.xlsheetsUrl}/${id}`;
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    }
+
+    return this.http.post<XLSheetDB>(url, xlsheetDB, httpOptions).pipe(
+      tap(_ => {
+      }),
+      catchError(this.handleError<XLSheetDB>('postXLSheet'))
+    );
+  }
+  
   /** POST: add a new xlsheet to the server */
   post(xlsheetdb: XLSheetDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
     return this.postXLSheet(xlsheetdb, GONG__StackPath, frontRepo)

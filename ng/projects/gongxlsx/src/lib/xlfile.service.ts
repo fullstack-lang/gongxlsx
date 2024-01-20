@@ -77,6 +77,25 @@ export class XLFileService {
     );
   }
 
+  // postFront copy xlfile to a version with encoded pointers and post to the back
+  postFront(xlfile: XLFile, GONG__StackPath: string): Observable<XLFileDB> {
+    let xlfileDB = new XLFileDB
+    CopyXLFileToXLFileDB(xlfile, xlfileDB)
+    const id = typeof xlfileDB === 'number' ? xlfileDB : xlfileDB.ID
+    const url = `${this.xlfilesUrl}/${id}`;
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    }
+
+    return this.http.post<XLFileDB>(url, xlfileDB, httpOptions).pipe(
+      tap(_ => {
+      }),
+      catchError(this.handleError<XLFileDB>('postXLFile'))
+    );
+  }
+  
   /** POST: add a new xlfile to the server */
   post(xlfiledb: XLFileDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
     return this.postXLFile(xlfiledb, GONG__StackPath, frontRepo)

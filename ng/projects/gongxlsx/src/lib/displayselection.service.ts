@@ -78,6 +78,25 @@ export class DisplaySelectionService {
     );
   }
 
+  // postFront copy displayselection to a version with encoded pointers and post to the back
+  postFront(displayselection: DisplaySelection, GONG__StackPath: string): Observable<DisplaySelectionDB> {
+    let displayselectionDB = new DisplaySelectionDB
+    CopyDisplaySelectionToDisplaySelectionDB(displayselection, displayselectionDB)
+    const id = typeof displayselectionDB === 'number' ? displayselectionDB : displayselectionDB.ID
+    const url = `${this.displayselectionsUrl}/${id}`;
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    }
+
+    return this.http.post<DisplaySelectionDB>(url, displayselectionDB, httpOptions).pipe(
+      tap(_ => {
+      }),
+      catchError(this.handleError<DisplaySelectionDB>('postDisplaySelection'))
+    );
+  }
+  
   /** POST: add a new displayselection to the server */
   post(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB> {
     return this.postDisplaySelection(displayselectiondb, GONG__StackPath, frontRepo)

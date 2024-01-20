@@ -76,6 +76,25 @@ export class XLCellService {
     );
   }
 
+  // postFront copy xlcell to a version with encoded pointers and post to the back
+  postFront(xlcell: XLCell, GONG__StackPath: string): Observable<XLCellDB> {
+    let xlcellDB = new XLCellDB
+    CopyXLCellToXLCellDB(xlcell, xlcellDB)
+    const id = typeof xlcellDB === 'number' ? xlcellDB : xlcellDB.ID
+    const url = `${this.xlcellsUrl}/${id}`;
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    }
+
+    return this.http.post<XLCellDB>(url, xlcellDB, httpOptions).pipe(
+      tap(_ => {
+      }),
+      catchError(this.handleError<XLCellDB>('postXLCell'))
+    );
+  }
+  
   /** POST: add a new xlcell to the server */
   post(xlcelldb: XLCellDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB> {
     return this.postXLCell(xlcelldb, GONG__StackPath, frontRepo)

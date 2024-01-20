@@ -77,6 +77,25 @@ export class XLRowService {
     );
   }
 
+  // postFront copy xlrow to a version with encoded pointers and post to the back
+  postFront(xlrow: XLRow, GONG__StackPath: string): Observable<XLRowDB> {
+    let xlrowDB = new XLRowDB
+    CopyXLRowToXLRowDB(xlrow, xlrowDB)
+    const id = typeof xlrowDB === 'number' ? xlrowDB : xlrowDB.ID
+    const url = `${this.xlrowsUrl}/${id}`;
+    let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
+    let httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params
+    }
+
+    return this.http.post<XLRowDB>(url, xlrowDB, httpOptions).pipe(
+      tap(_ => {
+      }),
+      catchError(this.handleError<XLRowDB>('postXLRow'))
+    );
+  }
+  
   /** POST: add a new xlrow to the server */
   post(xlrowdb: XLRowDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLRowDB> {
     return this.postXLRow(xlrowdb, GONG__StackPath, frontRepo)
