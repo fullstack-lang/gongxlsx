@@ -116,6 +116,7 @@ func (controller *Controller) GetDisplaySelections(c *gin.Context) {
 func (controller *Controller) PostDisplaySelection(c *gin.Context) {
 
 	mutexDisplaySelection.Lock()
+	defer mutexDisplaySelection.Unlock()
 
 	values := c.Request.URL.Query()
 	stackPath := ""
@@ -173,8 +174,6 @@ func (controller *Controller) PostDisplaySelection(c *gin.Context) {
 	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, displayselectionDB)
-
-	mutexDisplaySelection.Unlock()
 }
 
 // GetDisplaySelection
@@ -236,6 +235,7 @@ func (controller *Controller) GetDisplaySelection(c *gin.Context) {
 func (controller *Controller) UpdateDisplaySelection(c *gin.Context) {
 
 	mutexDisplaySelection.Lock()
+	defer mutexDisplaySelection.Unlock()
 
 	values := c.Request.URL.Query()
 	stackPath := ""
@@ -310,8 +310,6 @@ func (controller *Controller) UpdateDisplaySelection(c *gin.Context) {
 
 	// return status OK with the marshalling of the the displayselectionDB
 	c.JSON(http.StatusOK, displayselectionDB)
-
-	mutexDisplaySelection.Unlock()
 }
 
 // DeleteDisplaySelection
@@ -326,6 +324,7 @@ func (controller *Controller) UpdateDisplaySelection(c *gin.Context) {
 func (controller *Controller) DeleteDisplaySelection(c *gin.Context) {
 
 	mutexDisplaySelection.Lock()
+	defer mutexDisplaySelection.Unlock()
 
 	values := c.Request.URL.Query()
 	stackPath := ""
@@ -371,6 +370,4 @@ func (controller *Controller) DeleteDisplaySelection(c *gin.Context) {
 	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
-
-	mutexDisplaySelection.Unlock()
 }

@@ -116,6 +116,7 @@ func (controller *Controller) GetXLFiles(c *gin.Context) {
 func (controller *Controller) PostXLFile(c *gin.Context) {
 
 	mutexXLFile.Lock()
+	defer mutexXLFile.Unlock()
 
 	values := c.Request.URL.Query()
 	stackPath := ""
@@ -173,8 +174,6 @@ func (controller *Controller) PostXLFile(c *gin.Context) {
 	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, xlfileDB)
-
-	mutexXLFile.Unlock()
 }
 
 // GetXLFile
@@ -236,6 +235,7 @@ func (controller *Controller) GetXLFile(c *gin.Context) {
 func (controller *Controller) UpdateXLFile(c *gin.Context) {
 
 	mutexXLFile.Lock()
+	defer mutexXLFile.Unlock()
 
 	values := c.Request.URL.Query()
 	stackPath := ""
@@ -310,8 +310,6 @@ func (controller *Controller) UpdateXLFile(c *gin.Context) {
 
 	// return status OK with the marshalling of the the xlfileDB
 	c.JSON(http.StatusOK, xlfileDB)
-
-	mutexXLFile.Unlock()
 }
 
 // DeleteXLFile
@@ -326,6 +324,7 @@ func (controller *Controller) UpdateXLFile(c *gin.Context) {
 func (controller *Controller) DeleteXLFile(c *gin.Context) {
 
 	mutexXLFile.Lock()
+	defer mutexXLFile.Unlock()
 
 	values := c.Request.URL.Query()
 	stackPath := ""
@@ -371,6 +370,4 @@ func (controller *Controller) DeleteXLFile(c *gin.Context) {
 	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
-
-	mutexXLFile.Unlock()
 }

@@ -116,6 +116,7 @@ func (controller *Controller) GetXLCells(c *gin.Context) {
 func (controller *Controller) PostXLCell(c *gin.Context) {
 
 	mutexXLCell.Lock()
+	defer mutexXLCell.Unlock()
 
 	values := c.Request.URL.Query()
 	stackPath := ""
@@ -173,8 +174,6 @@ func (controller *Controller) PostXLCell(c *gin.Context) {
 	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, xlcellDB)
-
-	mutexXLCell.Unlock()
 }
 
 // GetXLCell
@@ -236,6 +235,7 @@ func (controller *Controller) GetXLCell(c *gin.Context) {
 func (controller *Controller) UpdateXLCell(c *gin.Context) {
 
 	mutexXLCell.Lock()
+	defer mutexXLCell.Unlock()
 
 	values := c.Request.URL.Query()
 	stackPath := ""
@@ -310,8 +310,6 @@ func (controller *Controller) UpdateXLCell(c *gin.Context) {
 
 	// return status OK with the marshalling of the the xlcellDB
 	c.JSON(http.StatusOK, xlcellDB)
-
-	mutexXLCell.Unlock()
 }
 
 // DeleteXLCell
@@ -326,6 +324,7 @@ func (controller *Controller) UpdateXLCell(c *gin.Context) {
 func (controller *Controller) DeleteXLCell(c *gin.Context) {
 
 	mutexXLCell.Lock()
+	defer mutexXLCell.Unlock()
 
 	values := c.Request.URL.Query()
 	stackPath := ""
@@ -371,6 +370,4 @@ func (controller *Controller) DeleteXLCell(c *gin.Context) {
 	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
-
-	mutexXLCell.Unlock()
 }

@@ -116,6 +116,7 @@ func (controller *Controller) GetXLRows(c *gin.Context) {
 func (controller *Controller) PostXLRow(c *gin.Context) {
 
 	mutexXLRow.Lock()
+	defer mutexXLRow.Unlock()
 
 	values := c.Request.URL.Query()
 	stackPath := ""
@@ -173,8 +174,6 @@ func (controller *Controller) PostXLRow(c *gin.Context) {
 	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, xlrowDB)
-
-	mutexXLRow.Unlock()
 }
 
 // GetXLRow
@@ -236,6 +235,7 @@ func (controller *Controller) GetXLRow(c *gin.Context) {
 func (controller *Controller) UpdateXLRow(c *gin.Context) {
 
 	mutexXLRow.Lock()
+	defer mutexXLRow.Unlock()
 
 	values := c.Request.URL.Query()
 	stackPath := ""
@@ -310,8 +310,6 @@ func (controller *Controller) UpdateXLRow(c *gin.Context) {
 
 	// return status OK with the marshalling of the the xlrowDB
 	c.JSON(http.StatusOK, xlrowDB)
-
-	mutexXLRow.Unlock()
 }
 
 // DeleteXLRow
@@ -326,6 +324,7 @@ func (controller *Controller) UpdateXLRow(c *gin.Context) {
 func (controller *Controller) DeleteXLRow(c *gin.Context) {
 
 	mutexXLRow.Lock()
+	defer mutexXLRow.Unlock()
 
 	values := c.Request.URL.Query()
 	stackPath := ""
@@ -371,6 +370,4 @@ func (controller *Controller) DeleteXLRow(c *gin.Context) {
 	backRepo.IncrementPushFromFrontNb()
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
-
-	mutexXLRow.Unlock()
 }
