@@ -102,13 +102,6 @@ export class XLFileService {
   }
   postXLFile(xlfiledb: XLFileDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
 
-    // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
-    xlfiledb.XLFilePointersEncoding.Sheets = []
-    for (let _xlsheet of xlfiledb.Sheets) {
-      xlfiledb.XLFilePointersEncoding.Sheets.push(_xlsheet.ID)
-    }
-    xlfiledb.Sheets = []
-
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
@@ -117,14 +110,6 @@ export class XLFileService {
 
     return this.http.post<XLFileDB>(this.xlfilesUrl, xlfiledb, httpOptions).pipe(
       tap(_ => {
-        // insertion point for restoration of reverse pointers
-        xlfiledb.Sheets = new Array<XLSheetDB>()
-        for (let _id of xlfiledb.XLFilePointersEncoding.Sheets) {
-          let _xlsheet = frontRepo.XLSheets.get(_id)
-          if (_xlsheet != undefined) {
-            xlfiledb.Sheets.push(_xlsheet!)
-          }
-        }
         // this.log(`posted xlfiledb id=${xlfiledb.ID}`)
       }),
       catchError(this.handleError<XLFileDB>('postXLFile'))
@@ -178,13 +163,6 @@ export class XLFileService {
     const id = typeof xlfiledb === 'number' ? xlfiledb : xlfiledb.ID;
     const url = `${this.xlfilesUrl}/${id}`;
 
-    // insertion point for reset of pointers (to avoid circular JSON)
-    // and encoding of pointers
-    xlfiledb.XLFilePointersEncoding.Sheets = []
-    for (let _xlsheet of xlfiledb.Sheets) {
-      xlfiledb.XLFilePointersEncoding.Sheets.push(_xlsheet.ID)
-    }
-    xlfiledb.Sheets = []
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -194,14 +172,6 @@ export class XLFileService {
 
     return this.http.put<XLFileDB>(url, xlfiledb, httpOptions).pipe(
       tap(_ => {
-        // insertion point for restoration of reverse pointers
-        xlfiledb.Sheets = new Array<XLSheetDB>()
-        for (let _id of xlfiledb.XLFilePointersEncoding.Sheets) {
-          let _xlsheet = frontRepo.XLSheets.get(_id)
-          if (_xlsheet != undefined) {
-            xlfiledb.Sheets.push(_xlsheet!)
-          }
-        }
         // this.log(`updated xlfiledb id=${xlfiledb.ID}`)
       }),
       catchError(this.handleError<XLFileDB>('updateXLFile'))

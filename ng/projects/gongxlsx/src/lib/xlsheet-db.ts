@@ -19,9 +19,7 @@ export class XLSheetDB {
 	MaxCol: number = 0
 	NbRows: number = 0
 
-	// insertion point for pointers and slices of pointers declarations
-	Rows: Array<XLRowDB> = []
-	SheetCells: Array<XLCellDB> = []
+	// insertion point for other decls
 
 	XLSheetPointersEncoding: XLSheetPointersEncoding = new XLSheetPointersEncoding
 }

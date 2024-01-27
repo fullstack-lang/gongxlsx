@@ -30,7 +30,7 @@ export function CopyXLRowToXLRowDB(xlrow: XLRow, xlrowDB: XLRowDB) {
 	xlrowDB.CreatedAt = xlrow.CreatedAt
 	xlrowDB.DeletedAt = xlrow.DeletedAt
 	xlrowDB.ID = xlrow.ID
-	
+
 	// insertion point for basic fields copy operations
 	xlrowDB.Name = xlrow.Name
 	xlrowDB.RowIndex = xlrow.RowIndex
@@ -39,18 +39,22 @@ export function CopyXLRowToXLRowDB(xlrow: XLRow, xlrowDB: XLRowDB) {
 
 	// insertion point for slice of pointers fields encoding
 	xlrowDB.XLRowPointersEncoding.Cells = []
-    for (let _xlcell of xlrow.Cells) {
+	for (let _xlcell of xlrow.Cells) {
 		xlrowDB.XLRowPointersEncoding.Cells.push(_xlcell.ID)
-    }
-	
+	}
+
 }
 
+// CopyXLRowDBToXLRow update basic, pointers and slice of pointers fields of xlrow
+// from respectively the basic fields and encoded fields of pointers and slices of pointers of xlrowDB
+// this function uses frontRepo.map_ID_<structname> to decode the encoded fields
+// a condition is that those maps has to be initialized before
 export function CopyXLRowDBToXLRow(xlrowDB: XLRowDB, xlrow: XLRow, frontRepo: FrontRepo) {
 
 	xlrow.CreatedAt = xlrowDB.CreatedAt
 	xlrow.DeletedAt = xlrowDB.DeletedAt
 	xlrow.ID = xlrowDB.ID
-	
+
 	// insertion point for basic fields copy operations
 	xlrow.Name = xlrowDB.Name
 	xlrow.RowIndex = xlrowDB.RowIndex
@@ -60,9 +64,9 @@ export function CopyXLRowDBToXLRow(xlrowDB: XLRowDB, xlrow: XLRow, frontRepo: Fr
 	// insertion point for slice of pointers fields encoding
 	xlrow.Cells = new Array<XLCell>()
 	for (let _id of xlrowDB.XLRowPointersEncoding.Cells) {
-	  let _xlcell = frontRepo.XLCells.get(_id)
-	  if (_xlcell != undefined) {
-		xlrow.Cells.push(_xlcell!)
-	  }
+		let _xlcell = frontRepo.map_ID_XLCell.get(_id)
+		if (_xlcell != undefined) {
+			xlrow.Cells.push(_xlcell!)
+		}
 	}
 }

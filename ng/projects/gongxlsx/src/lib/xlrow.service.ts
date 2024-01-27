@@ -102,13 +102,6 @@ export class XLRowService {
   }
   postXLRow(xlrowdb: XLRowDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLRowDB> {
 
-    // insertion point for reset of pointers and reverse pointers (to avoid circular JSON)
-    xlrowdb.XLRowPointersEncoding.Cells = []
-    for (let _xlcell of xlrowdb.Cells) {
-      xlrowdb.XLRowPointersEncoding.Cells.push(_xlcell.ID)
-    }
-    xlrowdb.Cells = []
-
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
@@ -117,14 +110,6 @@ export class XLRowService {
 
     return this.http.post<XLRowDB>(this.xlrowsUrl, xlrowdb, httpOptions).pipe(
       tap(_ => {
-        // insertion point for restoration of reverse pointers
-        xlrowdb.Cells = new Array<XLCellDB>()
-        for (let _id of xlrowdb.XLRowPointersEncoding.Cells) {
-          let _xlcell = frontRepo.XLCells.get(_id)
-          if (_xlcell != undefined) {
-            xlrowdb.Cells.push(_xlcell!)
-          }
-        }
         // this.log(`posted xlrowdb id=${xlrowdb.ID}`)
       }),
       catchError(this.handleError<XLRowDB>('postXLRow'))
@@ -178,13 +163,6 @@ export class XLRowService {
     const id = typeof xlrowdb === 'number' ? xlrowdb : xlrowdb.ID;
     const url = `${this.xlrowsUrl}/${id}`;
 
-    // insertion point for reset of pointers (to avoid circular JSON)
-    // and encoding of pointers
-    xlrowdb.XLRowPointersEncoding.Cells = []
-    for (let _xlcell of xlrowdb.Cells) {
-      xlrowdb.XLRowPointersEncoding.Cells.push(_xlcell.ID)
-    }
-    xlrowdb.Cells = []
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -194,14 +172,6 @@ export class XLRowService {
 
     return this.http.put<XLRowDB>(url, xlrowdb, httpOptions).pipe(
       tap(_ => {
-        // insertion point for restoration of reverse pointers
-        xlrowdb.Cells = new Array<XLCellDB>()
-        for (let _id of xlrowdb.XLRowPointersEncoding.Cells) {
-          let _xlcell = frontRepo.XLCells.get(_id)
-          if (_xlcell != undefined) {
-            xlrowdb.Cells.push(_xlcell!)
-          }
-        }
         // this.log(`updated xlrowdb id=${xlrowdb.ID}`)
       }),
       catchError(this.handleError<XLRowDB>('updateXLRow'))

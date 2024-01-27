@@ -16,8 +16,7 @@ export class XLRowDB {
 	Name: string = ""
 	RowIndex: number = 0
 
-	// insertion point for pointers and slices of pointers declarations
-	Cells: Array<XLCellDB> = []
+	// insertion point for other decls
 
 	XLRowPointersEncoding: XLRowPointersEncoding = new XLRowPointersEncoding
 }

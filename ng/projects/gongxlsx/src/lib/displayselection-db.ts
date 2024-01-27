@@ -16,11 +16,7 @@ export class DisplaySelectionDB {
 	// insertion point for basic fields declarations
 	Name: string = ""
 
-	// insertion point for pointers and slices of pointers declarations
-	XLFile?: XLFileDB
-
-	XLSheet?: XLSheetDB
-
+	// insertion point for other decls
 
 	DisplaySelectionPointersEncoding: DisplaySelectionPointersEncoding = new DisplaySelectionPointersEncoding
 }

@@ -76,8 +76,8 @@ export class DisplaysheetComponent implements OnInit {
         // reset tabs and create one tab per XL file
 
         this.tabsForFile = new Array<string>()
-        for (let fileId = 0; fileId < gongxlsxsFrontRepo.XLFiles_array!.length; fileId++) {
-          let xlFile = gongxlsxsFrontRepo.XLFiles_array[fileId]
+        for (let fileId = 0; fileId < gongxlsxsFrontRepo.getFrontArray<gongxlsx.XLFile>(gongxlsx.XLFile.GONGSTRUCT_NAME)!.length; fileId++) {
+          let xlFile = gongxlsxsFrontRepo.getFrontArray<gongxlsx.XLFile>(gongxlsx.XLFile.GONGSTRUCT_NAME)[fileId]
 
           this.tabsForFile.push(xlFile.Name);
 
@@ -95,17 +95,17 @@ export class DisplaysheetComponent implements OnInit {
 
         this.gongxlsxFrontRepo = gongxlsxsFrontRepo
 
-        if (this.gongxlsxFrontRepo.XLFiles.size == 0) {
+        if (this.gongxlsxFrontRepo.getFrontArray<gongxlsx.XLFile>(gongxlsx.XLFile.GONGSTRUCT_NAME).length == 0) {
           console.error("cannot deal with 0 file")
         }
 
         // file selected by the end user
-        let gongXLFile = this.gongxlsxFrontRepo.XLFiles_array[this.selectedFileIndex]
+        let gongXLFile = this.gongxlsxFrontRepo.getFrontArray<gongxlsx.XLFile>(gongxlsx.XLFile.GONGSTRUCT_NAME)[this.selectedFileIndex]
 
-        let displayselection = new gongxlsx.DisplaySelectionDB
-        if (this.gongxlsxFrontRepo.DisplaySelections.size > 0) {
+        let displayselection = new gongxlsx.DisplaySelection
+        if (this.gongxlsxFrontRepo.getFrontArray<gongxlsx.DisplaySelection>(gongxlsx.DisplaySelection.GONGSTRUCT_NAME).length > 0) {
           // default file to display is rank 0
-          displayselection = this.gongxlsxFrontRepo.DisplaySelections_array[this.selectedFileIndex]
+          displayselection = this.gongxlsxFrontRepo.getFrontArray<gongxlsx.DisplaySelection>(gongxlsx.DisplaySelection.GONGSTRUCT_NAME)[this.selectedFileIndex]
         }
 
 

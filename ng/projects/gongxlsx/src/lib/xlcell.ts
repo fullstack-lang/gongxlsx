@@ -29,7 +29,7 @@ export function CopyXLCellToXLCellDB(xlcell: XLCell, xlcellDB: XLCellDB) {
 	xlcellDB.CreatedAt = xlcell.CreatedAt
 	xlcellDB.DeletedAt = xlcell.DeletedAt
 	xlcellDB.ID = xlcell.ID
-	
+
 	// insertion point for basic fields copy operations
 	xlcellDB.Name = xlcell.Name
 	xlcellDB.X = xlcell.X
@@ -40,12 +40,16 @@ export function CopyXLCellToXLCellDB(xlcell: XLCell, xlcellDB: XLCellDB) {
 	// insertion point for slice of pointers fields encoding
 }
 
+// CopyXLCellDBToXLCell update basic, pointers and slice of pointers fields of xlcell
+// from respectively the basic fields and encoded fields of pointers and slices of pointers of xlcellDB
+// this function uses frontRepo.map_ID_<structname> to decode the encoded fields
+// a condition is that those maps has to be initialized before
 export function CopyXLCellDBToXLCell(xlcellDB: XLCellDB, xlcell: XLCell, frontRepo: FrontRepo) {
 
 	xlcell.CreatedAt = xlcellDB.CreatedAt
 	xlcell.DeletedAt = xlcellDB.DeletedAt
 	xlcell.ID = xlcellDB.ID
-	
+
 	// insertion point for basic fields copy operations
 	xlcell.Name = xlcellDB.Name
 	xlcell.X = xlcellDB.X

@@ -33,22 +33,22 @@ export function CopyDisplaySelectionToDisplaySelectionDB(displayselection: Displ
 	displayselectionDB.CreatedAt = displayselection.CreatedAt
 	displayselectionDB.DeletedAt = displayselection.DeletedAt
 	displayselectionDB.ID = displayselection.ID
-	
+
 	// insertion point for basic fields copy operations
 	displayselectionDB.Name = displayselection.Name
 
 	// insertion point for pointer fields encoding
-    displayselectionDB.DisplaySelectionPointersEncoding.XLFileID.Valid = true
+	displayselectionDB.DisplaySelectionPointersEncoding.XLFileID.Valid = true
 	if (displayselection.XLFile != undefined) {
 		displayselectionDB.DisplaySelectionPointersEncoding.XLFileID.Int64 = displayselection.XLFile.ID  
-    } else {
+	} else {
 		displayselectionDB.DisplaySelectionPointersEncoding.XLFileID.Int64 = 0 		
 	}
 
-    displayselectionDB.DisplaySelectionPointersEncoding.XLSheetID.Valid = true
+	displayselectionDB.DisplaySelectionPointersEncoding.XLSheetID.Valid = true
 	if (displayselection.XLSheet != undefined) {
 		displayselectionDB.DisplaySelectionPointersEncoding.XLSheetID.Int64 = displayselection.XLSheet.ID  
-    } else {
+	} else {
 		displayselectionDB.DisplaySelectionPointersEncoding.XLSheetID.Int64 = 0 		
 	}
 
@@ -56,18 +56,22 @@ export function CopyDisplaySelectionToDisplaySelectionDB(displayselection: Displ
 	// insertion point for slice of pointers fields encoding
 }
 
+// CopyDisplaySelectionDBToDisplaySelection update basic, pointers and slice of pointers fields of displayselection
+// from respectively the basic fields and encoded fields of pointers and slices of pointers of displayselectionDB
+// this function uses frontRepo.map_ID_<structname> to decode the encoded fields
+// a condition is that those maps has to be initialized before
 export function CopyDisplaySelectionDBToDisplaySelection(displayselectionDB: DisplaySelectionDB, displayselection: DisplaySelection, frontRepo: FrontRepo) {
 
 	displayselection.CreatedAt = displayselectionDB.CreatedAt
 	displayselection.DeletedAt = displayselectionDB.DeletedAt
 	displayselection.ID = displayselectionDB.ID
-	
+
 	// insertion point for basic fields copy operations
 	displayselection.Name = displayselectionDB.Name
 
 	// insertion point for pointer fields encoding
-	displayselection.XLFile = frontRepo.XLFiles.get(displayselectionDB.DisplaySelectionPointersEncoding.XLFileID.Int64)
-	displayselection.XLSheet = frontRepo.XLSheets.get(displayselectionDB.DisplaySelectionPointersEncoding.XLSheetID.Int64)
+	displayselection.XLFile = frontRepo.map_ID_XLFile.get(displayselectionDB.DisplaySelectionPointersEncoding.XLFileID.Int64)
+	displayselection.XLSheet = frontRepo.map_ID_XLSheet.get(displayselectionDB.DisplaySelectionPointersEncoding.XLSheetID.Int64)
 
 	// insertion point for slice of pointers fields encoding
 }
