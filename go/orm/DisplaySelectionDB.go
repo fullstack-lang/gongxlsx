@@ -38,6 +38,7 @@ type DisplaySelectionAPI struct {
 	models.DisplaySelection_WOP
 
 	// encoding of pointers
+	// for API, it cannot be embedded
 	DisplaySelectionPointersEncoding DisplaySelectionPointersEncoding
 }
 
@@ -68,7 +69,9 @@ type DisplaySelectionDB struct {
 
 	// Declation for basic field displayselectionDB.Name
 	Name_Data sql.NullString
+	
 	// encoding of pointers
+	// for GORM serialization, it is necessary to embed to Pointer Encoding declaration
 	DisplaySelectionPointersEncoding
 }
 

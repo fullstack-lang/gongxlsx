@@ -27,44 +27,44 @@ func IsStaged[Type Gongstruct](stage *StageStruct, instance *Type) (ok bool) {
 }
 
 // insertion point for stage per struct
-	func (stage *StageStruct) IsStagedDisplaySelection(displayselection *DisplaySelection) (ok bool) {
+func (stage *StageStruct) IsStagedDisplaySelection(displayselection *DisplaySelection) (ok bool) {
 
-		_, ok = stage.DisplaySelections[displayselection]
-	
-		return
-	}
+	_, ok = stage.DisplaySelections[displayselection]
 
-	func (stage *StageStruct) IsStagedXLCell(xlcell *XLCell) (ok bool) {
+	return
+}
 
-		_, ok = stage.XLCells[xlcell]
-	
-		return
-	}
+func (stage *StageStruct) IsStagedXLCell(xlcell *XLCell) (ok bool) {
 
-	func (stage *StageStruct) IsStagedXLFile(xlfile *XLFile) (ok bool) {
+	_, ok = stage.XLCells[xlcell]
 
-		_, ok = stage.XLFiles[xlfile]
-	
-		return
-	}
+	return
+}
 
-	func (stage *StageStruct) IsStagedXLRow(xlrow *XLRow) (ok bool) {
+func (stage *StageStruct) IsStagedXLFile(xlfile *XLFile) (ok bool) {
 
-		_, ok = stage.XLRows[xlrow]
-	
-		return
-	}
+	_, ok = stage.XLFiles[xlfile]
 
-	func (stage *StageStruct) IsStagedXLSheet(xlsheet *XLSheet) (ok bool) {
+	return
+}
 
-		_, ok = stage.XLSheets[xlsheet]
-	
-		return
-	}
+func (stage *StageStruct) IsStagedXLRow(xlrow *XLRow) (ok bool) {
+
+	_, ok = stage.XLRows[xlrow]
+
+	return
+}
+
+func (stage *StageStruct) IsStagedXLSheet(xlsheet *XLSheet) (ok bool) {
+
+	_, ok = stage.XLSheets[xlsheet]
+
+	return
+}
 
 
 // StageBranch stages instance and apply StageBranch on all gongstruct instances that are
-// referenced by pointers or slices of pointers of the insance
+// referenced by pointers or slices of pointers of the instance
 //
 // the algorithm stops along the course of graph if a vertex is already staged
 func StageBranch[Type Gongstruct](stage *StageStruct, instance *Type) {
@@ -183,6 +183,158 @@ func (stage *StageStruct) StageBranchXLSheet(xlsheet *XLSheet) {
 		StageBranch(stage, _xlcell)
 	}
 
+}
+
+
+// CopyBranch stages instance and apply CopyBranch on all gongstruct instances that are
+// referenced by pointers or slices of pointers of the instance
+//
+// the algorithm stops along the course of graph if a vertex is already staged
+func CopyBranch[Type Gongstruct](from *Type) (to *Type) {
+
+	mapOrigCopy := make(map[any]any)
+	_ = mapOrigCopy
+
+	switch fromT := any(from).(type) {
+	// insertion point for stage branch
+	case *DisplaySelection:
+		toT := CopyBranchDisplaySelection(mapOrigCopy, fromT)
+		return any(toT).(*Type)
+
+	case *XLCell:
+		toT := CopyBranchXLCell(mapOrigCopy, fromT)
+		return any(toT).(*Type)
+
+	case *XLFile:
+		toT := CopyBranchXLFile(mapOrigCopy, fromT)
+		return any(toT).(*Type)
+
+	case *XLRow:
+		toT := CopyBranchXLRow(mapOrigCopy, fromT)
+		return any(toT).(*Type)
+
+	case *XLSheet:
+		toT := CopyBranchXLSheet(mapOrigCopy, fromT)
+		return any(toT).(*Type)
+
+	default:
+		_ = fromT // to espace compilation issue when model is empty
+	}
+	return
+}
+
+// insertion point for stage branch per struct
+func CopyBranchDisplaySelection(mapOrigCopy map[any]any, displayselectionFrom *DisplaySelection) (displayselectionTo  *DisplaySelection){
+
+	// displayselectionFrom has already been copied
+	if _displayselectionTo, ok := mapOrigCopy[displayselectionFrom]; ok {
+		displayselectionTo = _displayselectionTo.(*DisplaySelection)
+		return
+	}
+
+	displayselectionTo = new(DisplaySelection)
+	mapOrigCopy[displayselectionFrom] = displayselectionTo
+	displayselectionFrom.CopyBasicFields(displayselectionTo)
+
+	//insertion point for the staging of instances referenced by pointers
+	if displayselectionFrom.XLFile != nil {
+		displayselectionTo.XLFile = CopyBranchXLFile(mapOrigCopy, displayselectionFrom.XLFile)
+	}
+	if displayselectionFrom.XLSheet != nil {
+		displayselectionTo.XLSheet = CopyBranchXLSheet(mapOrigCopy, displayselectionFrom.XLSheet)
+	}
+
+	//insertion point for the staging of instances referenced by slice of pointers
+
+	return
+}
+
+func CopyBranchXLCell(mapOrigCopy map[any]any, xlcellFrom *XLCell) (xlcellTo  *XLCell){
+
+	// xlcellFrom has already been copied
+	if _xlcellTo, ok := mapOrigCopy[xlcellFrom]; ok {
+		xlcellTo = _xlcellTo.(*XLCell)
+		return
+	}
+
+	xlcellTo = new(XLCell)
+	mapOrigCopy[xlcellFrom] = xlcellTo
+	xlcellFrom.CopyBasicFields(xlcellTo)
+
+	//insertion point for the staging of instances referenced by pointers
+
+	//insertion point for the staging of instances referenced by slice of pointers
+
+	return
+}
+
+func CopyBranchXLFile(mapOrigCopy map[any]any, xlfileFrom *XLFile) (xlfileTo  *XLFile){
+
+	// xlfileFrom has already been copied
+	if _xlfileTo, ok := mapOrigCopy[xlfileFrom]; ok {
+		xlfileTo = _xlfileTo.(*XLFile)
+		return
+	}
+
+	xlfileTo = new(XLFile)
+	mapOrigCopy[xlfileFrom] = xlfileTo
+	xlfileFrom.CopyBasicFields(xlfileTo)
+
+	//insertion point for the staging of instances referenced by pointers
+
+	//insertion point for the staging of instances referenced by slice of pointers
+	for _, _xlsheet := range xlfileFrom.Sheets {
+		xlfileTo.Sheets = append( xlfileTo.Sheets, CopyBranchXLSheet(mapOrigCopy, _xlsheet))
+	}
+
+	return
+}
+
+func CopyBranchXLRow(mapOrigCopy map[any]any, xlrowFrom *XLRow) (xlrowTo  *XLRow){
+
+	// xlrowFrom has already been copied
+	if _xlrowTo, ok := mapOrigCopy[xlrowFrom]; ok {
+		xlrowTo = _xlrowTo.(*XLRow)
+		return
+	}
+
+	xlrowTo = new(XLRow)
+	mapOrigCopy[xlrowFrom] = xlrowTo
+	xlrowFrom.CopyBasicFields(xlrowTo)
+
+	//insertion point for the staging of instances referenced by pointers
+
+	//insertion point for the staging of instances referenced by slice of pointers
+	for _, _xlcell := range xlrowFrom.Cells {
+		xlrowTo.Cells = append( xlrowTo.Cells, CopyBranchXLCell(mapOrigCopy, _xlcell))
+	}
+
+	return
+}
+
+func CopyBranchXLSheet(mapOrigCopy map[any]any, xlsheetFrom *XLSheet) (xlsheetTo  *XLSheet){
+
+	// xlsheetFrom has already been copied
+	if _xlsheetTo, ok := mapOrigCopy[xlsheetFrom]; ok {
+		xlsheetTo = _xlsheetTo.(*XLSheet)
+		return
+	}
+
+	xlsheetTo = new(XLSheet)
+	mapOrigCopy[xlsheetFrom] = xlsheetTo
+	xlsheetFrom.CopyBasicFields(xlsheetTo)
+
+	//insertion point for the staging of instances referenced by pointers
+
+	//insertion point for the staging of instances referenced by slice of pointers
+	for _, _xlrow := range xlsheetFrom.Rows {
+		xlsheetTo.Rows = append( xlsheetTo.Rows, CopyBranchXLRow(mapOrigCopy, _xlrow))
+	}
+	for _, _xlcell := range xlsheetFrom.SheetCells {
+		xlsheetTo.SheetCells = append( xlsheetTo.SheetCells, CopyBranchXLCell(mapOrigCopy, _xlcell))
+	}
+
+	return
 }
 
 

@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/fullstack-lang/gongxlsx/go/models"
 
@@ -36,6 +37,10 @@ type BackRepoStruct struct {
 	PushFromFrontNb uint // records commit increments when performed by the front
 
 	stage *models.StageStruct
+
+	// the back repo can broadcast the CommitFromBackNb to all interested subscribers
+	rwMutex     sync.RWMutex
+	subscribers []chan int
 }
 
 func NewBackRepo(stage *models.StageStruct, filename string) (backRepo *BackRepoStruct) {
@@ -150,6 +155,9 @@ func (backRepo *BackRepoStruct) IncrementCommitFromBackNb() uint {
 		backRepo.stage.OnInitCommitFromBackCallback.BeforeCommit(backRepo.stage)
 	}
 	backRepo.CommitFromBackNb = backRepo.CommitFromBackNb + 1
+
+	backRepo.broadcastNbCommitToBack()
+	
 	return backRepo.CommitFromBackNb
 }
 
@@ -300,4 +308,32 @@ func (backRepo *BackRepoStruct) RestoreXL(stage *models.StageStruct, dirPath str
 
 	// commit the restored stage
 	backRepo.stage.Commit()
+}
+
+func (backRepoStruct *BackRepoStruct) SubscribeToCommitNb() <-chan int {
+	backRepoStruct.rwMutex.Lock()
+	defer backRepoStruct.rwMutex.Unlock()
+
+	ch := make(chan int)
+	backRepoStruct.subscribers = append(backRepoStruct.subscribers, ch)
+	return ch
+}
+
+func (backRepoStruct *BackRepoStruct) broadcastNbCommitToBack() {
+	backRepoStruct.rwMutex.RLock()
+	defer backRepoStruct.rwMutex.RUnlock()
+
+	activeChannels := make([]chan int, 0)
+
+	for _, ch := range backRepoStruct.subscribers {
+		select {
+		case ch <- int(backRepoStruct.CommitFromBackNb):
+			activeChannels = append(activeChannels, ch)
+		default:
+			// Assume channel is no longer active; don't add to activeChannels
+			log.Println("Channel no longer active")
+			close(ch)
+		}
+	}
+	backRepoStruct.subscribers = activeChannels
 }

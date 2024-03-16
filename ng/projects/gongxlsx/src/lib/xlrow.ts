@@ -1,6 +1,6 @@
 // generated code - do not edit
 
-import { XLRowDB } from './xlrow-db'
+import { XLRowAPI } from './xlrow-api'
 import { FrontRepo } from './front-repo.service';
 
 // insertion point for imports
@@ -25,45 +25,45 @@ export class XLRow {
 	Cells: Array<XLCell> = []
 }
 
-export function CopyXLRowToXLRowDB(xlrow: XLRow, xlrowDB: XLRowDB) {
+export function CopyXLRowToXLRowAPI(xlrow: XLRow, xlrowAPI: XLRowAPI) {
 
-	xlrowDB.CreatedAt = xlrow.CreatedAt
-	xlrowDB.DeletedAt = xlrow.DeletedAt
-	xlrowDB.ID = xlrow.ID
+	xlrowAPI.CreatedAt = xlrow.CreatedAt
+	xlrowAPI.DeletedAt = xlrow.DeletedAt
+	xlrowAPI.ID = xlrow.ID
 
 	// insertion point for basic fields copy operations
-	xlrowDB.Name = xlrow.Name
-	xlrowDB.RowIndex = xlrow.RowIndex
+	xlrowAPI.Name = xlrow.Name
+	xlrowAPI.RowIndex = xlrow.RowIndex
 
 	// insertion point for pointer fields encoding
 
 	// insertion point for slice of pointers fields encoding
-	xlrowDB.XLRowPointersEncoding.Cells = []
+	xlrowAPI.XLRowPointersEncoding.Cells = []
 	for (let _xlcell of xlrow.Cells) {
-		xlrowDB.XLRowPointersEncoding.Cells.push(_xlcell.ID)
+		xlrowAPI.XLRowPointersEncoding.Cells.push(_xlcell.ID)
 	}
 
 }
 
-// CopyXLRowDBToXLRow update basic, pointers and slice of pointers fields of xlrow
-// from respectively the basic fields and encoded fields of pointers and slices of pointers of xlrowDB
+// CopyXLRowAPIToXLRow update basic, pointers and slice of pointers fields of xlrow
+// from respectively the basic fields and encoded fields of pointers and slices of pointers of xlrowAPI
 // this function uses frontRepo.map_ID_<structname> to decode the encoded fields
 // a condition is that those maps has to be initialized before
-export function CopyXLRowDBToXLRow(xlrowDB: XLRowDB, xlrow: XLRow, frontRepo: FrontRepo) {
+export function CopyXLRowAPIToXLRow(xlrowAPI: XLRowAPI, xlrow: XLRow, frontRepo: FrontRepo) {
 
-	xlrow.CreatedAt = xlrowDB.CreatedAt
-	xlrow.DeletedAt = xlrowDB.DeletedAt
-	xlrow.ID = xlrowDB.ID
+	xlrow.CreatedAt = xlrowAPI.CreatedAt
+	xlrow.DeletedAt = xlrowAPI.DeletedAt
+	xlrow.ID = xlrowAPI.ID
 
 	// insertion point for basic fields copy operations
-	xlrow.Name = xlrowDB.Name
-	xlrow.RowIndex = xlrowDB.RowIndex
+	xlrow.Name = xlrowAPI.Name
+	xlrow.RowIndex = xlrowAPI.RowIndex
 
 	// insertion point for pointer fields encoding
 
 	// insertion point for slice of pointers fields encoding
 	xlrow.Cells = new Array<XLCell>()
-	for (let _id of xlrowDB.XLRowPointersEncoding.Cells) {
+	for (let _id of xlrowAPI.XLRowPointersEncoding.Cells) {
 		let _xlcell = frontRepo.map_ID_XLCell.get(_id)
 		if (_xlcell != undefined) {
 			xlrow.Cells.push(_xlcell!)

@@ -38,6 +38,7 @@ type XLSheetAPI struct {
 	models.XLSheet_WOP
 
 	// encoding of pointers
+	// for API, it cannot be embedded
 	XLSheetPointersEncoding XLSheetPointersEncoding
 }
 
@@ -75,7 +76,9 @@ type XLSheetDB struct {
 
 	// Declation for basic field xlsheetDB.NbRows
 	NbRows_Data sql.NullInt64
+	
 	// encoding of pointers
+	// for GORM serialization, it is necessary to embed to Pointer Encoding declaration
 	XLSheetPointersEncoding
 }
 

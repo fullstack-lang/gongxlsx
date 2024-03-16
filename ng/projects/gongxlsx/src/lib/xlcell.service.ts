@@ -11,8 +11,8 @@ import { BehaviorSubject } from 'rxjs'
 import { Observable, of } from 'rxjs'
 import { catchError, map, tap } from 'rxjs/operators'
 
-import { XLCellDB } from './xlcell-db'
-import { XLCell, CopyXLCellToXLCellDB } from './xlcell'
+import { XLCellAPI } from './xlcell-api'
+import { XLCell, CopyXLCellToXLCellAPI } from './xlcell'
 
 import { FrontRepo, FrontRepoService } from './front-repo.service';
 
@@ -46,41 +46,41 @@ export class XLCellService {
 
   /** GET xlcells from the server */
   // gets is more robust to refactoring
-  gets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB[]> {
+  gets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellAPI[]> {
     return this.getXLCells(GONG__StackPath, frontRepo)
   }
-  getXLCells(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB[]> {
+  getXLCells(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellAPI[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
-    return this.http.get<XLCellDB[]>(this.xlcellsUrl, { params: params })
+    return this.http.get<XLCellAPI[]>(this.xlcellsUrl, { params: params })
       .pipe(
         tap(),
-        catchError(this.handleError<XLCellDB[]>('getXLCells', []))
+        catchError(this.handleError<XLCellAPI[]>('getXLCells', []))
       );
   }
 
   /** GET xlcell by id. Will 404 if id not found */
   // more robust API to refactoring
-  get(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB> {
+  get(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellAPI> {
     return this.getXLCell(id, GONG__StackPath, frontRepo)
   }
-  getXLCell(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB> {
+  getXLCell(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellAPI> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
     const url = `${this.xlcellsUrl}/${id}`;
-    return this.http.get<XLCellDB>(url, { params: params }).pipe(
+    return this.http.get<XLCellAPI>(url, { params: params }).pipe(
       // tap(_ => this.log(`fetched xlcell id=${id}`)),
-      catchError(this.handleError<XLCellDB>(`getXLCell id=${id}`))
+      catchError(this.handleError<XLCellAPI>(`getXLCell id=${id}`))
     );
   }
 
   // postFront copy xlcell to a version with encoded pointers and post to the back
-  postFront(xlcell: XLCell, GONG__StackPath: string): Observable<XLCellDB> {
-    let xlcellDB = new XLCellDB
-    CopyXLCellToXLCellDB(xlcell, xlcellDB)
-    const id = typeof xlcellDB === 'number' ? xlcellDB : xlcellDB.ID
+  postFront(xlcell: XLCell, GONG__StackPath: string): Observable<XLCellAPI> {
+    let xlcellAPI = new XLCellAPI
+    CopyXLCellToXLCellAPI(xlcell, xlcellAPI)
+    const id = typeof xlcellAPI === 'number' ? xlcellAPI : xlcellAPI.ID
     const url = `${this.xlcellsUrl}/${id}`;
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -88,18 +88,18 @@ export class XLCellService {
       params: params
     }
 
-    return this.http.post<XLCellDB>(url, xlcellDB, httpOptions).pipe(
+    return this.http.post<XLCellAPI>(url, xlcellAPI, httpOptions).pipe(
       tap(_ => {
       }),
-      catchError(this.handleError<XLCellDB>('postXLCell'))
+      catchError(this.handleError<XLCellAPI>('postXLCell'))
     );
   }
   
   /** POST: add a new xlcell to the server */
-  post(xlcelldb: XLCellDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB> {
+  post(xlcelldb: XLCellAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellAPI> {
     return this.postXLCell(xlcelldb, GONG__StackPath, frontRepo)
   }
-  postXLCell(xlcelldb: XLCellDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB> {
+  postXLCell(xlcelldb: XLCellAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellAPI> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -107,19 +107,19 @@ export class XLCellService {
       params: params
     }
 
-    return this.http.post<XLCellDB>(this.xlcellsUrl, xlcelldb, httpOptions).pipe(
+    return this.http.post<XLCellAPI>(this.xlcellsUrl, xlcelldb, httpOptions).pipe(
       tap(_ => {
         // this.log(`posted xlcelldb id=${xlcelldb.ID}`)
       }),
-      catchError(this.handleError<XLCellDB>('postXLCell'))
+      catchError(this.handleError<XLCellAPI>('postXLCell'))
     );
   }
 
   /** DELETE: delete the xlcelldb from the server */
-  delete(xlcelldb: XLCellDB | number, GONG__StackPath: string): Observable<XLCellDB> {
+  delete(xlcelldb: XLCellAPI | number, GONG__StackPath: string): Observable<XLCellAPI> {
     return this.deleteXLCell(xlcelldb, GONG__StackPath)
   }
-  deleteXLCell(xlcelldb: XLCellDB | number, GONG__StackPath: string): Observable<XLCellDB> {
+  deleteXLCell(xlcelldb: XLCellAPI | number, GONG__StackPath: string): Observable<XLCellAPI> {
     const id = typeof xlcelldb === 'number' ? xlcelldb : xlcelldb.ID;
     const url = `${this.xlcellsUrl}/${id}`;
 
@@ -129,17 +129,17 @@ export class XLCellService {
       params: params
     };
 
-    return this.http.delete<XLCellDB>(url, httpOptions).pipe(
+    return this.http.delete<XLCellAPI>(url, httpOptions).pipe(
       tap(_ => this.log(`deleted xlcelldb id=${id}`)),
-      catchError(this.handleError<XLCellDB>('deleteXLCell'))
+      catchError(this.handleError<XLCellAPI>('deleteXLCell'))
     );
   }
 
   // updateFront copy xlcell to a version with encoded pointers and update to the back
-  updateFront(xlcell: XLCell, GONG__StackPath: string): Observable<XLCellDB> {
-    let xlcellDB = new XLCellDB
-    CopyXLCellToXLCellDB(xlcell, xlcellDB)
-    const id = typeof xlcellDB === 'number' ? xlcellDB : xlcellDB.ID
+  updateFront(xlcell: XLCell, GONG__StackPath: string): Observable<XLCellAPI> {
+    let xlcellAPI = new XLCellAPI
+    CopyXLCellToXLCellAPI(xlcell, xlcellAPI)
+    const id = typeof xlcellAPI === 'number' ? xlcellAPI : xlcellAPI.ID
     const url = `${this.xlcellsUrl}/${id}`;
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -147,18 +147,18 @@ export class XLCellService {
       params: params
     }
 
-    return this.http.put<XLCellDB>(url, xlcellDB, httpOptions).pipe(
+    return this.http.put<XLCellAPI>(url, xlcellAPI, httpOptions).pipe(
       tap(_ => {
       }),
-      catchError(this.handleError<XLCellDB>('updateXLCell'))
+      catchError(this.handleError<XLCellAPI>('updateXLCell'))
     );
   }
 
   /** PUT: update the xlcelldb on the server */
-  update(xlcelldb: XLCellDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB> {
+  update(xlcelldb: XLCellAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellAPI> {
     return this.updateXLCell(xlcelldb, GONG__StackPath, frontRepo)
   }
-  updateXLCell(xlcelldb: XLCellDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellDB> {
+  updateXLCell(xlcelldb: XLCellAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLCellAPI> {
     const id = typeof xlcelldb === 'number' ? xlcelldb : xlcelldb.ID;
     const url = `${this.xlcellsUrl}/${id}`;
 
@@ -169,11 +169,11 @@ export class XLCellService {
       params: params
     };
 
-    return this.http.put<XLCellDB>(url, xlcelldb, httpOptions).pipe(
+    return this.http.put<XLCellAPI>(url, xlcelldb, httpOptions).pipe(
       tap(_ => {
         // this.log(`updated xlcelldb id=${xlcelldb.ID}`)
       }),
-      catchError(this.handleError<XLCellDB>('updateXLCell'))
+      catchError(this.handleError<XLCellAPI>('updateXLCell'))
     );
   }
 

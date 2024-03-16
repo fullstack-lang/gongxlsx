@@ -1,6 +1,6 @@
 // generated code - do not edit
 
-import { XLSheetDB } from './xlsheet-db'
+import { XLSheetAPI } from './xlsheet-api'
 import { FrontRepo } from './front-repo.service';
 
 // insertion point for imports
@@ -29,61 +29,61 @@ export class XLSheet {
 	SheetCells: Array<XLCell> = []
 }
 
-export function CopyXLSheetToXLSheetDB(xlsheet: XLSheet, xlsheetDB: XLSheetDB) {
+export function CopyXLSheetToXLSheetAPI(xlsheet: XLSheet, xlsheetAPI: XLSheetAPI) {
 
-	xlsheetDB.CreatedAt = xlsheet.CreatedAt
-	xlsheetDB.DeletedAt = xlsheet.DeletedAt
-	xlsheetDB.ID = xlsheet.ID
+	xlsheetAPI.CreatedAt = xlsheet.CreatedAt
+	xlsheetAPI.DeletedAt = xlsheet.DeletedAt
+	xlsheetAPI.ID = xlsheet.ID
 
 	// insertion point for basic fields copy operations
-	xlsheetDB.Name = xlsheet.Name
-	xlsheetDB.MaxRow = xlsheet.MaxRow
-	xlsheetDB.MaxCol = xlsheet.MaxCol
-	xlsheetDB.NbRows = xlsheet.NbRows
+	xlsheetAPI.Name = xlsheet.Name
+	xlsheetAPI.MaxRow = xlsheet.MaxRow
+	xlsheetAPI.MaxCol = xlsheet.MaxCol
+	xlsheetAPI.NbRows = xlsheet.NbRows
 
 	// insertion point for pointer fields encoding
 
 	// insertion point for slice of pointers fields encoding
-	xlsheetDB.XLSheetPointersEncoding.Rows = []
+	xlsheetAPI.XLSheetPointersEncoding.Rows = []
 	for (let _xlrow of xlsheet.Rows) {
-		xlsheetDB.XLSheetPointersEncoding.Rows.push(_xlrow.ID)
+		xlsheetAPI.XLSheetPointersEncoding.Rows.push(_xlrow.ID)
 	}
 
-	xlsheetDB.XLSheetPointersEncoding.SheetCells = []
+	xlsheetAPI.XLSheetPointersEncoding.SheetCells = []
 	for (let _xlcell of xlsheet.SheetCells) {
-		xlsheetDB.XLSheetPointersEncoding.SheetCells.push(_xlcell.ID)
+		xlsheetAPI.XLSheetPointersEncoding.SheetCells.push(_xlcell.ID)
 	}
 
 }
 
-// CopyXLSheetDBToXLSheet update basic, pointers and slice of pointers fields of xlsheet
-// from respectively the basic fields and encoded fields of pointers and slices of pointers of xlsheetDB
+// CopyXLSheetAPIToXLSheet update basic, pointers and slice of pointers fields of xlsheet
+// from respectively the basic fields and encoded fields of pointers and slices of pointers of xlsheetAPI
 // this function uses frontRepo.map_ID_<structname> to decode the encoded fields
 // a condition is that those maps has to be initialized before
-export function CopyXLSheetDBToXLSheet(xlsheetDB: XLSheetDB, xlsheet: XLSheet, frontRepo: FrontRepo) {
+export function CopyXLSheetAPIToXLSheet(xlsheetAPI: XLSheetAPI, xlsheet: XLSheet, frontRepo: FrontRepo) {
 
-	xlsheet.CreatedAt = xlsheetDB.CreatedAt
-	xlsheet.DeletedAt = xlsheetDB.DeletedAt
-	xlsheet.ID = xlsheetDB.ID
+	xlsheet.CreatedAt = xlsheetAPI.CreatedAt
+	xlsheet.DeletedAt = xlsheetAPI.DeletedAt
+	xlsheet.ID = xlsheetAPI.ID
 
 	// insertion point for basic fields copy operations
-	xlsheet.Name = xlsheetDB.Name
-	xlsheet.MaxRow = xlsheetDB.MaxRow
-	xlsheet.MaxCol = xlsheetDB.MaxCol
-	xlsheet.NbRows = xlsheetDB.NbRows
+	xlsheet.Name = xlsheetAPI.Name
+	xlsheet.MaxRow = xlsheetAPI.MaxRow
+	xlsheet.MaxCol = xlsheetAPI.MaxCol
+	xlsheet.NbRows = xlsheetAPI.NbRows
 
 	// insertion point for pointer fields encoding
 
 	// insertion point for slice of pointers fields encoding
 	xlsheet.Rows = new Array<XLRow>()
-	for (let _id of xlsheetDB.XLSheetPointersEncoding.Rows) {
+	for (let _id of xlsheetAPI.XLSheetPointersEncoding.Rows) {
 		let _xlrow = frontRepo.map_ID_XLRow.get(_id)
 		if (_xlrow != undefined) {
 			xlsheet.Rows.push(_xlrow!)
 		}
 	}
 	xlsheet.SheetCells = new Array<XLCell>()
-	for (let _id of xlsheetDB.XLSheetPointersEncoding.SheetCells) {
+	for (let _id of xlsheetAPI.XLSheetPointersEncoding.SheetCells) {
 		let _xlcell = frontRepo.map_ID_XLCell.get(_id)
 		if (_xlcell != undefined) {
 			xlsheet.SheetCells.push(_xlcell!)

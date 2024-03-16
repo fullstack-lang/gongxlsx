@@ -11,13 +11,13 @@ import { BehaviorSubject } from 'rxjs'
 import { Observable, of } from 'rxjs'
 import { catchError, map, tap } from 'rxjs/operators'
 
-import { XLFileDB } from './xlfile-db'
-import { XLFile, CopyXLFileToXLFileDB } from './xlfile'
+import { XLFileAPI } from './xlfile-api'
+import { XLFile, CopyXLFileToXLFileAPI } from './xlfile'
 
 import { FrontRepo, FrontRepoService } from './front-repo.service';
 
 // insertion point for imports
-import { XLSheetDB } from './xlsheet-db'
+import { XLSheetAPI } from './xlsheet-api'
 
 @Injectable({
   providedIn: 'root'
@@ -47,41 +47,41 @@ export class XLFileService {
 
   /** GET xlfiles from the server */
   // gets is more robust to refactoring
-  gets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB[]> {
+  gets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileAPI[]> {
     return this.getXLFiles(GONG__StackPath, frontRepo)
   }
-  getXLFiles(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB[]> {
+  getXLFiles(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileAPI[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
-    return this.http.get<XLFileDB[]>(this.xlfilesUrl, { params: params })
+    return this.http.get<XLFileAPI[]>(this.xlfilesUrl, { params: params })
       .pipe(
         tap(),
-        catchError(this.handleError<XLFileDB[]>('getXLFiles', []))
+        catchError(this.handleError<XLFileAPI[]>('getXLFiles', []))
       );
   }
 
   /** GET xlfile by id. Will 404 if id not found */
   // more robust API to refactoring
-  get(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
+  get(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileAPI> {
     return this.getXLFile(id, GONG__StackPath, frontRepo)
   }
-  getXLFile(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
+  getXLFile(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileAPI> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
     const url = `${this.xlfilesUrl}/${id}`;
-    return this.http.get<XLFileDB>(url, { params: params }).pipe(
+    return this.http.get<XLFileAPI>(url, { params: params }).pipe(
       // tap(_ => this.log(`fetched xlfile id=${id}`)),
-      catchError(this.handleError<XLFileDB>(`getXLFile id=${id}`))
+      catchError(this.handleError<XLFileAPI>(`getXLFile id=${id}`))
     );
   }
 
   // postFront copy xlfile to a version with encoded pointers and post to the back
-  postFront(xlfile: XLFile, GONG__StackPath: string): Observable<XLFileDB> {
-    let xlfileDB = new XLFileDB
-    CopyXLFileToXLFileDB(xlfile, xlfileDB)
-    const id = typeof xlfileDB === 'number' ? xlfileDB : xlfileDB.ID
+  postFront(xlfile: XLFile, GONG__StackPath: string): Observable<XLFileAPI> {
+    let xlfileAPI = new XLFileAPI
+    CopyXLFileToXLFileAPI(xlfile, xlfileAPI)
+    const id = typeof xlfileAPI === 'number' ? xlfileAPI : xlfileAPI.ID
     const url = `${this.xlfilesUrl}/${id}`;
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -89,18 +89,18 @@ export class XLFileService {
       params: params
     }
 
-    return this.http.post<XLFileDB>(url, xlfileDB, httpOptions).pipe(
+    return this.http.post<XLFileAPI>(url, xlfileAPI, httpOptions).pipe(
       tap(_ => {
       }),
-      catchError(this.handleError<XLFileDB>('postXLFile'))
+      catchError(this.handleError<XLFileAPI>('postXLFile'))
     );
   }
   
   /** POST: add a new xlfile to the server */
-  post(xlfiledb: XLFileDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
+  post(xlfiledb: XLFileAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileAPI> {
     return this.postXLFile(xlfiledb, GONG__StackPath, frontRepo)
   }
-  postXLFile(xlfiledb: XLFileDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
+  postXLFile(xlfiledb: XLFileAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileAPI> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -108,19 +108,19 @@ export class XLFileService {
       params: params
     }
 
-    return this.http.post<XLFileDB>(this.xlfilesUrl, xlfiledb, httpOptions).pipe(
+    return this.http.post<XLFileAPI>(this.xlfilesUrl, xlfiledb, httpOptions).pipe(
       tap(_ => {
         // this.log(`posted xlfiledb id=${xlfiledb.ID}`)
       }),
-      catchError(this.handleError<XLFileDB>('postXLFile'))
+      catchError(this.handleError<XLFileAPI>('postXLFile'))
     );
   }
 
   /** DELETE: delete the xlfiledb from the server */
-  delete(xlfiledb: XLFileDB | number, GONG__StackPath: string): Observable<XLFileDB> {
+  delete(xlfiledb: XLFileAPI | number, GONG__StackPath: string): Observable<XLFileAPI> {
     return this.deleteXLFile(xlfiledb, GONG__StackPath)
   }
-  deleteXLFile(xlfiledb: XLFileDB | number, GONG__StackPath: string): Observable<XLFileDB> {
+  deleteXLFile(xlfiledb: XLFileAPI | number, GONG__StackPath: string): Observable<XLFileAPI> {
     const id = typeof xlfiledb === 'number' ? xlfiledb : xlfiledb.ID;
     const url = `${this.xlfilesUrl}/${id}`;
 
@@ -130,17 +130,17 @@ export class XLFileService {
       params: params
     };
 
-    return this.http.delete<XLFileDB>(url, httpOptions).pipe(
+    return this.http.delete<XLFileAPI>(url, httpOptions).pipe(
       tap(_ => this.log(`deleted xlfiledb id=${id}`)),
-      catchError(this.handleError<XLFileDB>('deleteXLFile'))
+      catchError(this.handleError<XLFileAPI>('deleteXLFile'))
     );
   }
 
   // updateFront copy xlfile to a version with encoded pointers and update to the back
-  updateFront(xlfile: XLFile, GONG__StackPath: string): Observable<XLFileDB> {
-    let xlfileDB = new XLFileDB
-    CopyXLFileToXLFileDB(xlfile, xlfileDB)
-    const id = typeof xlfileDB === 'number' ? xlfileDB : xlfileDB.ID
+  updateFront(xlfile: XLFile, GONG__StackPath: string): Observable<XLFileAPI> {
+    let xlfileAPI = new XLFileAPI
+    CopyXLFileToXLFileAPI(xlfile, xlfileAPI)
+    const id = typeof xlfileAPI === 'number' ? xlfileAPI : xlfileAPI.ID
     const url = `${this.xlfilesUrl}/${id}`;
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -148,18 +148,18 @@ export class XLFileService {
       params: params
     }
 
-    return this.http.put<XLFileDB>(url, xlfileDB, httpOptions).pipe(
+    return this.http.put<XLFileAPI>(url, xlfileAPI, httpOptions).pipe(
       tap(_ => {
       }),
-      catchError(this.handleError<XLFileDB>('updateXLFile'))
+      catchError(this.handleError<XLFileAPI>('updateXLFile'))
     );
   }
 
   /** PUT: update the xlfiledb on the server */
-  update(xlfiledb: XLFileDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
+  update(xlfiledb: XLFileAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileAPI> {
     return this.updateXLFile(xlfiledb, GONG__StackPath, frontRepo)
   }
-  updateXLFile(xlfiledb: XLFileDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileDB> {
+  updateXLFile(xlfiledb: XLFileAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLFileAPI> {
     const id = typeof xlfiledb === 'number' ? xlfiledb : xlfiledb.ID;
     const url = `${this.xlfilesUrl}/${id}`;
 
@@ -170,11 +170,11 @@ export class XLFileService {
       params: params
     };
 
-    return this.http.put<XLFileDB>(url, xlfiledb, httpOptions).pipe(
+    return this.http.put<XLFileAPI>(url, xlfiledb, httpOptions).pipe(
       tap(_ => {
         // this.log(`updated xlfiledb id=${xlfiledb.ID}`)
       }),
-      catchError(this.handleError<XLFileDB>('updateXLFile'))
+      catchError(this.handleError<XLFileAPI>('updateXLFile'))
     );
   }
 

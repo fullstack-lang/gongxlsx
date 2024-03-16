@@ -38,6 +38,7 @@ type XLCellAPI struct {
 	models.XLCell_WOP
 
 	// encoding of pointers
+	// for API, it cannot be embedded
 	XLCellPointersEncoding XLCellPointersEncoding
 }
 
@@ -66,7 +67,9 @@ type XLCellDB struct {
 
 	// Declation for basic field xlcellDB.Y
 	Y_Data sql.NullInt64
+	
 	// encoding of pointers
+	// for GORM serialization, it is necessary to embed to Pointer Encoding declaration
 	XLCellPointersEncoding
 }
 

@@ -1,11 +1,11 @@
 // insertion point for imports
-import { XLFileDB } from './xlfile-db'
-import { XLSheetDB } from './xlsheet-db'
+import { XLFileAPI } from './xlfile-api'
+import { XLSheetAPI } from './xlsheet-api'
 
 // usefull for managing pointer ID values that can be nullable
 import { NullInt64 } from './null-int64'
 
-export class DisplaySelectionDB {
+export class DisplaySelectionAPI {
 
 	static GONGSTRUCT_NAME = "DisplaySelection"
 

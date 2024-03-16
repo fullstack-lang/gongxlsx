@@ -38,6 +38,7 @@ type XLRowAPI struct {
 	models.XLRow_WOP
 
 	// encoding of pointers
+	// for API, it cannot be embedded
 	XLRowPointersEncoding XLRowPointersEncoding
 }
 
@@ -66,7 +67,9 @@ type XLRowDB struct {
 
 	// Declation for basic field xlrowDB.RowIndex
 	RowIndex_Data sql.NullInt64
+	
 	// encoding of pointers
+	// for GORM serialization, it is necessary to embed to Pointer Encoding declaration
 	XLRowPointersEncoding
 }
 

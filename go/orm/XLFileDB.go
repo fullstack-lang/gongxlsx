@@ -38,6 +38,7 @@ type XLFileAPI struct {
 	models.XLFile_WOP
 
 	// encoding of pointers
+	// for API, it cannot be embedded
 	XLFilePointersEncoding XLFilePointersEncoding
 }
 
@@ -66,7 +67,9 @@ type XLFileDB struct {
 
 	// Declation for basic field xlfileDB.NbSheets
 	NbSheets_Data sql.NullInt64
+	
 	// encoding of pointers
+	// for GORM serialization, it is necessary to embed to Pointer Encoding declaration
 	XLFilePointersEncoding
 }
 

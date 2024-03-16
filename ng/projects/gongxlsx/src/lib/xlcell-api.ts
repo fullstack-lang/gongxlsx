@@ -3,7 +3,7 @@
 // usefull for managing pointer ID values that can be nullable
 import { NullInt64 } from './null-int64'
 
-export class XLCellDB {
+export class XLCellAPI {
 
 	static GONGSTRUCT_NAME = "XLCell"
 

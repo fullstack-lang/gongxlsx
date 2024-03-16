@@ -1,13 +1,12 @@
 // insertion point for imports
-import { XLRowDB } from './xlrow-db'
-import { XLCellDB } from './xlcell-db'
+import { XLCellAPI } from './xlcell-api'
 
 // usefull for managing pointer ID values that can be nullable
 import { NullInt64 } from './null-int64'
 
-export class XLSheetDB {
+export class XLRowAPI {
 
-	static GONGSTRUCT_NAME = "XLSheet"
+	static GONGSTRUCT_NAME = "XLRow"
 
 	CreatedAt?: string
 	DeletedAt?: string
@@ -15,17 +14,14 @@ export class XLSheetDB {
 
 	// insertion point for basic fields declarations
 	Name: string = ""
-	MaxRow: number = 0
-	MaxCol: number = 0
-	NbRows: number = 0
+	RowIndex: number = 0
 
 	// insertion point for other decls
 
-	XLSheetPointersEncoding: XLSheetPointersEncoding = new XLSheetPointersEncoding
+	XLRowPointersEncoding: XLRowPointersEncoding = new XLRowPointersEncoding
 }
 
-export class XLSheetPointersEncoding {
+export class XLRowPointersEncoding {
 	// insertion point for pointers and slices of pointers encoding fields
-	Rows: number[] = []
-	SheetCells: number[] = []
+	Cells: number[] = []
 }

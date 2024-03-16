@@ -11,14 +11,14 @@ import { BehaviorSubject } from 'rxjs'
 import { Observable, of } from 'rxjs'
 import { catchError, map, tap } from 'rxjs/operators'
 
-import { XLSheetDB } from './xlsheet-db'
-import { XLSheet, CopyXLSheetToXLSheetDB } from './xlsheet'
+import { XLSheetAPI } from './xlsheet-api'
+import { XLSheet, CopyXLSheetToXLSheetAPI } from './xlsheet'
 
 import { FrontRepo, FrontRepoService } from './front-repo.service';
 
 // insertion point for imports
-import { XLRowDB } from './xlrow-db'
-import { XLCellDB } from './xlcell-db'
+import { XLRowAPI } from './xlrow-api'
+import { XLCellAPI } from './xlcell-api'
 
 @Injectable({
   providedIn: 'root'
@@ -48,41 +48,41 @@ export class XLSheetService {
 
   /** GET xlsheets from the server */
   // gets is more robust to refactoring
-  gets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB[]> {
+  gets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetAPI[]> {
     return this.getXLSheets(GONG__StackPath, frontRepo)
   }
-  getXLSheets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB[]> {
+  getXLSheets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetAPI[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
-    return this.http.get<XLSheetDB[]>(this.xlsheetsUrl, { params: params })
+    return this.http.get<XLSheetAPI[]>(this.xlsheetsUrl, { params: params })
       .pipe(
         tap(),
-        catchError(this.handleError<XLSheetDB[]>('getXLSheets', []))
+        catchError(this.handleError<XLSheetAPI[]>('getXLSheets', []))
       );
   }
 
   /** GET xlsheet by id. Will 404 if id not found */
   // more robust API to refactoring
-  get(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
+  get(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetAPI> {
     return this.getXLSheet(id, GONG__StackPath, frontRepo)
   }
-  getXLSheet(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
+  getXLSheet(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetAPI> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
     const url = `${this.xlsheetsUrl}/${id}`;
-    return this.http.get<XLSheetDB>(url, { params: params }).pipe(
+    return this.http.get<XLSheetAPI>(url, { params: params }).pipe(
       // tap(_ => this.log(`fetched xlsheet id=${id}`)),
-      catchError(this.handleError<XLSheetDB>(`getXLSheet id=${id}`))
+      catchError(this.handleError<XLSheetAPI>(`getXLSheet id=${id}`))
     );
   }
 
   // postFront copy xlsheet to a version with encoded pointers and post to the back
-  postFront(xlsheet: XLSheet, GONG__StackPath: string): Observable<XLSheetDB> {
-    let xlsheetDB = new XLSheetDB
-    CopyXLSheetToXLSheetDB(xlsheet, xlsheetDB)
-    const id = typeof xlsheetDB === 'number' ? xlsheetDB : xlsheetDB.ID
+  postFront(xlsheet: XLSheet, GONG__StackPath: string): Observable<XLSheetAPI> {
+    let xlsheetAPI = new XLSheetAPI
+    CopyXLSheetToXLSheetAPI(xlsheet, xlsheetAPI)
+    const id = typeof xlsheetAPI === 'number' ? xlsheetAPI : xlsheetAPI.ID
     const url = `${this.xlsheetsUrl}/${id}`;
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -90,18 +90,18 @@ export class XLSheetService {
       params: params
     }
 
-    return this.http.post<XLSheetDB>(url, xlsheetDB, httpOptions).pipe(
+    return this.http.post<XLSheetAPI>(url, xlsheetAPI, httpOptions).pipe(
       tap(_ => {
       }),
-      catchError(this.handleError<XLSheetDB>('postXLSheet'))
+      catchError(this.handleError<XLSheetAPI>('postXLSheet'))
     );
   }
   
   /** POST: add a new xlsheet to the server */
-  post(xlsheetdb: XLSheetDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
+  post(xlsheetdb: XLSheetAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetAPI> {
     return this.postXLSheet(xlsheetdb, GONG__StackPath, frontRepo)
   }
-  postXLSheet(xlsheetdb: XLSheetDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
+  postXLSheet(xlsheetdb: XLSheetAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetAPI> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -109,19 +109,19 @@ export class XLSheetService {
       params: params
     }
 
-    return this.http.post<XLSheetDB>(this.xlsheetsUrl, xlsheetdb, httpOptions).pipe(
+    return this.http.post<XLSheetAPI>(this.xlsheetsUrl, xlsheetdb, httpOptions).pipe(
       tap(_ => {
         // this.log(`posted xlsheetdb id=${xlsheetdb.ID}`)
       }),
-      catchError(this.handleError<XLSheetDB>('postXLSheet'))
+      catchError(this.handleError<XLSheetAPI>('postXLSheet'))
     );
   }
 
   /** DELETE: delete the xlsheetdb from the server */
-  delete(xlsheetdb: XLSheetDB | number, GONG__StackPath: string): Observable<XLSheetDB> {
+  delete(xlsheetdb: XLSheetAPI | number, GONG__StackPath: string): Observable<XLSheetAPI> {
     return this.deleteXLSheet(xlsheetdb, GONG__StackPath)
   }
-  deleteXLSheet(xlsheetdb: XLSheetDB | number, GONG__StackPath: string): Observable<XLSheetDB> {
+  deleteXLSheet(xlsheetdb: XLSheetAPI | number, GONG__StackPath: string): Observable<XLSheetAPI> {
     const id = typeof xlsheetdb === 'number' ? xlsheetdb : xlsheetdb.ID;
     const url = `${this.xlsheetsUrl}/${id}`;
 
@@ -131,17 +131,17 @@ export class XLSheetService {
       params: params
     };
 
-    return this.http.delete<XLSheetDB>(url, httpOptions).pipe(
+    return this.http.delete<XLSheetAPI>(url, httpOptions).pipe(
       tap(_ => this.log(`deleted xlsheetdb id=${id}`)),
-      catchError(this.handleError<XLSheetDB>('deleteXLSheet'))
+      catchError(this.handleError<XLSheetAPI>('deleteXLSheet'))
     );
   }
 
   // updateFront copy xlsheet to a version with encoded pointers and update to the back
-  updateFront(xlsheet: XLSheet, GONG__StackPath: string): Observable<XLSheetDB> {
-    let xlsheetDB = new XLSheetDB
-    CopyXLSheetToXLSheetDB(xlsheet, xlsheetDB)
-    const id = typeof xlsheetDB === 'number' ? xlsheetDB : xlsheetDB.ID
+  updateFront(xlsheet: XLSheet, GONG__StackPath: string): Observable<XLSheetAPI> {
+    let xlsheetAPI = new XLSheetAPI
+    CopyXLSheetToXLSheetAPI(xlsheet, xlsheetAPI)
+    const id = typeof xlsheetAPI === 'number' ? xlsheetAPI : xlsheetAPI.ID
     const url = `${this.xlsheetsUrl}/${id}`;
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -149,18 +149,18 @@ export class XLSheetService {
       params: params
     }
 
-    return this.http.put<XLSheetDB>(url, xlsheetDB, httpOptions).pipe(
+    return this.http.put<XLSheetAPI>(url, xlsheetAPI, httpOptions).pipe(
       tap(_ => {
       }),
-      catchError(this.handleError<XLSheetDB>('updateXLSheet'))
+      catchError(this.handleError<XLSheetAPI>('updateXLSheet'))
     );
   }
 
   /** PUT: update the xlsheetdb on the server */
-  update(xlsheetdb: XLSheetDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
+  update(xlsheetdb: XLSheetAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetAPI> {
     return this.updateXLSheet(xlsheetdb, GONG__StackPath, frontRepo)
   }
-  updateXLSheet(xlsheetdb: XLSheetDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetDB> {
+  updateXLSheet(xlsheetdb: XLSheetAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<XLSheetAPI> {
     const id = typeof xlsheetdb === 'number' ? xlsheetdb : xlsheetdb.ID;
     const url = `${this.xlsheetsUrl}/${id}`;
 
@@ -171,11 +171,11 @@ export class XLSheetService {
       params: params
     };
 
-    return this.http.put<XLSheetDB>(url, xlsheetdb, httpOptions).pipe(
+    return this.http.put<XLSheetAPI>(url, xlsheetdb, httpOptions).pipe(
       tap(_ => {
         // this.log(`updated xlsheetdb id=${xlsheetdb.ID}`)
       }),
-      catchError(this.handleError<XLSheetDB>('updateXLSheet'))
+      catchError(this.handleError<XLSheetAPI>('updateXLSheet'))
     );
   }
 

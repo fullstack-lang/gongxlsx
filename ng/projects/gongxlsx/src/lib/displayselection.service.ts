@@ -11,14 +11,14 @@ import { BehaviorSubject } from 'rxjs'
 import { Observable, of } from 'rxjs'
 import { catchError, map, tap } from 'rxjs/operators'
 
-import { DisplaySelectionDB } from './displayselection-db'
-import { DisplaySelection, CopyDisplaySelectionToDisplaySelectionDB } from './displayselection'
+import { DisplaySelectionAPI } from './displayselection-api'
+import { DisplaySelection, CopyDisplaySelectionToDisplaySelectionAPI } from './displayselection'
 
 import { FrontRepo, FrontRepoService } from './front-repo.service';
 
 // insertion point for imports
-import { XLFileDB } from './xlfile-db'
-import { XLSheetDB } from './xlsheet-db'
+import { XLFileAPI } from './xlfile-api'
+import { XLSheetAPI } from './xlsheet-api'
 
 @Injectable({
   providedIn: 'root'
@@ -48,41 +48,41 @@ export class DisplaySelectionService {
 
   /** GET displayselections from the server */
   // gets is more robust to refactoring
-  gets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB[]> {
+  gets(GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionAPI[]> {
     return this.getDisplaySelections(GONG__StackPath, frontRepo)
   }
-  getDisplaySelections(GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB[]> {
+  getDisplaySelections(GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionAPI[]> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
-    return this.http.get<DisplaySelectionDB[]>(this.displayselectionsUrl, { params: params })
+    return this.http.get<DisplaySelectionAPI[]>(this.displayselectionsUrl, { params: params })
       .pipe(
         tap(),
-        catchError(this.handleError<DisplaySelectionDB[]>('getDisplaySelections', []))
+        catchError(this.handleError<DisplaySelectionAPI[]>('getDisplaySelections', []))
       );
   }
 
   /** GET displayselection by id. Will 404 if id not found */
   // more robust API to refactoring
-  get(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB> {
+  get(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionAPI> {
     return this.getDisplaySelection(id, GONG__StackPath, frontRepo)
   }
-  getDisplaySelection(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB> {
+  getDisplaySelection(id: number, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionAPI> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
 
     const url = `${this.displayselectionsUrl}/${id}`;
-    return this.http.get<DisplaySelectionDB>(url, { params: params }).pipe(
+    return this.http.get<DisplaySelectionAPI>(url, { params: params }).pipe(
       // tap(_ => this.log(`fetched displayselection id=${id}`)),
-      catchError(this.handleError<DisplaySelectionDB>(`getDisplaySelection id=${id}`))
+      catchError(this.handleError<DisplaySelectionAPI>(`getDisplaySelection id=${id}`))
     );
   }
 
   // postFront copy displayselection to a version with encoded pointers and post to the back
-  postFront(displayselection: DisplaySelection, GONG__StackPath: string): Observable<DisplaySelectionDB> {
-    let displayselectionDB = new DisplaySelectionDB
-    CopyDisplaySelectionToDisplaySelectionDB(displayselection, displayselectionDB)
-    const id = typeof displayselectionDB === 'number' ? displayselectionDB : displayselectionDB.ID
+  postFront(displayselection: DisplaySelection, GONG__StackPath: string): Observable<DisplaySelectionAPI> {
+    let displayselectionAPI = new DisplaySelectionAPI
+    CopyDisplaySelectionToDisplaySelectionAPI(displayselection, displayselectionAPI)
+    const id = typeof displayselectionAPI === 'number' ? displayselectionAPI : displayselectionAPI.ID
     const url = `${this.displayselectionsUrl}/${id}`;
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -90,18 +90,18 @@ export class DisplaySelectionService {
       params: params
     }
 
-    return this.http.post<DisplaySelectionDB>(url, displayselectionDB, httpOptions).pipe(
+    return this.http.post<DisplaySelectionAPI>(url, displayselectionAPI, httpOptions).pipe(
       tap(_ => {
       }),
-      catchError(this.handleError<DisplaySelectionDB>('postDisplaySelection'))
+      catchError(this.handleError<DisplaySelectionAPI>('postDisplaySelection'))
     );
   }
   
   /** POST: add a new displayselection to the server */
-  post(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB> {
+  post(displayselectiondb: DisplaySelectionAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionAPI> {
     return this.postDisplaySelection(displayselectiondb, GONG__StackPath, frontRepo)
   }
-  postDisplaySelection(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB> {
+  postDisplaySelection(displayselectiondb: DisplaySelectionAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionAPI> {
 
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -109,19 +109,19 @@ export class DisplaySelectionService {
       params: params
     }
 
-    return this.http.post<DisplaySelectionDB>(this.displayselectionsUrl, displayselectiondb, httpOptions).pipe(
+    return this.http.post<DisplaySelectionAPI>(this.displayselectionsUrl, displayselectiondb, httpOptions).pipe(
       tap(_ => {
         // this.log(`posted displayselectiondb id=${displayselectiondb.ID}`)
       }),
-      catchError(this.handleError<DisplaySelectionDB>('postDisplaySelection'))
+      catchError(this.handleError<DisplaySelectionAPI>('postDisplaySelection'))
     );
   }
 
   /** DELETE: delete the displayselectiondb from the server */
-  delete(displayselectiondb: DisplaySelectionDB | number, GONG__StackPath: string): Observable<DisplaySelectionDB> {
+  delete(displayselectiondb: DisplaySelectionAPI | number, GONG__StackPath: string): Observable<DisplaySelectionAPI> {
     return this.deleteDisplaySelection(displayselectiondb, GONG__StackPath)
   }
-  deleteDisplaySelection(displayselectiondb: DisplaySelectionDB | number, GONG__StackPath: string): Observable<DisplaySelectionDB> {
+  deleteDisplaySelection(displayselectiondb: DisplaySelectionAPI | number, GONG__StackPath: string): Observable<DisplaySelectionAPI> {
     const id = typeof displayselectiondb === 'number' ? displayselectiondb : displayselectiondb.ID;
     const url = `${this.displayselectionsUrl}/${id}`;
 
@@ -131,17 +131,17 @@ export class DisplaySelectionService {
       params: params
     };
 
-    return this.http.delete<DisplaySelectionDB>(url, httpOptions).pipe(
+    return this.http.delete<DisplaySelectionAPI>(url, httpOptions).pipe(
       tap(_ => this.log(`deleted displayselectiondb id=${id}`)),
-      catchError(this.handleError<DisplaySelectionDB>('deleteDisplaySelection'))
+      catchError(this.handleError<DisplaySelectionAPI>('deleteDisplaySelection'))
     );
   }
 
   // updateFront copy displayselection to a version with encoded pointers and update to the back
-  updateFront(displayselection: DisplaySelection, GONG__StackPath: string): Observable<DisplaySelectionDB> {
-    let displayselectionDB = new DisplaySelectionDB
-    CopyDisplaySelectionToDisplaySelectionDB(displayselection, displayselectionDB)
-    const id = typeof displayselectionDB === 'number' ? displayselectionDB : displayselectionDB.ID
+  updateFront(displayselection: DisplaySelection, GONG__StackPath: string): Observable<DisplaySelectionAPI> {
+    let displayselectionAPI = new DisplaySelectionAPI
+    CopyDisplaySelectionToDisplaySelectionAPI(displayselection, displayselectionAPI)
+    const id = typeof displayselectionAPI === 'number' ? displayselectionAPI : displayselectionAPI.ID
     const url = `${this.displayselectionsUrl}/${id}`;
     let params = new HttpParams().set("GONG__StackPath", GONG__StackPath)
     let httpOptions = {
@@ -149,18 +149,18 @@ export class DisplaySelectionService {
       params: params
     }
 
-    return this.http.put<DisplaySelectionDB>(url, displayselectionDB, httpOptions).pipe(
+    return this.http.put<DisplaySelectionAPI>(url, displayselectionAPI, httpOptions).pipe(
       tap(_ => {
       }),
-      catchError(this.handleError<DisplaySelectionDB>('updateDisplaySelection'))
+      catchError(this.handleError<DisplaySelectionAPI>('updateDisplaySelection'))
     );
   }
 
   /** PUT: update the displayselectiondb on the server */
-  update(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB> {
+  update(displayselectiondb: DisplaySelectionAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionAPI> {
     return this.updateDisplaySelection(displayselectiondb, GONG__StackPath, frontRepo)
   }
-  updateDisplaySelection(displayselectiondb: DisplaySelectionDB, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionDB> {
+  updateDisplaySelection(displayselectiondb: DisplaySelectionAPI, GONG__StackPath: string, frontRepo: FrontRepo): Observable<DisplaySelectionAPI> {
     const id = typeof displayselectiondb === 'number' ? displayselectiondb : displayselectiondb.ID;
     const url = `${this.displayselectionsUrl}/${id}`;
 
@@ -171,11 +171,11 @@ export class DisplaySelectionService {
       params: params
     };
 
-    return this.http.put<DisplaySelectionDB>(url, displayselectiondb, httpOptions).pipe(
+    return this.http.put<DisplaySelectionAPI>(url, displayselectiondb, httpOptions).pipe(
       tap(_ => {
         // this.log(`updated displayselectiondb id=${displayselectiondb.ID}`)
       }),
-      catchError(this.handleError<DisplaySelectionDB>('updateDisplaySelection'))
+      catchError(this.handleError<DisplaySelectionAPI>('updateDisplaySelection'))
     );
   }
 

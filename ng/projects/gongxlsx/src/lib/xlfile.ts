@@ -1,6 +1,6 @@
 // generated code - do not edit
 
-import { XLFileDB } from './xlfile-db'
+import { XLFileAPI } from './xlfile-api'
 import { FrontRepo } from './front-repo.service';
 
 // insertion point for imports
@@ -25,45 +25,45 @@ export class XLFile {
 	Sheets: Array<XLSheet> = []
 }
 
-export function CopyXLFileToXLFileDB(xlfile: XLFile, xlfileDB: XLFileDB) {
+export function CopyXLFileToXLFileAPI(xlfile: XLFile, xlfileAPI: XLFileAPI) {
 
-	xlfileDB.CreatedAt = xlfile.CreatedAt
-	xlfileDB.DeletedAt = xlfile.DeletedAt
-	xlfileDB.ID = xlfile.ID
+	xlfileAPI.CreatedAt = xlfile.CreatedAt
+	xlfileAPI.DeletedAt = xlfile.DeletedAt
+	xlfileAPI.ID = xlfile.ID
 
 	// insertion point for basic fields copy operations
-	xlfileDB.Name = xlfile.Name
-	xlfileDB.NbSheets = xlfile.NbSheets
+	xlfileAPI.Name = xlfile.Name
+	xlfileAPI.NbSheets = xlfile.NbSheets
 
 	// insertion point for pointer fields encoding
 
 	// insertion point for slice of pointers fields encoding
-	xlfileDB.XLFilePointersEncoding.Sheets = []
+	xlfileAPI.XLFilePointersEncoding.Sheets = []
 	for (let _xlsheet of xlfile.Sheets) {
-		xlfileDB.XLFilePointersEncoding.Sheets.push(_xlsheet.ID)
+		xlfileAPI.XLFilePointersEncoding.Sheets.push(_xlsheet.ID)
 	}
 
 }
 
-// CopyXLFileDBToXLFile update basic, pointers and slice of pointers fields of xlfile
-// from respectively the basic fields and encoded fields of pointers and slices of pointers of xlfileDB
+// CopyXLFileAPIToXLFile update basic, pointers and slice of pointers fields of xlfile
+// from respectively the basic fields and encoded fields of pointers and slices of pointers of xlfileAPI
 // this function uses frontRepo.map_ID_<structname> to decode the encoded fields
 // a condition is that those maps has to be initialized before
-export function CopyXLFileDBToXLFile(xlfileDB: XLFileDB, xlfile: XLFile, frontRepo: FrontRepo) {
+export function CopyXLFileAPIToXLFile(xlfileAPI: XLFileAPI, xlfile: XLFile, frontRepo: FrontRepo) {
 
-	xlfile.CreatedAt = xlfileDB.CreatedAt
-	xlfile.DeletedAt = xlfileDB.DeletedAt
-	xlfile.ID = xlfileDB.ID
+	xlfile.CreatedAt = xlfileAPI.CreatedAt
+	xlfile.DeletedAt = xlfileAPI.DeletedAt
+	xlfile.ID = xlfileAPI.ID
 
 	// insertion point for basic fields copy operations
-	xlfile.Name = xlfileDB.Name
-	xlfile.NbSheets = xlfileDB.NbSheets
+	xlfile.Name = xlfileAPI.Name
+	xlfile.NbSheets = xlfileAPI.NbSheets
 
 	// insertion point for pointer fields encoding
 
 	// insertion point for slice of pointers fields encoding
 	xlfile.Sheets = new Array<XLSheet>()
-	for (let _id of xlfileDB.XLFilePointersEncoding.Sheets) {
+	for (let _id of xlfileAPI.XLFilePointersEncoding.Sheets) {
 		let _xlsheet = frontRepo.map_ID_XLSheet.get(_id)
 		if (_xlsheet != undefined) {
 			xlfile.Sheets.push(_xlsheet!)

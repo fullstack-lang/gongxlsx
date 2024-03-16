@@ -1,6 +1,6 @@
 // generated code - do not edit
 
-import { XLCellDB } from './xlcell-db'
+import { XLCellAPI } from './xlcell-api'
 import { FrontRepo } from './front-repo.service';
 
 // insertion point for imports
@@ -24,36 +24,36 @@ export class XLCell {
 	// insertion point for pointers and slices of pointers declarations
 }
 
-export function CopyXLCellToXLCellDB(xlcell: XLCell, xlcellDB: XLCellDB) {
+export function CopyXLCellToXLCellAPI(xlcell: XLCell, xlcellAPI: XLCellAPI) {
 
-	xlcellDB.CreatedAt = xlcell.CreatedAt
-	xlcellDB.DeletedAt = xlcell.DeletedAt
-	xlcellDB.ID = xlcell.ID
+	xlcellAPI.CreatedAt = xlcell.CreatedAt
+	xlcellAPI.DeletedAt = xlcell.DeletedAt
+	xlcellAPI.ID = xlcell.ID
 
 	// insertion point for basic fields copy operations
-	xlcellDB.Name = xlcell.Name
-	xlcellDB.X = xlcell.X
-	xlcellDB.Y = xlcell.Y
+	xlcellAPI.Name = xlcell.Name
+	xlcellAPI.X = xlcell.X
+	xlcellAPI.Y = xlcell.Y
 
 	// insertion point for pointer fields encoding
 
 	// insertion point for slice of pointers fields encoding
 }
 
-// CopyXLCellDBToXLCell update basic, pointers and slice of pointers fields of xlcell
-// from respectively the basic fields and encoded fields of pointers and slices of pointers of xlcellDB
+// CopyXLCellAPIToXLCell update basic, pointers and slice of pointers fields of xlcell
+// from respectively the basic fields and encoded fields of pointers and slices of pointers of xlcellAPI
 // this function uses frontRepo.map_ID_<structname> to decode the encoded fields
 // a condition is that those maps has to be initialized before
-export function CopyXLCellDBToXLCell(xlcellDB: XLCellDB, xlcell: XLCell, frontRepo: FrontRepo) {
+export function CopyXLCellAPIToXLCell(xlcellAPI: XLCellAPI, xlcell: XLCell, frontRepo: FrontRepo) {
 
-	xlcell.CreatedAt = xlcellDB.CreatedAt
-	xlcell.DeletedAt = xlcellDB.DeletedAt
-	xlcell.ID = xlcellDB.ID
+	xlcell.CreatedAt = xlcellAPI.CreatedAt
+	xlcell.DeletedAt = xlcellAPI.DeletedAt
+	xlcell.ID = xlcellAPI.ID
 
 	// insertion point for basic fields copy operations
-	xlcell.Name = xlcellDB.Name
-	xlcell.X = xlcellDB.X
-	xlcell.Y = xlcellDB.Y
+	xlcell.Name = xlcellAPI.Name
+	xlcell.X = xlcellAPI.X
+	xlcell.Y = xlcellAPI.Y
 
 	// insertion point for pointer fields encoding
 

@@ -1,28 +1,31 @@
 import { Injectable } from '@angular/core'
-import { HttpClient, HttpHeaders } from '@angular/common/http'
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http'
 
 import { Observable, combineLatest, BehaviorSubject, of } from 'rxjs'
 
 // insertion point sub template for services imports
-import { DisplaySelectionDB } from './displayselection-db'
-import { DisplaySelection, CopyDisplaySelectionDBToDisplaySelection } from './displayselection'
+import { DisplaySelectionAPI } from './displayselection-api'
+import { DisplaySelection, CopyDisplaySelectionAPIToDisplaySelection } from './displayselection'
 import { DisplaySelectionService } from './displayselection.service'
 
-import { XLCellDB } from './xlcell-db'
-import { XLCell, CopyXLCellDBToXLCell } from './xlcell'
+import { XLCellAPI } from './xlcell-api'
+import { XLCell, CopyXLCellAPIToXLCell } from './xlcell'
 import { XLCellService } from './xlcell.service'
 
-import { XLFileDB } from './xlfile-db'
-import { XLFile, CopyXLFileDBToXLFile } from './xlfile'
+import { XLFileAPI } from './xlfile-api'
+import { XLFile, CopyXLFileAPIToXLFile } from './xlfile'
 import { XLFileService } from './xlfile.service'
 
-import { XLRowDB } from './xlrow-db'
-import { XLRow, CopyXLRowDBToXLRow } from './xlrow'
+import { XLRowAPI } from './xlrow-api'
+import { XLRow, CopyXLRowAPIToXLRow } from './xlrow'
 import { XLRowService } from './xlrow.service'
 
-import { XLSheetDB } from './xlsheet-db'
-import { XLSheet, CopyXLSheetDBToXLSheet } from './xlsheet'
+import { XLSheetAPI } from './xlsheet-api'
+import { XLSheet, CopyXLSheetAPIToXLSheet } from './xlsheet'
 import { XLSheetService } from './xlsheet.service'
+
+
+import { BackRepoData } from './back-repo-data'
 
 export const StackType = "github.com/fullstack-lang/gongxlsx/go/models"
 
@@ -64,7 +67,7 @@ export class FrontRepo { // insertion point sub template
 				throw new Error("Type not recognized");
 		}
 	}
-	
+
 	getFrontMap<Type>(gongStructName: string): Map<number, Type> {
 		switch (gongStructName) {
 			// insertion point
@@ -132,6 +135,7 @@ export enum SelectionMode {
 export class FrontRepoService {
 
 	GONG__StackPath: string = ""
+	private socket: WebSocket | undefined
 
 	httpOptions = {
 		headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -181,11 +185,11 @@ export class FrontRepoService {
 	observableFrontRepo: [
 		Observable<null>, // see below for the of(null) observable
 		// insertion point sub template 
-		Observable<DisplaySelectionDB[]>,
-		Observable<XLCellDB[]>,
-		Observable<XLFileDB[]>,
-		Observable<XLRowDB[]>,
-		Observable<XLSheetDB[]>,
+		Observable<DisplaySelectionAPI[]>,
+		Observable<XLCellAPI[]>,
+		Observable<XLFileAPI[]>,
+		Observable<XLRowAPI[]>,
+		Observable<XLSheetAPI[]>,
 	] = [
 			// Using "combineLatest" with a placeholder observable.
 			//
@@ -240,16 +244,16 @@ export class FrontRepoService {
 						let _this = this
 						// Typing can be messy with many items. Therefore, type casting is necessary here
 						// insertion point sub template for type casting 
-						var displayselections: DisplaySelectionDB[]
-						displayselections = displayselections_ as DisplaySelectionDB[]
-						var xlcells: XLCellDB[]
-						xlcells = xlcells_ as XLCellDB[]
-						var xlfiles: XLFileDB[]
-						xlfiles = xlfiles_ as XLFileDB[]
-						var xlrows: XLRowDB[]
-						xlrows = xlrows_ as XLRowDB[]
-						var xlsheets: XLSheetDB[]
-						xlsheets = xlsheets_ as XLSheetDB[]
+						var displayselections: DisplaySelectionAPI[]
+						displayselections = displayselections_ as DisplaySelectionAPI[]
+						var xlcells: XLCellAPI[]
+						xlcells = xlcells_ as XLCellAPI[]
+						var xlfiles: XLFileAPI[]
+						xlfiles = xlfiles_ as XLFileAPI[]
+						var xlrows: XLRowAPI[]
+						xlrows = xlrows_ as XLRowAPI[]
+						var xlsheets: XLSheetAPI[]
+						xlsheets = xlsheets_ as XLSheetAPI[]
 
 						// 
 						// First Step: init map of instances
@@ -259,10 +263,10 @@ export class FrontRepoService {
 						this.frontRepo.map_ID_DisplaySelection.clear()
 
 						displayselections.forEach(
-							displayselectionDB => {
+							displayselectionAPI => {
 								let displayselection = new DisplaySelection
 								this.frontRepo.array_DisplaySelections.push(displayselection)
-								this.frontRepo.map_ID_DisplaySelection.set(displayselectionDB.ID, displayselection)
+								this.frontRepo.map_ID_DisplaySelection.set(displayselectionAPI.ID, displayselection)
 							}
 						)
 
@@ -271,10 +275,10 @@ export class FrontRepoService {
 						this.frontRepo.map_ID_XLCell.clear()
 
 						xlcells.forEach(
-							xlcellDB => {
+							xlcellAPI => {
 								let xlcell = new XLCell
 								this.frontRepo.array_XLCells.push(xlcell)
-								this.frontRepo.map_ID_XLCell.set(xlcellDB.ID, xlcell)
+								this.frontRepo.map_ID_XLCell.set(xlcellAPI.ID, xlcell)
 							}
 						)
 
@@ -283,10 +287,10 @@ export class FrontRepoService {
 						this.frontRepo.map_ID_XLFile.clear()
 
 						xlfiles.forEach(
-							xlfileDB => {
+							xlfileAPI => {
 								let xlfile = new XLFile
 								this.frontRepo.array_XLFiles.push(xlfile)
-								this.frontRepo.map_ID_XLFile.set(xlfileDB.ID, xlfile)
+								this.frontRepo.map_ID_XLFile.set(xlfileAPI.ID, xlfile)
 							}
 						)
 
@@ -295,10 +299,10 @@ export class FrontRepoService {
 						this.frontRepo.map_ID_XLRow.clear()
 
 						xlrows.forEach(
-							xlrowDB => {
+							xlrowAPI => {
 								let xlrow = new XLRow
 								this.frontRepo.array_XLRows.push(xlrow)
-								this.frontRepo.map_ID_XLRow.set(xlrowDB.ID, xlrow)
+								this.frontRepo.map_ID_XLRow.set(xlrowAPI.ID, xlrow)
 							}
 						)
 
@@ -307,10 +311,10 @@ export class FrontRepoService {
 						this.frontRepo.map_ID_XLSheet.clear()
 
 						xlsheets.forEach(
-							xlsheetDB => {
+							xlsheetAPI => {
 								let xlsheet = new XLSheet
 								this.frontRepo.array_XLSheets.push(xlsheet)
-								this.frontRepo.map_ID_XLSheet.set(xlsheetDB.ID, xlsheet)
+								this.frontRepo.map_ID_XLSheet.set(xlsheetAPI.ID, xlsheet)
 							}
 						)
 
@@ -320,41 +324,41 @@ export class FrontRepoService {
 						// insertion point sub template for redeem 
 						// fill up front objects
 						displayselections.forEach(
-							displayselectionDB => {
-								let displayselection = this.frontRepo.map_ID_DisplaySelection.get(displayselectionDB.ID)
-								CopyDisplaySelectionDBToDisplaySelection(displayselectionDB, displayselection!, this.frontRepo)
+							displayselectionAPI => {
+								let displayselection = this.frontRepo.map_ID_DisplaySelection.get(displayselectionAPI.ID)
+								CopyDisplaySelectionAPIToDisplaySelection(displayselectionAPI, displayselection!, this.frontRepo)
 							}
 						)
 
 						// fill up front objects
 						xlcells.forEach(
-							xlcellDB => {
-								let xlcell = this.frontRepo.map_ID_XLCell.get(xlcellDB.ID)
-								CopyXLCellDBToXLCell(xlcellDB, xlcell!, this.frontRepo)
+							xlcellAPI => {
+								let xlcell = this.frontRepo.map_ID_XLCell.get(xlcellAPI.ID)
+								CopyXLCellAPIToXLCell(xlcellAPI, xlcell!, this.frontRepo)
 							}
 						)
 
 						// fill up front objects
 						xlfiles.forEach(
-							xlfileDB => {
-								let xlfile = this.frontRepo.map_ID_XLFile.get(xlfileDB.ID)
-								CopyXLFileDBToXLFile(xlfileDB, xlfile!, this.frontRepo)
+							xlfileAPI => {
+								let xlfile = this.frontRepo.map_ID_XLFile.get(xlfileAPI.ID)
+								CopyXLFileAPIToXLFile(xlfileAPI, xlfile!, this.frontRepo)
 							}
 						)
 
 						// fill up front objects
 						xlrows.forEach(
-							xlrowDB => {
-								let xlrow = this.frontRepo.map_ID_XLRow.get(xlrowDB.ID)
-								CopyXLRowDBToXLRow(xlrowDB, xlrow!, this.frontRepo)
+							xlrowAPI => {
+								let xlrow = this.frontRepo.map_ID_XLRow.get(xlrowAPI.ID)
+								CopyXLRowAPIToXLRow(xlrowAPI, xlrow!, this.frontRepo)
 							}
 						)
 
 						// fill up front objects
 						xlsheets.forEach(
-							xlsheetDB => {
-								let xlsheet = this.frontRepo.map_ID_XLSheet.get(xlsheetDB.ID)
-								CopyXLSheetDBToXLSheet(xlsheetDB, xlsheet!, this.frontRepo)
+							xlsheetAPI => {
+								let xlsheet = this.frontRepo.map_ID_XLSheet.get(xlsheetAPI.ID)
+								CopyXLSheetAPIToXLSheet(xlsheetAPI, xlsheet!, this.frontRepo)
 							}
 						)
 
@@ -365,6 +369,151 @@ export class FrontRepoService {
 				)
 			}
 		)
+	}
+
+	public connectToWebSocket(GONG__StackPath: string): Observable<FrontRepo> {
+
+		this.GONG__StackPath = GONG__StackPath
+
+
+		let params = new HttpParams().set("GONG__StackPath", this.GONG__StackPath)
+		let basePath = 'ws://localhost:8080/api/github.com/fullstack-lang/gongxlsx/go/v1/ws/stage'
+		let paramString = params.toString()
+		let url = `${basePath}?${paramString}`
+		this.socket = new WebSocket(url)
+
+		return new Observable(observer => {
+			this.socket!.onmessage = event => {
+				let _this = this
+
+				const backRepoData = new BackRepoData(JSON.parse(event.data))
+
+				// 
+				// First Step: init map of instances
+				// insertion point sub template for init 
+				// init the arrays
+				// insertion point sub template for init 
+				// init the arrays
+				this.frontRepo.array_DisplaySelections = []
+				this.frontRepo.map_ID_DisplaySelection.clear()
+
+				backRepoData.DisplaySelectionAPIs.forEach(
+					displayselectionAPI => {
+						let displayselection = new DisplaySelection
+						this.frontRepo.array_DisplaySelections.push(displayselection)
+						this.frontRepo.map_ID_DisplaySelection.set(displayselectionAPI.ID, displayselection)
+					}
+				)
+
+				// init the arrays
+				this.frontRepo.array_XLCells = []
+				this.frontRepo.map_ID_XLCell.clear()
+
+				backRepoData.XLCellAPIs.forEach(
+					xlcellAPI => {
+						let xlcell = new XLCell
+						this.frontRepo.array_XLCells.push(xlcell)
+						this.frontRepo.map_ID_XLCell.set(xlcellAPI.ID, xlcell)
+					}
+				)
+
+				// init the arrays
+				this.frontRepo.array_XLFiles = []
+				this.frontRepo.map_ID_XLFile.clear()
+
+				backRepoData.XLFileAPIs.forEach(
+					xlfileAPI => {
+						let xlfile = new XLFile
+						this.frontRepo.array_XLFiles.push(xlfile)
+						this.frontRepo.map_ID_XLFile.set(xlfileAPI.ID, xlfile)
+					}
+				)
+
+				// init the arrays
+				this.frontRepo.array_XLRows = []
+				this.frontRepo.map_ID_XLRow.clear()
+
+				backRepoData.XLRowAPIs.forEach(
+					xlrowAPI => {
+						let xlrow = new XLRow
+						this.frontRepo.array_XLRows.push(xlrow)
+						this.frontRepo.map_ID_XLRow.set(xlrowAPI.ID, xlrow)
+					}
+				)
+
+				// init the arrays
+				this.frontRepo.array_XLSheets = []
+				this.frontRepo.map_ID_XLSheet.clear()
+
+				backRepoData.XLSheetAPIs.forEach(
+					xlsheetAPI => {
+						let xlsheet = new XLSheet
+						this.frontRepo.array_XLSheets.push(xlsheet)
+						this.frontRepo.map_ID_XLSheet.set(xlsheetAPI.ID, xlsheet)
+					}
+				)
+
+
+				// 
+				// Second Step: reddeem front objects
+				// insertion point sub template for redeem 
+				// fill up front objects
+				// insertion point sub template for redeem 
+				// fill up front objects
+				backRepoData.DisplaySelectionAPIs.forEach(
+					displayselectionAPI => {
+						let displayselection = this.frontRepo.map_ID_DisplaySelection.get(displayselectionAPI.ID)
+						CopyDisplaySelectionAPIToDisplaySelection(displayselectionAPI, displayselection!, this.frontRepo)
+					}
+				)
+
+				// fill up front objects
+				backRepoData.XLCellAPIs.forEach(
+					xlcellAPI => {
+						let xlcell = this.frontRepo.map_ID_XLCell.get(xlcellAPI.ID)
+						CopyXLCellAPIToXLCell(xlcellAPI, xlcell!, this.frontRepo)
+					}
+				)
+
+				// fill up front objects
+				backRepoData.XLFileAPIs.forEach(
+					xlfileAPI => {
+						let xlfile = this.frontRepo.map_ID_XLFile.get(xlfileAPI.ID)
+						CopyXLFileAPIToXLFile(xlfileAPI, xlfile!, this.frontRepo)
+					}
+				)
+
+				// fill up front objects
+				backRepoData.XLRowAPIs.forEach(
+					xlrowAPI => {
+						let xlrow = this.frontRepo.map_ID_XLRow.get(xlrowAPI.ID)
+						CopyXLRowAPIToXLRow(xlrowAPI, xlrow!, this.frontRepo)
+					}
+				)
+
+				// fill up front objects
+				backRepoData.XLSheetAPIs.forEach(
+					xlsheetAPI => {
+						let xlsheet = this.frontRepo.map_ID_XLSheet.get(xlsheetAPI.ID)
+						CopyXLSheetAPIToXLSheet(xlsheetAPI, xlsheet!, this.frontRepo)
+					}
+				)
+
+
+
+				observer.next(this.frontRepo)
+			}
+			this.socket!.onerror = event => {
+				observer.error(event)
+			}
+			this.socket!.onclose = event => {
+				observer.complete()
+			}
+
+			return () => {
+				this.socket!.close()
+			}
+		})
 	}
 }
 
