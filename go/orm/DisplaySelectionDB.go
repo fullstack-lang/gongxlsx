@@ -356,12 +356,12 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseTwo
 func (displayselectionDB *DisplaySelectionDB) DecodePointers(backRepo *BackRepoStruct, displayselection *models.DisplaySelection) {
 
 	// insertion point for checkout of pointer encoding
-	// XLFile field, hello here
+	// XLFile field
 	displayselection.XLFile = nil
 	if displayselectionDB.XLFileID.Int64 != 0 {
 		displayselection.XLFile = backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr[uint(displayselectionDB.XLFileID.Int64)]
 	}
-	// XLSheet field, hello here
+	// XLSheet field
 	displayselection.XLSheet = nil
 	if displayselectionDB.XLSheetID.Int64 != 0 {
 		displayselection.XLSheet = backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[uint(displayselectionDB.XLSheetID.Int64)]
