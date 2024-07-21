@@ -15,45 +15,13 @@ func GetReverseFieldOwnerName[T models.Gongstruct](
 	switch inst := any(instance).(type) {
 	// insertion point
 	case *models.DisplaySelection:
-		tmp := GetInstanceDBFromInstance[models.DisplaySelection, DisplaySelectionDB](
-			stage, backRepo, inst,
-		)
-		_ = tmp
 		switch reverseField.GongstructName {
 		// insertion point
-		case "DisplaySelection":
-			switch reverseField.Fieldname {
-			}
-		case "XLCell":
-			switch reverseField.Fieldname {
-			}
-		case "XLFile":
-			switch reverseField.Fieldname {
-			}
-		case "XLRow":
-			switch reverseField.Fieldname {
-			}
-		case "XLSheet":
-			switch reverseField.Fieldname {
-			}
 		}
 
 	case *models.XLCell:
-		tmp := GetInstanceDBFromInstance[models.XLCell, XLCellDB](
-			stage, backRepo, inst,
-		)
-		_ = tmp
 		switch reverseField.GongstructName {
 		// insertion point
-		case "DisplaySelection":
-			switch reverseField.Fieldname {
-			}
-		case "XLCell":
-			switch reverseField.Fieldname {
-			}
-		case "XLFile":
-			switch reverseField.Fieldname {
-			}
 		case "XLRow":
 			switch reverseField.Fieldname {
 			case "Cells":
@@ -71,48 +39,13 @@ func GetReverseFieldOwnerName[T models.Gongstruct](
 		}
 
 	case *models.XLFile:
-		tmp := GetInstanceDBFromInstance[models.XLFile, XLFileDB](
-			stage, backRepo, inst,
-		)
-		_ = tmp
 		switch reverseField.GongstructName {
 		// insertion point
-		case "DisplaySelection":
-			switch reverseField.Fieldname {
-			}
-		case "XLCell":
-			switch reverseField.Fieldname {
-			}
-		case "XLFile":
-			switch reverseField.Fieldname {
-			}
-		case "XLRow":
-			switch reverseField.Fieldname {
-			}
-		case "XLSheet":
-			switch reverseField.Fieldname {
-			}
 		}
 
 	case *models.XLRow:
-		tmp := GetInstanceDBFromInstance[models.XLRow, XLRowDB](
-			stage, backRepo, inst,
-		)
-		_ = tmp
 		switch reverseField.GongstructName {
 		// insertion point
-		case "DisplaySelection":
-			switch reverseField.Fieldname {
-			}
-		case "XLCell":
-			switch reverseField.Fieldname {
-			}
-		case "XLFile":
-			switch reverseField.Fieldname {
-			}
-		case "XLRow":
-			switch reverseField.Fieldname {
-			}
 		case "XLSheet":
 			switch reverseField.Fieldname {
 			case "Rows":
@@ -123,30 +56,14 @@ func GetReverseFieldOwnerName[T models.Gongstruct](
 		}
 
 	case *models.XLSheet:
-		tmp := GetInstanceDBFromInstance[models.XLSheet, XLSheetDB](
-			stage, backRepo, inst,
-		)
-		_ = tmp
 		switch reverseField.GongstructName {
 		// insertion point
-		case "DisplaySelection":
-			switch reverseField.Fieldname {
-			}
-		case "XLCell":
-			switch reverseField.Fieldname {
-			}
 		case "XLFile":
 			switch reverseField.Fieldname {
 			case "Sheets":
 				if _xlfile, ok := stage.XLFile_Sheets_reverseMap[inst]; ok {
 					res = _xlfile.Name
 				}
-			}
-		case "XLRow":
-			switch reverseField.Fieldname {
-			}
-		case "XLSheet":
-			switch reverseField.Fieldname {
 			}
 		}
 
@@ -166,45 +83,13 @@ func GetReverseFieldOwner[T models.Gongstruct](
 	switch inst := any(instance).(type) {
 	// insertion point
 	case *models.DisplaySelection:
-		tmp := GetInstanceDBFromInstance[models.DisplaySelection, DisplaySelectionDB](
-			stage, backRepo, inst,
-		)
-		_ = tmp
 		switch reverseField.GongstructName {
 		// insertion point
-		case "DisplaySelection":
-			switch reverseField.Fieldname {
-			}
-		case "XLCell":
-			switch reverseField.Fieldname {
-			}
-		case "XLFile":
-			switch reverseField.Fieldname {
-			}
-		case "XLRow":
-			switch reverseField.Fieldname {
-			}
-		case "XLSheet":
-			switch reverseField.Fieldname {
-			}
 		}
 
 	case *models.XLCell:
-		tmp := GetInstanceDBFromInstance[models.XLCell, XLCellDB](
-			stage, backRepo, inst,
-		)
-		_ = tmp
 		switch reverseField.GongstructName {
 		// insertion point
-		case "DisplaySelection":
-			switch reverseField.Fieldname {
-			}
-		case "XLCell":
-			switch reverseField.Fieldname {
-			}
-		case "XLFile":
-			switch reverseField.Fieldname {
-			}
 		case "XLRow":
 			switch reverseField.Fieldname {
 			case "Cells":
@@ -218,48 +103,13 @@ func GetReverseFieldOwner[T models.Gongstruct](
 		}
 
 	case *models.XLFile:
-		tmp := GetInstanceDBFromInstance[models.XLFile, XLFileDB](
-			stage, backRepo, inst,
-		)
-		_ = tmp
 		switch reverseField.GongstructName {
 		// insertion point
-		case "DisplaySelection":
-			switch reverseField.Fieldname {
-			}
-		case "XLCell":
-			switch reverseField.Fieldname {
-			}
-		case "XLFile":
-			switch reverseField.Fieldname {
-			}
-		case "XLRow":
-			switch reverseField.Fieldname {
-			}
-		case "XLSheet":
-			switch reverseField.Fieldname {
-			}
 		}
 
 	case *models.XLRow:
-		tmp := GetInstanceDBFromInstance[models.XLRow, XLRowDB](
-			stage, backRepo, inst,
-		)
-		_ = tmp
 		switch reverseField.GongstructName {
 		// insertion point
-		case "DisplaySelection":
-			switch reverseField.Fieldname {
-			}
-		case "XLCell":
-			switch reverseField.Fieldname {
-			}
-		case "XLFile":
-			switch reverseField.Fieldname {
-			}
-		case "XLRow":
-			switch reverseField.Fieldname {
-			}
 		case "XLSheet":
 			switch reverseField.Fieldname {
 			case "Rows":
@@ -268,28 +118,12 @@ func GetReverseFieldOwner[T models.Gongstruct](
 		}
 
 	case *models.XLSheet:
-		tmp := GetInstanceDBFromInstance[models.XLSheet, XLSheetDB](
-			stage, backRepo, inst,
-		)
-		_ = tmp
 		switch reverseField.GongstructName {
 		// insertion point
-		case "DisplaySelection":
-			switch reverseField.Fieldname {
-			}
-		case "XLCell":
-			switch reverseField.Fieldname {
-			}
 		case "XLFile":
 			switch reverseField.Fieldname {
 			case "Sheets":
 				res = stage.XLFile_Sheets_reverseMap[inst]
-			}
-		case "XLRow":
-			switch reverseField.Fieldname {
-			}
-		case "XLSheet":
-			switch reverseField.Fieldname {
 			}
 		}
 
