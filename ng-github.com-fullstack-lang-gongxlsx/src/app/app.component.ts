@@ -2,29 +2,55 @@ import { Component, OnInit } from '@angular/core';
 
 import { Observable, combineLatest, timer } from 'rxjs'
 
-import * as gongdoc from 'gongdoc'
-import * as gongxlsx from 'gongxlsx'
+// for angular & angular material
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
-import { GongdocModule } from 'gongdoc'
-import { GongdocspecificModule } from 'gongdocspecific'
+import { AngularSplitModule } from 'angular-split';
 
-import { GongtreeModule } from 'gongtree'
-import { GongtreespecificModule } from 'gongtreespecific'
+import * as gongxlsx from '../../projects/gongxlsx/src/public-api'
 
-import { GongtableModule } from 'gongtable'
-import { GongtablespecificModule } from 'gongtablespecific'
+import { GongxlsxspecificComponent } from '../../projects/gongxlsxspecific/src/public-api'
+
+import { TreeComponent } from '@vendored_components/github.com/fullstack-lang/gongtree/ng-github.com-fullstack-lang-gongtree/projects/gongtreespecific/src/public-api'
+import { MaterialTableComponent } from '@vendored_components/github.com/fullstack-lang/gongtable/ng-github.com-fullstack-lang-gongtable/projects/gongtablespecific/src/lib/material-table/material-table.component';
+import { MaterialFormComponent } from '@vendored_components/github.com/fullstack-lang/gongtable/ng-github.com-fullstack-lang-gongtable/projects/gongtablespecific/src/lib/material-form/material-form.component';
+import * as gongtable from '@vendored_components/github.com/fullstack-lang/gongtable/ng-github.com-fullstack-lang-gongtable/projects/gongtable/src/public-api';
+import { PanelComponent } from '@vendored_components/github.com/fullstack-lang/gongdoc/ng-github.com-fullstack-lang-gongdoc/projects/gongdocspecific/src/public-api'
+import { GongsvgDiagrammingComponent } from '@vendored_components/github.com/fullstack-lang/gongsvg/ng-github.com-fullstack-lang-gongsvg/projects/gongsvgspecific/src/lib/gongsvg-diagramming/gongsvg-diagramming'
+import { DisplaysheetComponent } from "../../projects/gongxlsxspecific/src/lib/displaysheet/displaysheet.component";
+
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatRadioModule,
+    MatButtonModule,
+    MatIconModule,
+    AngularSplitModule,
+    TreeComponent,
+    MaterialTableComponent,
+    MaterialFormComponent,
+    PanelComponent,
+    GongxlsxspecificComponent,
+    DisplaysheetComponent
+],
+
   templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit {
 
-  xl_display = 'xl_display'
-  default = 'Gongxlsx Data/Model'
-  view = this.default
+  gongxlsx = 'Gongxlsx'
+  probe = 'Gongxlsx Data/Model'
+  view = this.gongxlsx
 
-  views: string[] = [this.xl_display, this.default];
+  views: string[] = [this.gongxlsx, this.probe];
 
   scrollStyle = {
     'overflow- x': 'auto',
@@ -32,7 +58,9 @@ export class AppComponent implements OnInit {
   }
 
   StackName = "gongxlsx"
-  StackType = "github.com/fullstack-lang/gongxlsx/go/models"
+  StackType = gongxlsx.StackType
+
+  TableExtraPathEnum = gongtable.TableExtraPathEnum
 
   constructor(
   ) {

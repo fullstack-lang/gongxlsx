@@ -23,40 +23,24 @@ import (
 
 // generated in order to avoid error in the package import
 // if there are no elements in the stage to marshall
-var ___dummy__Stage_{{databaseName}} models.StageStruct
-var ___dummy__Time_{{databaseName}} time.Time
+var _ time.Time
 
 // Injection point for meta package dummy declaration{{ImportPackageDummyDeclaration}}
 
-// currently, DocLink renaming is not enabled in gopls
-// the following map are devised to overcome this limitation
-// those maps and the processing code will be eleminated when
-// DocLink renaming will be enabled in gopls
-// [Corresponding Issue](https://github.com/golang/go/issues/57559)
-//
 // When parsed, those maps will help with the renaming process
-var map_DocLink_Identifier_{{databaseName}} map[string]any = map[string]any{
+var _ map[string]any = map[string]any{
 	// injection point for docLink to identifiers{{EntriesDocLinkStringDocLinkIdentifier}}
 }
 
-// init might be handy if one want to have the data embedded in the binary
-// but it has to properly reference the Injection gateway in the main package
-// func init() {
-// 	_ = __Dummy_time_variable
-// 	InjectionGateway["{{databaseName}}"] = {{databaseName}}Injection
-// }
-
-// {{databaseName}}Injection will stage objects of database "{{databaseName}}"
-func {{databaseName}}Injection(stage *models.StageStruct) {
+// function will stage objects
+func _(stage *models.StageStruct) {
 
 	// Declaration of instances to stage{{Identifiers}}
 
 	// Setup of values{{ValueInitializers}}
 
 	// Setup of pointers{{PointersInitializers}}
-}
-
-`
+}`
 
 const IdentifiersDecls = `
 	{{Identifier}} := (&models.{{GeneratedStructName}}{Name: ` + "`" + `{{GeneratedFieldNameValue}}` + "`" + `}).Stage(stage)`
@@ -107,7 +91,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 	decl := ""
 	_ = decl
 	setValueField := ""
-	_ = setValueField 
+	_ = setValueField
 
 	// insertion initialization of objects to stage
 	map_DisplaySelection_Identifiers := make(map[*DisplaySelection]string)
@@ -120,7 +104,9 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 	sort.Slice(displayselectionOrdered[:], func(i, j int) bool {
 		return displayselectionOrdered[i].Name < displayselectionOrdered[j].Name
 	})
-	identifiersDecl += "\n\n	// Declarations of staged instances of DisplaySelection"
+	if len(displayselectionOrdered) > 0 {
+		identifiersDecl += "\n"
+	}
 	for idx, displayselection := range displayselectionOrdered {
 
 		id = generatesIdentifier("DisplaySelection", idx, displayselection.Name)
@@ -132,7 +118,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 		decl = strings.ReplaceAll(decl, "{{GeneratedFieldNameValue}}", displayselection.Name)
 		identifiersDecl += decl
 
-		initializerStatements += "\n\n	// DisplaySelection values setup"
+		initializerStatements += "\n"
 		// Initialisation of values
 		setValueField = StringInitStatement
 		setValueField = strings.ReplaceAll(setValueField, "{{Identifier}}", id)
@@ -152,7 +138,9 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 	sort.Slice(xlcellOrdered[:], func(i, j int) bool {
 		return xlcellOrdered[i].Name < xlcellOrdered[j].Name
 	})
-	identifiersDecl += "\n\n	// Declarations of staged instances of XLCell"
+	if len(xlcellOrdered) > 0 {
+		identifiersDecl += "\n"
+	}
 	for idx, xlcell := range xlcellOrdered {
 
 		id = generatesIdentifier("XLCell", idx, xlcell.Name)
@@ -164,7 +152,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 		decl = strings.ReplaceAll(decl, "{{GeneratedFieldNameValue}}", xlcell.Name)
 		identifiersDecl += decl
 
-		initializerStatements += "\n\n	// XLCell values setup"
+		initializerStatements += "\n"
 		// Initialisation of values
 		setValueField = StringInitStatement
 		setValueField = strings.ReplaceAll(setValueField, "{{Identifier}}", id)
@@ -196,7 +184,9 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 	sort.Slice(xlfileOrdered[:], func(i, j int) bool {
 		return xlfileOrdered[i].Name < xlfileOrdered[j].Name
 	})
-	identifiersDecl += "\n\n	// Declarations of staged instances of XLFile"
+	if len(xlfileOrdered) > 0 {
+		identifiersDecl += "\n"
+	}
 	for idx, xlfile := range xlfileOrdered {
 
 		id = generatesIdentifier("XLFile", idx, xlfile.Name)
@@ -208,7 +198,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 		decl = strings.ReplaceAll(decl, "{{GeneratedFieldNameValue}}", xlfile.Name)
 		identifiersDecl += decl
 
-		initializerStatements += "\n\n	// XLFile values setup"
+		initializerStatements += "\n"
 		// Initialisation of values
 		setValueField = StringInitStatement
 		setValueField = strings.ReplaceAll(setValueField, "{{Identifier}}", id)
@@ -234,7 +224,9 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 	sort.Slice(xlrowOrdered[:], func(i, j int) bool {
 		return xlrowOrdered[i].Name < xlrowOrdered[j].Name
 	})
-	identifiersDecl += "\n\n	// Declarations of staged instances of XLRow"
+	if len(xlrowOrdered) > 0 {
+		identifiersDecl += "\n"
+	}
 	for idx, xlrow := range xlrowOrdered {
 
 		id = generatesIdentifier("XLRow", idx, xlrow.Name)
@@ -246,7 +238,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 		decl = strings.ReplaceAll(decl, "{{GeneratedFieldNameValue}}", xlrow.Name)
 		identifiersDecl += decl
 
-		initializerStatements += "\n\n	// XLRow values setup"
+		initializerStatements += "\n"
 		// Initialisation of values
 		setValueField = StringInitStatement
 		setValueField = strings.ReplaceAll(setValueField, "{{Identifier}}", id)
@@ -272,7 +264,9 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 	sort.Slice(xlsheetOrdered[:], func(i, j int) bool {
 		return xlsheetOrdered[i].Name < xlsheetOrdered[j].Name
 	})
-	identifiersDecl += "\n\n	// Declarations of staged instances of XLSheet"
+	if len(xlsheetOrdered) > 0 {
+		identifiersDecl += "\n"
+	}
 	for idx, xlsheet := range xlsheetOrdered {
 
 		id = generatesIdentifier("XLSheet", idx, xlsheet.Name)
@@ -284,7 +278,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 		decl = strings.ReplaceAll(decl, "{{GeneratedFieldNameValue}}", xlsheet.Name)
 		identifiersDecl += decl
 
-		initializerStatements += "\n\n	// XLSheet values setup"
+		initializerStatements += "\n"
 		// Initialisation of values
 		setValueField = StringInitStatement
 		setValueField = strings.ReplaceAll(setValueField, "{{Identifier}}", id)
@@ -420,9 +414,7 @@ func (stage *StageStruct) Marshall(file *os.File, modelsPackageName, packageName
 			fmt.Sprintf("\n\t%s %s", stage.MetaPackageImportAlias, stage.MetaPackageImportPath))
 
 		res = strings.ReplaceAll(res, "{{ImportPackageDummyDeclaration}}",
-			fmt.Sprintf("\nvar ___dummy__%s_%s %s.StageStruct",
-				stage.MetaPackageImportAlias,
-				strings.ReplaceAll(filepath.Base(name), ".go", ""),
+			fmt.Sprintf("\nvar _ %s.StageStruct",
 				stage.MetaPackageImportAlias))
 
 		var entries string

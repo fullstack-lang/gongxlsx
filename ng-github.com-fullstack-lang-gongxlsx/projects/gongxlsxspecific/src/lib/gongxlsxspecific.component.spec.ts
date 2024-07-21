@@ -8,12 +8,10 @@ describe('GongxlsxspecificComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ GongxlsxspecificComponent ]
+      imports: [GongxlsxspecificComponent]
     })
     .compileComponents();
-  });
-
-  beforeEach(() => {
+    
     fixture = TestBed.createComponent(GongxlsxspecificComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

@@ -55,10 +55,10 @@ func (controller *Controller) GetXLFiles(c *gin.Context) {
 	// source slice
 	var xlfileDBs []orm.XLFileDB
 
-	values := c.Request.URL.Query()
+	_values := c.Request.URL.Query()
 	stackPath := ""
-	if len(values) == 1 {
-		value := values["GONG__StackPath"]
+	if len(_values) == 1 {
+		value := _values["GONG__StackPath"]
 		if len(value) == 1 {
 			stackPath = value[0]
 			// log.Println("GetXLFiles", "GONG__StackPath", stackPath)
@@ -118,10 +118,10 @@ func (controller *Controller) PostXLFile(c *gin.Context) {
 	mutexXLFile.Lock()
 	defer mutexXLFile.Unlock()
 
-	values := c.Request.URL.Query()
+	_values := c.Request.URL.Query()
 	stackPath := ""
-	if len(values) == 1 {
-		value := values["GONG__StackPath"]
+	if len(_values) == 1 {
+		value := _values["GONG__StackPath"]
 		if len(value) == 1 {
 			stackPath = value[0]
 			// log.Println("PostXLFiles", "GONG__StackPath", stackPath)
@@ -188,10 +188,10 @@ func (controller *Controller) PostXLFile(c *gin.Context) {
 //	200: xlfileDBResponse
 func (controller *Controller) GetXLFile(c *gin.Context) {
 
-	values := c.Request.URL.Query()
+	_values := c.Request.URL.Query()
 	stackPath := ""
-	if len(values) == 1 {
-		value := values["GONG__StackPath"]
+	if len(_values) == 1 {
+		value := _values["GONG__StackPath"]
 		if len(value) == 1 {
 			stackPath = value[0]
 			// log.Println("GetXLFile", "GONG__StackPath", stackPath)
@@ -237,10 +237,10 @@ func (controller *Controller) UpdateXLFile(c *gin.Context) {
 	mutexXLFile.Lock()
 	defer mutexXLFile.Unlock()
 
-	values := c.Request.URL.Query()
+	_values := c.Request.URL.Query()
 	stackPath := ""
-	if len(values) == 1 {
-		value := values["GONG__StackPath"]
+	if len(_values) == 1 {
+		value := _values["GONG__StackPath"]
 		if len(value) == 1 {
 			stackPath = value[0]
 			// log.Println("UpdateXLFile", "GONG__StackPath", stackPath)
@@ -326,10 +326,10 @@ func (controller *Controller) DeleteXLFile(c *gin.Context) {
 	mutexXLFile.Lock()
 	defer mutexXLFile.Unlock()
 
-	values := c.Request.URL.Query()
+	_values := c.Request.URL.Query()
 	stackPath := ""
-	if len(values) == 1 {
-		value := values["GONG__StackPath"]
+	if len(_values) == 1 {
+		value := _values["GONG__StackPath"]
 		if len(value) == 1 {
 			stackPath = value[0]
 			// log.Println("DeleteXLFile", "GONG__StackPath", stackPath)

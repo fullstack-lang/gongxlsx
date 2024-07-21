@@ -1,20 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'lib-gongxlsxspecific',
+  standalone: true,
+  imports: [],
   template: `
     <p>
       gongxlsxspecific works!
     </p>
   `,
-  styles: [
-  ]
+  styles: ``
 })
-export class GongxlsxspecificComponent implements OnInit {
-
-  constructor() { }
-
-  ngOnInit(): void {
-  }
+export class GongxlsxspecificComponent {
 
 }

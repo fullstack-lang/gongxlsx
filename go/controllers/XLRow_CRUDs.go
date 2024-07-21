@@ -55,10 +55,10 @@ func (controller *Controller) GetXLRows(c *gin.Context) {
 	// source slice
 	var xlrowDBs []orm.XLRowDB
 
-	values := c.Request.URL.Query()
+	_values := c.Request.URL.Query()
 	stackPath := ""
-	if len(values) == 1 {
-		value := values["GONG__StackPath"]
+	if len(_values) == 1 {
+		value := _values["GONG__StackPath"]
 		if len(value) == 1 {
 			stackPath = value[0]
 			// log.Println("GetXLRows", "GONG__StackPath", stackPath)
@@ -118,10 +118,10 @@ func (controller *Controller) PostXLRow(c *gin.Context) {
 	mutexXLRow.Lock()
 	defer mutexXLRow.Unlock()
 
-	values := c.Request.URL.Query()
+	_values := c.Request.URL.Query()
 	stackPath := ""
-	if len(values) == 1 {
-		value := values["GONG__StackPath"]
+	if len(_values) == 1 {
+		value := _values["GONG__StackPath"]
 		if len(value) == 1 {
 			stackPath = value[0]
 			// log.Println("PostXLRows", "GONG__StackPath", stackPath)
@@ -188,10 +188,10 @@ func (controller *Controller) PostXLRow(c *gin.Context) {
 //	200: xlrowDBResponse
 func (controller *Controller) GetXLRow(c *gin.Context) {
 
-	values := c.Request.URL.Query()
+	_values := c.Request.URL.Query()
 	stackPath := ""
-	if len(values) == 1 {
-		value := values["GONG__StackPath"]
+	if len(_values) == 1 {
+		value := _values["GONG__StackPath"]
 		if len(value) == 1 {
 			stackPath = value[0]
 			// log.Println("GetXLRow", "GONG__StackPath", stackPath)
@@ -237,10 +237,10 @@ func (controller *Controller) UpdateXLRow(c *gin.Context) {
 	mutexXLRow.Lock()
 	defer mutexXLRow.Unlock()
 
-	values := c.Request.URL.Query()
+	_values := c.Request.URL.Query()
 	stackPath := ""
-	if len(values) == 1 {
-		value := values["GONG__StackPath"]
+	if len(_values) == 1 {
+		value := _values["GONG__StackPath"]
 		if len(value) == 1 {
 			stackPath = value[0]
 			// log.Println("UpdateXLRow", "GONG__StackPath", stackPath)
@@ -326,10 +326,10 @@ func (controller *Controller) DeleteXLRow(c *gin.Context) {
 	mutexXLRow.Lock()
 	defer mutexXLRow.Unlock()
 
-	values := c.Request.URL.Query()
+	_values := c.Request.URL.Query()
 	stackPath := ""
-	if len(values) == 1 {
-		value := values["GONG__StackPath"]
+	if len(_values) == 1 {
+		value := _values["GONG__StackPath"]
 		if len(value) == 1 {
 			stackPath = value[0]
 			// log.Println("DeleteXLRow", "GONG__StackPath", stackPath)

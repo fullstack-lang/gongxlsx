@@ -1,6 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
 
-import * as gongxlsx from 'gongxlsx'
+import * as gongxlsx from '../../../../gongxlsx/src/public-api'
+
+import { MatRadioModule } from '@angular/material/radio';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { AngularSplitModule } from 'angular-split';
+import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
@@ -16,7 +23,15 @@ const json2Instance = (source: string, destinationConstructor: Constructor) =>
 @Component({
   selector: 'lib-displaysheet',
   templateUrl: './displaysheet.component.html',
-  styleUrls: ['./displaysheet.component.css']
+  standalone: true,
+  styleUrls: ['./displaysheet.component.css'],
+  imports: [
+    MatTableModule,
+    MatTabsModule,
+    MatRadioModule,
+    FormsModule,
+    CommonModule,
+  ]
 })
 export class DisplaysheetComponent implements OnInit {
 
