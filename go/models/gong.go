@@ -53,7 +53,6 @@ type StageStruct struct {
 	DisplaySelections_mapString map[string]*DisplaySelection
 
 	// insertion point for slice of pointers maps
-
 	OnAfterDisplaySelectionCreateCallback OnAfterCreateInterface[DisplaySelection]
 	OnAfterDisplaySelectionUpdateCallback OnAfterUpdateInterface[DisplaySelection]
 	OnAfterDisplaySelectionDeleteCallback OnAfterDeleteInterface[DisplaySelection]
@@ -63,7 +62,6 @@ type StageStruct struct {
 	XLCells_mapString map[string]*XLCell
 
 	// insertion point for slice of pointers maps
-
 	OnAfterXLCellCreateCallback OnAfterCreateInterface[XLCell]
 	OnAfterXLCellUpdateCallback OnAfterUpdateInterface[XLCell]
 	OnAfterXLCellDeleteCallback OnAfterDeleteInterface[XLCell]
@@ -96,6 +94,7 @@ type StageStruct struct {
 
 	// insertion point for slice of pointers maps
 	XLSheet_Rows_reverseMap map[*XLRow]*XLSheet
+
 	XLSheet_SheetCells_reverseMap map[*XLCell]*XLSheet
 
 	OnAfterXLSheetCreateCallback OnAfterCreateInterface[XLSheet]
@@ -619,8 +618,7 @@ func (stage *StageStruct) Unstage() { // insertion point for array nil
 // - navigation between staged instances by going backward association links between gongstruct
 // - full refactoring of Gongstruct identifiers / fields
 type Gongstruct interface {
-	// insertion point for generic types
-	DisplaySelection | XLCell | XLFile | XLRow | XLSheet
+
 }
 
 type GongtructBasicField interface {
@@ -632,11 +630,10 @@ type GongtructBasicField interface {
 // - navigation between staged instances by going backward association links between gongstruct
 // - full refactoring of Gongstruct identifiers / fields
 type PointerToGongstruct interface {
-	// insertion point for generic types
-	*DisplaySelection | *XLCell | *XLFile | *XLRow | *XLSheet
 	GetName() string
 	CommitVoid(*StageStruct)
 	UnstageVoid(stage *StageStruct)
+	comparable
 }
 
 func CompareGongstructByName[T PointerToGongstruct](a, b T) int {
@@ -660,25 +657,11 @@ func GetGongstrucsSorted[T PointerToGongstruct](stage *StageStruct) (sortedSlice
 }
 
 type GongstructSet interface {
-	map[any]any |
-		// insertion point for generic types
-		map[*DisplaySelection]any |
-		map[*XLCell]any |
-		map[*XLFile]any |
-		map[*XLRow]any |
-		map[*XLSheet]any |
-		map[*any]any // because go does not support an extra "|" at the end of type specifications
+	map[any]any
 }
 
 type GongstructMapString interface {
-	map[any]any |
-		// insertion point for generic types
-		map[string]*DisplaySelection |
-		map[string]*XLCell |
-		map[string]*XLFile |
-		map[string]*XLRow |
-		map[string]*XLSheet |
-		map[*any]any // because go does not support an extra "|" at the end of type specifications
+	map[any]any
 }
 
 // GongGetSet returns the set staged GongstructType instances
