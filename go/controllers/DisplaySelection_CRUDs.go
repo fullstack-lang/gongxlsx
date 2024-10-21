@@ -70,12 +70,12 @@ func (controller *Controller) GetDisplaySelections(c *gin.Context) {
 	}
 	db := backRepo.BackRepoDisplaySelection.GetDB()
 
-	query := db.Find(&displayselectionDBs)
-	if query.Error != nil {
+	_, err := db.Find(&displayselectionDBs)
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -151,12 +151,12 @@ func (controller *Controller) PostDisplaySelection(c *gin.Context) {
 	displayselectionDB.DisplaySelectionPointersEncoding = input.DisplaySelectionPointersEncoding
 	displayselectionDB.CopyBasicFieldsFromDisplaySelection_WOP(&input.DisplaySelection_WOP)
 
-	query := db.Create(&displayselectionDB)
-	if query.Error != nil {
+	_, err = db.Create(&displayselectionDB)
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -205,7 +205,7 @@ func (controller *Controller) GetDisplaySelection(c *gin.Context) {
 
 	// Get displayselectionDB in DB
 	var displayselectionDB orm.DisplaySelectionDB
-	if err := db.First(&displayselectionDB, c.Param("id")).Error; err != nil {
+	if _, err := db.First(&displayselectionDB, c.Param("id")); err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
 		returnError.Body.Message = err.Error()
@@ -264,13 +264,13 @@ func (controller *Controller) UpdateDisplaySelection(c *gin.Context) {
 	var displayselectionDB orm.DisplaySelectionDB
 
 	// fetch the displayselection
-	query := db.First(&displayselectionDB, c.Param("id"))
+	_, err := db.First(&displayselectionDB, c.Param("id"))
 
-	if query.Error != nil {
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -279,12 +279,13 @@ func (controller *Controller) UpdateDisplaySelection(c *gin.Context) {
 	displayselectionDB.CopyBasicFieldsFromDisplaySelection_WOP(&input.DisplaySelection_WOP)
 	displayselectionDB.DisplaySelectionPointersEncoding = input.DisplaySelectionPointersEncoding
 
-	query = db.Model(&displayselectionDB).Updates(displayselectionDB)
-	if query.Error != nil {
+	db, _ = db.Model(&displayselectionDB)
+	_, err = db.Updates(displayselectionDB)
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -343,7 +344,7 @@ func (controller *Controller) DeleteDisplaySelection(c *gin.Context) {
 
 	// Get model if exist
 	var displayselectionDB orm.DisplaySelectionDB
-	if err := db.First(&displayselectionDB, c.Param("id")).Error; err != nil {
+	if _, err := db.First(&displayselectionDB, c.Param("id")); err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
 		returnError.Body.Message = err.Error()
@@ -353,7 +354,8 @@ func (controller *Controller) DeleteDisplaySelection(c *gin.Context) {
 	}
 
 	// with gorm.Model field, default delete is a soft delete. Unscoped() force delete
-	db.Unscoped().Delete(&displayselectionDB)
+	db.Unscoped()
+	db.Delete(&displayselectionDB)
 
 	// get an instance (not staged) from DB instance, and call callback function
 	displayselectionDeleted := new(models.DisplaySelection)

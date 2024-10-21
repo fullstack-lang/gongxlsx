@@ -17,6 +17,7 @@ import (
 
 	"github.com/tealeg/xlsx/v3"
 
+	"github.com/fullstack-lang/gongxlsx/go/db"
 	"github.com/fullstack-lang/gongxlsx/go/models"
 )
 
@@ -76,7 +77,7 @@ type XLSheetDB struct {
 
 	// Declation for basic field xlsheetDB.NbRows
 	NbRows_Data sql.NullInt64
-	
+
 	// encoding of pointers
 	// for GORM serialization, it is necessary to embed to Pointer Encoding declaration
 	XLSheetPointersEncoding
@@ -128,7 +129,7 @@ type BackRepoXLSheetStruct struct {
 	// stores XLSheet according to their gorm ID
 	Map_XLSheetDBID_XLSheetPtr map[uint]*models.XLSheet
 
-	db *gorm.DB
+	db db.DBInterface
 
 	stage *models.StageStruct
 }
@@ -138,7 +139,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) GetStage() (stage *models.StageStr
 	return
 }
 
-func (backRepoXLSheet *BackRepoXLSheetStruct) GetDB() *gorm.DB {
+func (backRepoXLSheet *BackRepoXLSheetStruct) GetDB() db.DBInterface {
 	return backRepoXLSheet.db
 }
 
@@ -175,9 +176,10 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitDeleteInstance(id uint) (Err
 
 	// xlsheet is not staged anymore, remove xlsheetDB
 	xlsheetDB := backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[id]
-	query := backRepoXLSheet.db.Unscoped().Delete(&xlsheetDB)
-	if query.Error != nil {
-		log.Fatal(query.Error)
+	db, _ := backRepoXLSheet.db.Unscoped()
+	_, err := db.Delete(&xlsheetDB)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// update stores
@@ -201,9 +203,9 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseOneInstance(xlsheet *mo
 	var xlsheetDB XLSheetDB
 	xlsheetDB.CopyBasicFieldsFromXLSheet(xlsheet)
 
-	query := backRepoXLSheet.db.Create(&xlsheetDB)
-	if query.Error != nil {
-		log.Fatal(query.Error)
+	_, err := backRepoXLSheet.db.Create(&xlsheetDB)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// update stores
@@ -271,9 +273,9 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 				append(xlsheetDB.XLSheetPointersEncoding.SheetCells, int(xlcellAssocEnd_DB.ID))
 		}
 
-		query := backRepoXLSheet.db.Save(&xlsheetDB)
-		if query.Error != nil {
-			log.Fatalln(query.Error)
+		_, err := backRepoXLSheet.db.Save(&xlsheetDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 
 	} else {
@@ -292,9 +294,9 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 func (backRepoXLSheet *BackRepoXLSheetStruct) CheckoutPhaseOne() (Error error) {
 
 	xlsheetDBArray := make([]XLSheetDB, 0)
-	query := backRepoXLSheet.db.Find(&xlsheetDBArray)
-	if query.Error != nil {
-		return query.Error
+	_, err := backRepoXLSheet.db.Find(&xlsheetDBArray)
+	if err != nil {
+		return err
 	}
 
 	// list of instances to be removed
@@ -423,7 +425,7 @@ func (backRepo *BackRepoStruct) CheckoutXLSheet(xlsheet *models.XLSheet) {
 			var xlsheetDB XLSheetDB
 			xlsheetDB.ID = id
 
-			if err := backRepo.BackRepoXLSheet.db.First(&xlsheetDB, id).Error; err != nil {
+			if _, err := backRepo.BackRepoXLSheet.db.First(&xlsheetDB, id); err != nil {
 				log.Fatalln("CheckoutXLSheet : Problem with getting object with id:", id)
 			}
 			backRepo.BackRepoXLSheet.CheckoutPhaseOneInstance(&xlsheetDB)
@@ -606,9 +608,9 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) rowVisitorXLSheet(row *xlsx.Row) e
 
 		xlsheetDB_ID_atBackupTime := xlsheetDB.ID
 		xlsheetDB.ID = 0
-		query := backRepoXLSheet.db.Create(xlsheetDB)
-		if query.Error != nil {
-			log.Fatal(query.Error)
+		_, err := backRepoXLSheet.db.Create(xlsheetDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 		backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[xlsheetDB.ID] = xlsheetDB
 		BackRepoXLSheetid_atBckpTime_newID[xlsheetDB_ID_atBackupTime] = xlsheetDB.ID
@@ -643,9 +645,9 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseOne(dirPath string) {
 
 		xlsheetDB_ID_atBackupTime := xlsheetDB.ID
 		xlsheetDB.ID = 0
-		query := backRepoXLSheet.db.Create(xlsheetDB)
-		if query.Error != nil {
-			log.Fatal(query.Error)
+		_, err := backRepoXLSheet.db.Create(xlsheetDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 		backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[xlsheetDB.ID] = xlsheetDB
 		BackRepoXLSheetid_atBckpTime_newID[xlsheetDB_ID_atBackupTime] = xlsheetDB.ID
@@ -667,9 +669,10 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) RestorePhaseTwo() {
 
 		// insertion point for reindexing pointers encoding
 		// update databse with new index encoding
-		query := backRepoXLSheet.db.Model(xlsheetDB).Updates(*xlsheetDB)
-		if query.Error != nil {
-			log.Fatal(query.Error)
+		db, _ := backRepoXLSheet.db.Model(xlsheetDB)
+		_, err := db.Updates(*xlsheetDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 

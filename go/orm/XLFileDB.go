@@ -17,6 +17,7 @@ import (
 
 	"github.com/tealeg/xlsx/v3"
 
+	"github.com/fullstack-lang/gongxlsx/go/db"
 	"github.com/fullstack-lang/gongxlsx/go/models"
 )
 
@@ -67,7 +68,7 @@ type XLFileDB struct {
 
 	// Declation for basic field xlfileDB.NbSheets
 	NbSheets_Data sql.NullInt64
-	
+
 	// encoding of pointers
 	// for GORM serialization, it is necessary to embed to Pointer Encoding declaration
 	XLFilePointersEncoding
@@ -113,7 +114,7 @@ type BackRepoXLFileStruct struct {
 	// stores XLFile according to their gorm ID
 	Map_XLFileDBID_XLFilePtr map[uint]*models.XLFile
 
-	db *gorm.DB
+	db db.DBInterface
 
 	stage *models.StageStruct
 }
@@ -123,7 +124,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) GetStage() (stage *models.StageStruc
 	return
 }
 
-func (backRepoXLFile *BackRepoXLFileStruct) GetDB() *gorm.DB {
+func (backRepoXLFile *BackRepoXLFileStruct) GetDB() db.DBInterface {
 	return backRepoXLFile.db
 }
 
@@ -160,9 +161,10 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitDeleteInstance(id uint) (Error
 
 	// xlfile is not staged anymore, remove xlfileDB
 	xlfileDB := backRepoXLFile.Map_XLFileDBID_XLFileDB[id]
-	query := backRepoXLFile.db.Unscoped().Delete(&xlfileDB)
-	if query.Error != nil {
-		log.Fatal(query.Error)
+	db, _ := backRepoXLFile.db.Unscoped()
+	_, err := db.Delete(&xlfileDB)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// update stores
@@ -186,9 +188,9 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseOneInstance(xlfile *model
 	var xlfileDB XLFileDB
 	xlfileDB.CopyBasicFieldsFromXLFile(xlfile)
 
-	query := backRepoXLFile.db.Create(&xlfileDB)
-	if query.Error != nil {
-		log.Fatal(query.Error)
+	_, err := backRepoXLFile.db.Create(&xlfileDB)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// update stores
@@ -238,9 +240,9 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseTwoInstance(backRepo *Bac
 				append(xlfileDB.XLFilePointersEncoding.Sheets, int(xlsheetAssocEnd_DB.ID))
 		}
 
-		query := backRepoXLFile.db.Save(&xlfileDB)
-		if query.Error != nil {
-			log.Fatalln(query.Error)
+		_, err := backRepoXLFile.db.Save(&xlfileDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 
 	} else {
@@ -259,9 +261,9 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseTwoInstance(backRepo *Bac
 func (backRepoXLFile *BackRepoXLFileStruct) CheckoutPhaseOne() (Error error) {
 
 	xlfileDBArray := make([]XLFileDB, 0)
-	query := backRepoXLFile.db.Find(&xlfileDBArray)
-	if query.Error != nil {
-		return query.Error
+	_, err := backRepoXLFile.db.Find(&xlfileDBArray)
+	if err != nil {
+		return err
 	}
 
 	// list of instances to be removed
@@ -381,7 +383,7 @@ func (backRepo *BackRepoStruct) CheckoutXLFile(xlfile *models.XLFile) {
 			var xlfileDB XLFileDB
 			xlfileDB.ID = id
 
-			if err := backRepo.BackRepoXLFile.db.First(&xlfileDB, id).Error; err != nil {
+			if _, err := backRepo.BackRepoXLFile.db.First(&xlfileDB, id); err != nil {
 				log.Fatalln("CheckoutXLFile : Problem with getting object with id:", id)
 			}
 			backRepo.BackRepoXLFile.CheckoutPhaseOneInstance(&xlfileDB)
@@ -540,9 +542,9 @@ func (backRepoXLFile *BackRepoXLFileStruct) rowVisitorXLFile(row *xlsx.Row) erro
 
 		xlfileDB_ID_atBackupTime := xlfileDB.ID
 		xlfileDB.ID = 0
-		query := backRepoXLFile.db.Create(xlfileDB)
-		if query.Error != nil {
-			log.Fatal(query.Error)
+		_, err := backRepoXLFile.db.Create(xlfileDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 		backRepoXLFile.Map_XLFileDBID_XLFileDB[xlfileDB.ID] = xlfileDB
 		BackRepoXLFileid_atBckpTime_newID[xlfileDB_ID_atBackupTime] = xlfileDB.ID
@@ -577,9 +579,9 @@ func (backRepoXLFile *BackRepoXLFileStruct) RestorePhaseOne(dirPath string) {
 
 		xlfileDB_ID_atBackupTime := xlfileDB.ID
 		xlfileDB.ID = 0
-		query := backRepoXLFile.db.Create(xlfileDB)
-		if query.Error != nil {
-			log.Fatal(query.Error)
+		_, err := backRepoXLFile.db.Create(xlfileDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 		backRepoXLFile.Map_XLFileDBID_XLFileDB[xlfileDB.ID] = xlfileDB
 		BackRepoXLFileid_atBckpTime_newID[xlfileDB_ID_atBackupTime] = xlfileDB.ID
@@ -601,9 +603,10 @@ func (backRepoXLFile *BackRepoXLFileStruct) RestorePhaseTwo() {
 
 		// insertion point for reindexing pointers encoding
 		// update databse with new index encoding
-		query := backRepoXLFile.db.Model(xlfileDB).Updates(*xlfileDB)
-		if query.Error != nil {
-			log.Fatal(query.Error)
+		db, _ := backRepoXLFile.db.Model(xlfileDB)
+		_, err := db.Updates(*xlfileDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 

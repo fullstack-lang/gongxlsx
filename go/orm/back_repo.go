@@ -11,12 +11,9 @@ import (
 	"sync"
 
 	"github.com/fullstack-lang/gongxlsx/go/models"
+	"github.com/fullstack-lang/gongxlsx/go/orm/dbgorm"
 
 	"github.com/tealeg/xlsx/v3"
-
-	"github.com/glebarez/sqlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 )
 
 // BackRepoStruct supports callback functions
@@ -45,44 +42,13 @@ type BackRepoStruct struct {
 
 func NewBackRepo(stage *models.StageStruct, filename string) (backRepo *BackRepoStruct) {
 
-	// adjust naming strategy to the stack
-	gormConfig := &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			TablePrefix: "github_com_fullstack_lang_gong_test_go_", // table name prefix
-		},
-	}
-	db, err := gorm.Open(sqlite.Open(filename), gormConfig)
-
-	// since testsim is a multi threaded application. It is important to set up
-	// only one open connexion at a time
-	dbDB_inMemory, err := db.DB()
-	if err != nil {
-		panic("cannot access DB of db" + err.Error())
-	}
-	// it is mandatory to allow parallel access, otherwise, bizarre errors occurs
-	dbDB_inMemory.SetMaxOpenConns(1)
-
-	if err != nil {
-		panic("Failed to connect to database!")
-	}
-
-	// adjust naming strategy to the stack
-	db.Config.NamingStrategy = &schema.NamingStrategy{
-		TablePrefix: "github_com_fullstack_lang_gong_test_go_", // table name prefix
-	}
-
-	err = db.AutoMigrate( // insertion point for reference to structs
+	dbWrapper := dbgorm.NewDBWrapper(filename, "github_com_fullstack_lang_gongxlsx_go",
 		&DisplaySelectionDB{},
 		&XLCellDB{},
 		&XLFileDB{},
 		&XLRowDB{},
 		&XLSheetDB{},
 	)
-
-	if err != nil {
-		msg := err.Error()
-		panic("problem with migration " + msg + " on package github.com/fullstack-lang/gong/test/go")
-	}
 
 	backRepo = new(BackRepoStruct)
 
@@ -92,7 +58,7 @@ func NewBackRepo(stage *models.StageStruct, filename string) (backRepo *BackRepo
 		Map_DisplaySelectionDBID_DisplaySelectionDB:  make(map[uint]*DisplaySelectionDB, 0),
 		Map_DisplaySelectionPtr_DisplaySelectionDBID: make(map[*models.DisplaySelection]uint, 0),
 
-		db:    db,
+		db:    dbWrapper,
 		stage: stage,
 	}
 	backRepo.BackRepoXLCell = BackRepoXLCellStruct{
@@ -100,7 +66,7 @@ func NewBackRepo(stage *models.StageStruct, filename string) (backRepo *BackRepo
 		Map_XLCellDBID_XLCellDB:  make(map[uint]*XLCellDB, 0),
 		Map_XLCellPtr_XLCellDBID: make(map[*models.XLCell]uint, 0),
 
-		db:    db,
+		db:    dbWrapper,
 		stage: stage,
 	}
 	backRepo.BackRepoXLFile = BackRepoXLFileStruct{
@@ -108,7 +74,7 @@ func NewBackRepo(stage *models.StageStruct, filename string) (backRepo *BackRepo
 		Map_XLFileDBID_XLFileDB:  make(map[uint]*XLFileDB, 0),
 		Map_XLFilePtr_XLFileDBID: make(map[*models.XLFile]uint, 0),
 
-		db:    db,
+		db:    dbWrapper,
 		stage: stage,
 	}
 	backRepo.BackRepoXLRow = BackRepoXLRowStruct{
@@ -116,7 +82,7 @@ func NewBackRepo(stage *models.StageStruct, filename string) (backRepo *BackRepo
 		Map_XLRowDBID_XLRowDB:  make(map[uint]*XLRowDB, 0),
 		Map_XLRowPtr_XLRowDBID: make(map[*models.XLRow]uint, 0),
 
-		db:    db,
+		db:    dbWrapper,
 		stage: stage,
 	}
 	backRepo.BackRepoXLSheet = BackRepoXLSheetStruct{
@@ -124,7 +90,7 @@ func NewBackRepo(stage *models.StageStruct, filename string) (backRepo *BackRepo
 		Map_XLSheetDBID_XLSheetDB:  make(map[uint]*XLSheetDB, 0),
 		Map_XLSheetPtr_XLSheetDBID: make(map[*models.XLSheet]uint, 0),
 
-		db:    db,
+		db:    dbWrapper,
 		stage: stage,
 	}
 
@@ -157,7 +123,7 @@ func (backRepo *BackRepoStruct) IncrementCommitFromBackNb() uint {
 	backRepo.CommitFromBackNb = backRepo.CommitFromBackNb + 1
 
 	backRepo.broadcastNbCommitToBack()
-	
+
 	return backRepo.CommitFromBackNb
 }
 

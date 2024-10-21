@@ -17,6 +17,7 @@ import (
 
 	"github.com/tealeg/xlsx/v3"
 
+	"github.com/fullstack-lang/gongxlsx/go/db"
 	"github.com/fullstack-lang/gongxlsx/go/models"
 )
 
@@ -67,7 +68,7 @@ type XLCellDB struct {
 
 	// Declation for basic field xlcellDB.Y
 	Y_Data sql.NullInt64
-	
+
 	// encoding of pointers
 	// for GORM serialization, it is necessary to embed to Pointer Encoding declaration
 	XLCellPointersEncoding
@@ -116,7 +117,7 @@ type BackRepoXLCellStruct struct {
 	// stores XLCell according to their gorm ID
 	Map_XLCellDBID_XLCellPtr map[uint]*models.XLCell
 
-	db *gorm.DB
+	db db.DBInterface
 
 	stage *models.StageStruct
 }
@@ -126,7 +127,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) GetStage() (stage *models.StageStruc
 	return
 }
 
-func (backRepoXLCell *BackRepoXLCellStruct) GetDB() *gorm.DB {
+func (backRepoXLCell *BackRepoXLCellStruct) GetDB() db.DBInterface {
 	return backRepoXLCell.db
 }
 
@@ -163,9 +164,10 @@ func (backRepoXLCell *BackRepoXLCellStruct) CommitDeleteInstance(id uint) (Error
 
 	// xlcell is not staged anymore, remove xlcellDB
 	xlcellDB := backRepoXLCell.Map_XLCellDBID_XLCellDB[id]
-	query := backRepoXLCell.db.Unscoped().Delete(&xlcellDB)
-	if query.Error != nil {
-		log.Fatal(query.Error)
+	db, _ := backRepoXLCell.db.Unscoped()
+	_, err := db.Delete(&xlcellDB)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// update stores
@@ -189,9 +191,9 @@ func (backRepoXLCell *BackRepoXLCellStruct) CommitPhaseOneInstance(xlcell *model
 	var xlcellDB XLCellDB
 	xlcellDB.CopyBasicFieldsFromXLCell(xlcell)
 
-	query := backRepoXLCell.db.Create(&xlcellDB)
-	if query.Error != nil {
-		log.Fatal(query.Error)
+	_, err := backRepoXLCell.db.Create(&xlcellDB)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// update stores
@@ -223,9 +225,9 @@ func (backRepoXLCell *BackRepoXLCellStruct) CommitPhaseTwoInstance(backRepo *Bac
 		xlcellDB.CopyBasicFieldsFromXLCell(xlcell)
 
 		// insertion point for translating pointers encodings into actual pointers
-		query := backRepoXLCell.db.Save(&xlcellDB)
-		if query.Error != nil {
-			log.Fatalln(query.Error)
+		_, err := backRepoXLCell.db.Save(&xlcellDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 
 	} else {
@@ -244,9 +246,9 @@ func (backRepoXLCell *BackRepoXLCellStruct) CommitPhaseTwoInstance(backRepo *Bac
 func (backRepoXLCell *BackRepoXLCellStruct) CheckoutPhaseOne() (Error error) {
 
 	xlcellDBArray := make([]XLCellDB, 0)
-	query := backRepoXLCell.db.Find(&xlcellDBArray)
-	if query.Error != nil {
-		return query.Error
+	_, err := backRepoXLCell.db.Find(&xlcellDBArray)
+	if err != nil {
+		return err
 	}
 
 	// list of instances to be removed
@@ -357,7 +359,7 @@ func (backRepo *BackRepoStruct) CheckoutXLCell(xlcell *models.XLCell) {
 			var xlcellDB XLCellDB
 			xlcellDB.ID = id
 
-			if err := backRepo.BackRepoXLCell.db.First(&xlcellDB, id).Error; err != nil {
+			if _, err := backRepo.BackRepoXLCell.db.First(&xlcellDB, id); err != nil {
 				log.Fatalln("CheckoutXLCell : Problem with getting object with id:", id)
 			}
 			backRepo.BackRepoXLCell.CheckoutPhaseOneInstance(&xlcellDB)
@@ -528,9 +530,9 @@ func (backRepoXLCell *BackRepoXLCellStruct) rowVisitorXLCell(row *xlsx.Row) erro
 
 		xlcellDB_ID_atBackupTime := xlcellDB.ID
 		xlcellDB.ID = 0
-		query := backRepoXLCell.db.Create(xlcellDB)
-		if query.Error != nil {
-			log.Fatal(query.Error)
+		_, err := backRepoXLCell.db.Create(xlcellDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 		backRepoXLCell.Map_XLCellDBID_XLCellDB[xlcellDB.ID] = xlcellDB
 		BackRepoXLCellid_atBckpTime_newID[xlcellDB_ID_atBackupTime] = xlcellDB.ID
@@ -565,9 +567,9 @@ func (backRepoXLCell *BackRepoXLCellStruct) RestorePhaseOne(dirPath string) {
 
 		xlcellDB_ID_atBackupTime := xlcellDB.ID
 		xlcellDB.ID = 0
-		query := backRepoXLCell.db.Create(xlcellDB)
-		if query.Error != nil {
-			log.Fatal(query.Error)
+		_, err := backRepoXLCell.db.Create(xlcellDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 		backRepoXLCell.Map_XLCellDBID_XLCellDB[xlcellDB.ID] = xlcellDB
 		BackRepoXLCellid_atBckpTime_newID[xlcellDB_ID_atBackupTime] = xlcellDB.ID
@@ -589,9 +591,10 @@ func (backRepoXLCell *BackRepoXLCellStruct) RestorePhaseTwo() {
 
 		// insertion point for reindexing pointers encoding
 		// update databse with new index encoding
-		query := backRepoXLCell.db.Model(xlcellDB).Updates(*xlcellDB)
-		if query.Error != nil {
-			log.Fatal(query.Error)
+		db, _ := backRepoXLCell.db.Model(xlcellDB)
+		_, err := db.Updates(*xlcellDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 

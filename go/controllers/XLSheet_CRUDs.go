@@ -70,12 +70,12 @@ func (controller *Controller) GetXLSheets(c *gin.Context) {
 	}
 	db := backRepo.BackRepoXLSheet.GetDB()
 
-	query := db.Find(&xlsheetDBs)
-	if query.Error != nil {
+	_, err := db.Find(&xlsheetDBs)
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -151,12 +151,12 @@ func (controller *Controller) PostXLSheet(c *gin.Context) {
 	xlsheetDB.XLSheetPointersEncoding = input.XLSheetPointersEncoding
 	xlsheetDB.CopyBasicFieldsFromXLSheet_WOP(&input.XLSheet_WOP)
 
-	query := db.Create(&xlsheetDB)
-	if query.Error != nil {
+	_, err = db.Create(&xlsheetDB)
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -205,7 +205,7 @@ func (controller *Controller) GetXLSheet(c *gin.Context) {
 
 	// Get xlsheetDB in DB
 	var xlsheetDB orm.XLSheetDB
-	if err := db.First(&xlsheetDB, c.Param("id")).Error; err != nil {
+	if _, err := db.First(&xlsheetDB, c.Param("id")); err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
 		returnError.Body.Message = err.Error()
@@ -264,13 +264,13 @@ func (controller *Controller) UpdateXLSheet(c *gin.Context) {
 	var xlsheetDB orm.XLSheetDB
 
 	// fetch the xlsheet
-	query := db.First(&xlsheetDB, c.Param("id"))
+	_, err := db.First(&xlsheetDB, c.Param("id"))
 
-	if query.Error != nil {
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -279,12 +279,13 @@ func (controller *Controller) UpdateXLSheet(c *gin.Context) {
 	xlsheetDB.CopyBasicFieldsFromXLSheet_WOP(&input.XLSheet_WOP)
 	xlsheetDB.XLSheetPointersEncoding = input.XLSheetPointersEncoding
 
-	query = db.Model(&xlsheetDB).Updates(xlsheetDB)
-	if query.Error != nil {
+	db, _ = db.Model(&xlsheetDB)
+	_, err = db.Updates(xlsheetDB)
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -343,7 +344,7 @@ func (controller *Controller) DeleteXLSheet(c *gin.Context) {
 
 	// Get model if exist
 	var xlsheetDB orm.XLSheetDB
-	if err := db.First(&xlsheetDB, c.Param("id")).Error; err != nil {
+	if _, err := db.First(&xlsheetDB, c.Param("id")); err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
 		returnError.Body.Message = err.Error()
@@ -353,7 +354,8 @@ func (controller *Controller) DeleteXLSheet(c *gin.Context) {
 	}
 
 	// with gorm.Model field, default delete is a soft delete. Unscoped() force delete
-	db.Unscoped().Delete(&xlsheetDB)
+	db.Unscoped()
+	db.Delete(&xlsheetDB)
 
 	// get an instance (not staged) from DB instance, and call callback function
 	xlsheetDeleted := new(models.XLSheet)

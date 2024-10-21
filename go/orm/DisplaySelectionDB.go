@@ -17,6 +17,7 @@ import (
 
 	"github.com/tealeg/xlsx/v3"
 
+	"github.com/fullstack-lang/gongxlsx/go/db"
 	"github.com/fullstack-lang/gongxlsx/go/models"
 )
 
@@ -69,7 +70,7 @@ type DisplaySelectionDB struct {
 
 	// Declation for basic field displayselectionDB.Name
 	Name_Data sql.NullString
-	
+
 	// encoding of pointers
 	// for GORM serialization, it is necessary to embed to Pointer Encoding declaration
 	DisplaySelectionPointersEncoding
@@ -112,7 +113,7 @@ type BackRepoDisplaySelectionStruct struct {
 	// stores DisplaySelection according to their gorm ID
 	Map_DisplaySelectionDBID_DisplaySelectionPtr map[uint]*models.DisplaySelection
 
-	db *gorm.DB
+	db db.DBInterface
 
 	stage *models.StageStruct
 }
@@ -122,7 +123,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) GetStage() (stag
 	return
 }
 
-func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) GetDB() *gorm.DB {
+func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) GetDB() db.DBInterface {
 	return backRepoDisplaySelection.db
 }
 
@@ -159,9 +160,10 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitDeleteInst
 
 	// displayselection is not staged anymore, remove displayselectionDB
 	displayselectionDB := backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[id]
-	query := backRepoDisplaySelection.db.Unscoped().Delete(&displayselectionDB)
-	if query.Error != nil {
-		log.Fatal(query.Error)
+	db, _ := backRepoDisplaySelection.db.Unscoped()
+	_, err := db.Delete(&displayselectionDB)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// update stores
@@ -185,9 +187,9 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseOneIn
 	var displayselectionDB DisplaySelectionDB
 	displayselectionDB.CopyBasicFieldsFromDisplaySelection(displayselection)
 
-	query := backRepoDisplaySelection.db.Create(&displayselectionDB)
-	if query.Error != nil {
-		log.Fatal(query.Error)
+	_, err := backRepoDisplaySelection.db.Create(&displayselectionDB)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// update stores
@@ -243,9 +245,9 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseTwoIn
 			displayselectionDB.XLSheetID.Valid = true
 		}
 
-		query := backRepoDisplaySelection.db.Save(&displayselectionDB)
-		if query.Error != nil {
-			log.Fatalln(query.Error)
+		_, err := backRepoDisplaySelection.db.Save(&displayselectionDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 
 	} else {
@@ -264,9 +266,9 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseTwoIn
 func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseOne() (Error error) {
 
 	displayselectionDBArray := make([]DisplaySelectionDB, 0)
-	query := backRepoDisplaySelection.db.Find(&displayselectionDBArray)
-	if query.Error != nil {
-		return query.Error
+	_, err := backRepoDisplaySelection.db.Find(&displayselectionDBArray)
+	if err != nil {
+		return err
 	}
 
 	// list of instances to be removed
@@ -387,7 +389,7 @@ func (backRepo *BackRepoStruct) CheckoutDisplaySelection(displayselection *model
 			var displayselectionDB DisplaySelectionDB
 			displayselectionDB.ID = id
 
-			if err := backRepo.BackRepoDisplaySelection.db.First(&displayselectionDB, id).Error; err != nil {
+			if _, err := backRepo.BackRepoDisplaySelection.db.First(&displayselectionDB, id); err != nil {
 				log.Fatalln("CheckoutDisplaySelection : Problem with getting object with id:", id)
 			}
 			backRepo.BackRepoDisplaySelection.CheckoutPhaseOneInstance(&displayselectionDB)
@@ -534,9 +536,9 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) rowVisitorDispla
 
 		displayselectionDB_ID_atBackupTime := displayselectionDB.ID
 		displayselectionDB.ID = 0
-		query := backRepoDisplaySelection.db.Create(displayselectionDB)
-		if query.Error != nil {
-			log.Fatal(query.Error)
+		_, err := backRepoDisplaySelection.db.Create(displayselectionDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 		backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[displayselectionDB.ID] = displayselectionDB
 		BackRepoDisplaySelectionid_atBckpTime_newID[displayselectionDB_ID_atBackupTime] = displayselectionDB.ID
@@ -571,9 +573,9 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) RestorePhaseOne(
 
 		displayselectionDB_ID_atBackupTime := displayselectionDB.ID
 		displayselectionDB.ID = 0
-		query := backRepoDisplaySelection.db.Create(displayselectionDB)
-		if query.Error != nil {
-			log.Fatal(query.Error)
+		_, err := backRepoDisplaySelection.db.Create(displayselectionDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 		backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[displayselectionDB.ID] = displayselectionDB
 		BackRepoDisplaySelectionid_atBckpTime_newID[displayselectionDB_ID_atBackupTime] = displayselectionDB.ID
@@ -607,9 +609,10 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) RestorePhaseTwo(
 		}
 
 		// update databse with new index encoding
-		query := backRepoDisplaySelection.db.Model(displayselectionDB).Updates(*displayselectionDB)
-		if query.Error != nil {
-			log.Fatal(query.Error)
+		db, _ := backRepoDisplaySelection.db.Model(displayselectionDB)
+		_, err := db.Updates(*displayselectionDB)
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 

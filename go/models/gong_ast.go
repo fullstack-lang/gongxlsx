@@ -492,23 +492,33 @@ func UnmarshallGongstructStaging(stage *StageStruct, cmap *ast.CommentMap, assig
 									switch gongstructName {
 									// insertion point for identifiers
 									case "DisplaySelection":
-										instanceDisplaySelection := (&DisplaySelection{Name: instanceName}).Stage(stage)
+										instanceDisplaySelection := new(DisplaySelection)
+										instanceDisplaySelection.Name = instanceName
+										instanceDisplaySelection.Stage(stage)
 										instance = any(instanceDisplaySelection)
 										__gong__map_DisplaySelection[identifier] = instanceDisplaySelection
 									case "XLCell":
-										instanceXLCell := (&XLCell{Name: instanceName}).Stage(stage)
+										instanceXLCell := new(XLCell)
+										instanceXLCell.Name = instanceName
+										instanceXLCell.Stage(stage)
 										instance = any(instanceXLCell)
 										__gong__map_XLCell[identifier] = instanceXLCell
 									case "XLFile":
-										instanceXLFile := (&XLFile{Name: instanceName}).Stage(stage)
+										instanceXLFile := new(XLFile)
+										instanceXLFile.Name = instanceName
+										instanceXLFile.Stage(stage)
 										instance = any(instanceXLFile)
 										__gong__map_XLFile[identifier] = instanceXLFile
 									case "XLRow":
-										instanceXLRow := (&XLRow{Name: instanceName}).Stage(stage)
+										instanceXLRow := new(XLRow)
+										instanceXLRow.Name = instanceName
+										instanceXLRow.Stage(stage)
 										instance = any(instanceXLRow)
 										__gong__map_XLRow[identifier] = instanceXLRow
 									case "XLSheet":
-										instanceXLSheet := (&XLSheet{Name: instanceName}).Stage(stage)
+										instanceXLSheet := new(XLSheet)
+										instanceXLSheet.Name = instanceName
+										instanceXLSheet.Stage(stage)
 										instance = any(instanceXLSheet)
 										__gong__map_XLSheet[identifier] = instanceXLSheet
 									}

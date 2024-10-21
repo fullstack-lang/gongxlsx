@@ -70,12 +70,12 @@ func (controller *Controller) GetXLFiles(c *gin.Context) {
 	}
 	db := backRepo.BackRepoXLFile.GetDB()
 
-	query := db.Find(&xlfileDBs)
-	if query.Error != nil {
+	_, err := db.Find(&xlfileDBs)
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -151,12 +151,12 @@ func (controller *Controller) PostXLFile(c *gin.Context) {
 	xlfileDB.XLFilePointersEncoding = input.XLFilePointersEncoding
 	xlfileDB.CopyBasicFieldsFromXLFile_WOP(&input.XLFile_WOP)
 
-	query := db.Create(&xlfileDB)
-	if query.Error != nil {
+	_, err = db.Create(&xlfileDB)
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -205,7 +205,7 @@ func (controller *Controller) GetXLFile(c *gin.Context) {
 
 	// Get xlfileDB in DB
 	var xlfileDB orm.XLFileDB
-	if err := db.First(&xlfileDB, c.Param("id")).Error; err != nil {
+	if _, err := db.First(&xlfileDB, c.Param("id")); err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
 		returnError.Body.Message = err.Error()
@@ -264,13 +264,13 @@ func (controller *Controller) UpdateXLFile(c *gin.Context) {
 	var xlfileDB orm.XLFileDB
 
 	// fetch the xlfile
-	query := db.First(&xlfileDB, c.Param("id"))
+	_, err := db.First(&xlfileDB, c.Param("id"))
 
-	if query.Error != nil {
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -279,12 +279,13 @@ func (controller *Controller) UpdateXLFile(c *gin.Context) {
 	xlfileDB.CopyBasicFieldsFromXLFile_WOP(&input.XLFile_WOP)
 	xlfileDB.XLFilePointersEncoding = input.XLFilePointersEncoding
 
-	query = db.Model(&xlfileDB).Updates(xlfileDB)
-	if query.Error != nil {
+	db, _ = db.Model(&xlfileDB)
+	_, err = db.Updates(xlfileDB)
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -343,7 +344,7 @@ func (controller *Controller) DeleteXLFile(c *gin.Context) {
 
 	// Get model if exist
 	var xlfileDB orm.XLFileDB
-	if err := db.First(&xlfileDB, c.Param("id")).Error; err != nil {
+	if _, err := db.First(&xlfileDB, c.Param("id")); err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
 		returnError.Body.Message = err.Error()
@@ -353,7 +354,8 @@ func (controller *Controller) DeleteXLFile(c *gin.Context) {
 	}
 
 	// with gorm.Model field, default delete is a soft delete. Unscoped() force delete
-	db.Unscoped().Delete(&xlfileDB)
+	db.Unscoped()
+	db.Delete(&xlfileDB)
 
 	// get an instance (not staged) from DB instance, and call callback function
 	xlfileDeleted := new(models.XLFile)

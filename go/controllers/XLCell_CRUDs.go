@@ -70,12 +70,12 @@ func (controller *Controller) GetXLCells(c *gin.Context) {
 	}
 	db := backRepo.BackRepoXLCell.GetDB()
 
-	query := db.Find(&xlcellDBs)
-	if query.Error != nil {
+	_, err := db.Find(&xlcellDBs)
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -151,12 +151,12 @@ func (controller *Controller) PostXLCell(c *gin.Context) {
 	xlcellDB.XLCellPointersEncoding = input.XLCellPointersEncoding
 	xlcellDB.CopyBasicFieldsFromXLCell_WOP(&input.XLCell_WOP)
 
-	query := db.Create(&xlcellDB)
-	if query.Error != nil {
+	_, err = db.Create(&xlcellDB)
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -205,7 +205,7 @@ func (controller *Controller) GetXLCell(c *gin.Context) {
 
 	// Get xlcellDB in DB
 	var xlcellDB orm.XLCellDB
-	if err := db.First(&xlcellDB, c.Param("id")).Error; err != nil {
+	if _, err := db.First(&xlcellDB, c.Param("id")); err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
 		returnError.Body.Message = err.Error()
@@ -264,13 +264,13 @@ func (controller *Controller) UpdateXLCell(c *gin.Context) {
 	var xlcellDB orm.XLCellDB
 
 	// fetch the xlcell
-	query := db.First(&xlcellDB, c.Param("id"))
+	_, err := db.First(&xlcellDB, c.Param("id"))
 
-	if query.Error != nil {
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -279,12 +279,13 @@ func (controller *Controller) UpdateXLCell(c *gin.Context) {
 	xlcellDB.CopyBasicFieldsFromXLCell_WOP(&input.XLCell_WOP)
 	xlcellDB.XLCellPointersEncoding = input.XLCellPointersEncoding
 
-	query = db.Model(&xlcellDB).Updates(xlcellDB)
-	if query.Error != nil {
+	db, _ = db.Model(&xlcellDB)
+	_, err = db.Updates(xlcellDB)
+	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
-		returnError.Body.Message = query.Error.Error()
-		log.Println(query.Error.Error())
+		returnError.Body.Message = err.Error()
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, returnError.Body)
 		return
 	}
@@ -343,7 +344,7 @@ func (controller *Controller) DeleteXLCell(c *gin.Context) {
 
 	// Get model if exist
 	var xlcellDB orm.XLCellDB
-	if err := db.First(&xlcellDB, c.Param("id")).Error; err != nil {
+	if _, err := db.First(&xlcellDB, c.Param("id")); err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
 		returnError.Body.Message = err.Error()
@@ -353,7 +354,8 @@ func (controller *Controller) DeleteXLCell(c *gin.Context) {
 	}
 
 	// with gorm.Model field, default delete is a soft delete. Unscoped() force delete
-	db.Unscoped().Delete(&xlcellDB)
+	db.Unscoped()
+	db.Delete(&xlcellDB)
 
 	// get an instance (not staged) from DB instance, and call callback function
 	xlcellDeleted := new(models.XLCell)
