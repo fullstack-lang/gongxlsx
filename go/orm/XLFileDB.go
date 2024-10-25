@@ -162,7 +162,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitDeleteInstance(id uint) (Error
 	// xlfile is not staged anymore, remove xlfileDB
 	xlfileDB := backRepoXLFile.Map_XLFileDBID_XLFileDB[id]
 	db, _ := backRepoXLFile.db.Unscoped()
-	_, err := db.Delete(&xlfileDB)
+	_, err := db.Delete(xlfileDB)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -240,7 +240,7 @@ func (backRepoXLFile *BackRepoXLFileStruct) CommitPhaseTwoInstance(backRepo *Bac
 				append(xlfileDB.XLFilePointersEncoding.Sheets, int(xlsheetAssocEnd_DB.ID))
 		}
 
-		_, err := backRepoXLFile.db.Save(&xlfileDB)
+		_, err := backRepoXLFile.db.Save(xlfileDB)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -165,7 +165,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) CommitDeleteInstance(id uint) (Error
 	// xlcell is not staged anymore, remove xlcellDB
 	xlcellDB := backRepoXLCell.Map_XLCellDBID_XLCellDB[id]
 	db, _ := backRepoXLCell.db.Unscoped()
-	_, err := db.Delete(&xlcellDB)
+	_, err := db.Delete(xlcellDB)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -225,7 +225,7 @@ func (backRepoXLCell *BackRepoXLCellStruct) CommitPhaseTwoInstance(backRepo *Bac
 		xlcellDB.CopyBasicFieldsFromXLCell(xlcell)
 
 		// insertion point for translating pointers encodings into actual pointers
-		_, err := backRepoXLCell.db.Save(&xlcellDB)
+		_, err := backRepoXLCell.db.Save(xlcellDB)
 		if err != nil {
 			log.Fatal(err)
 		}

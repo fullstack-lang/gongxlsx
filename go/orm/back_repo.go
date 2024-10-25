@@ -10,8 +10,12 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/fullstack-lang/gongxlsx/go/db"
 	"github.com/fullstack-lang/gongxlsx/go/models"
+
+	/* THIS IS REMOVED BY GONG COMPILER IF TARGET IS gorm
 	"github.com/fullstack-lang/gongxlsx/go/orm/dbgorm"
+	THIS IS REMOVED BY GONG COMPILER IF TARGET IS gorm */
 
 	"github.com/tealeg/xlsx/v3"
 )
@@ -42,13 +46,19 @@ type BackRepoStruct struct {
 
 func NewBackRepo(stage *models.StageStruct, filename string) (backRepo *BackRepoStruct) {
 
-	dbWrapper := dbgorm.NewDBWrapper(filename, "github_com_fullstack_lang_gongxlsx_go",
+	var db db.DBInterface
+
+	db = NewDBLite()
+
+	/* THIS IS REMOVED BY GONG COMPILER IF TARGET IS gorm
+	db = dbgorm.NewDBWrapper(filename, "github_com_fullstack_lang_gongxlsx_go",
 		&DisplaySelectionDB{},
 		&XLCellDB{},
 		&XLFileDB{},
 		&XLRowDB{},
 		&XLSheetDB{},
 	)
+	THIS IS REMOVED BY GONG COMPILER IF TARGET IS gorm */
 
 	backRepo = new(BackRepoStruct)
 
@@ -58,7 +68,7 @@ func NewBackRepo(stage *models.StageStruct, filename string) (backRepo *BackRepo
 		Map_DisplaySelectionDBID_DisplaySelectionDB:  make(map[uint]*DisplaySelectionDB, 0),
 		Map_DisplaySelectionPtr_DisplaySelectionDBID: make(map[*models.DisplaySelection]uint, 0),
 
-		db:    dbWrapper,
+		db:    db,
 		stage: stage,
 	}
 	backRepo.BackRepoXLCell = BackRepoXLCellStruct{
@@ -66,7 +76,7 @@ func NewBackRepo(stage *models.StageStruct, filename string) (backRepo *BackRepo
 		Map_XLCellDBID_XLCellDB:  make(map[uint]*XLCellDB, 0),
 		Map_XLCellPtr_XLCellDBID: make(map[*models.XLCell]uint, 0),
 
-		db:    dbWrapper,
+		db:    db,
 		stage: stage,
 	}
 	backRepo.BackRepoXLFile = BackRepoXLFileStruct{
@@ -74,7 +84,7 @@ func NewBackRepo(stage *models.StageStruct, filename string) (backRepo *BackRepo
 		Map_XLFileDBID_XLFileDB:  make(map[uint]*XLFileDB, 0),
 		Map_XLFilePtr_XLFileDBID: make(map[*models.XLFile]uint, 0),
 
-		db:    dbWrapper,
+		db:    db,
 		stage: stage,
 	}
 	backRepo.BackRepoXLRow = BackRepoXLRowStruct{
@@ -82,7 +92,7 @@ func NewBackRepo(stage *models.StageStruct, filename string) (backRepo *BackRepo
 		Map_XLRowDBID_XLRowDB:  make(map[uint]*XLRowDB, 0),
 		Map_XLRowPtr_XLRowDBID: make(map[*models.XLRow]uint, 0),
 
-		db:    dbWrapper,
+		db:    db,
 		stage: stage,
 	}
 	backRepo.BackRepoXLSheet = BackRepoXLSheetStruct{
@@ -90,7 +100,7 @@ func NewBackRepo(stage *models.StageStruct, filename string) (backRepo *BackRepo
 		Map_XLSheetDBID_XLSheetDB:  make(map[uint]*XLSheetDB, 0),
 		Map_XLSheetPtr_XLSheetDBID: make(map[*models.XLSheet]uint, 0),
 
-		db:    dbWrapper,
+		db:    db,
 		stage: stage,
 	}
 

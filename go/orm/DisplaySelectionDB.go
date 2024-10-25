@@ -161,7 +161,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitDeleteInst
 	// displayselection is not staged anymore, remove displayselectionDB
 	displayselectionDB := backRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB[id]
 	db, _ := backRepoDisplaySelection.db.Unscoped()
-	_, err := db.Delete(&displayselectionDB)
+	_, err := db.Delete(displayselectionDB)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -245,7 +245,7 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CommitPhaseTwoIn
 			displayselectionDB.XLSheetID.Valid = true
 		}
 
-		_, err := backRepoDisplaySelection.db.Save(&displayselectionDB)
+		_, err := backRepoDisplaySelection.db.Save(displayselectionDB)
 		if err != nil {
 			log.Fatal(err)
 		}

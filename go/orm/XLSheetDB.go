@@ -177,7 +177,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitDeleteInstance(id uint) (Err
 	// xlsheet is not staged anymore, remove xlsheetDB
 	xlsheetDB := backRepoXLSheet.Map_XLSheetDBID_XLSheetDB[id]
 	db, _ := backRepoXLSheet.db.Unscoped()
-	_, err := db.Delete(&xlsheetDB)
+	_, err := db.Delete(xlsheetDB)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -273,7 +273,7 @@ func (backRepoXLSheet *BackRepoXLSheetStruct) CommitPhaseTwoInstance(backRepo *B
 				append(xlsheetDB.XLSheetPointersEncoding.SheetCells, int(xlcellAssocEnd_DB.ID))
 		}
 
-		_, err := backRepoXLSheet.db.Save(&xlsheetDB)
+		_, err := backRepoXLSheet.db.Save(xlsheetDB)
 		if err != nil {
 			log.Fatal(err)
 		}
