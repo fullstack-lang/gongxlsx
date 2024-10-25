@@ -280,7 +280,7 @@ func (controller *Controller) UpdateDisplaySelection(c *gin.Context) {
 	displayselectionDB.DisplaySelectionPointersEncoding = input.DisplaySelectionPointersEncoding
 
 	db, _ = db.Model(&displayselectionDB)
-	_, err = db.Updates(displayselectionDB)
+	_, err = db.Updates(&displayselectionDB)
 	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest

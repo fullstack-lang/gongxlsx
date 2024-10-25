@@ -280,7 +280,7 @@ func (controller *Controller) UpdateXLSheet(c *gin.Context) {
 	xlsheetDB.XLSheetPointersEncoding = input.XLSheetPointersEncoding
 
 	db, _ = db.Model(&xlsheetDB)
-	_, err = db.Updates(xlsheetDB)
+	_, err = db.Updates(&xlsheetDB)
 	if err != nil {
 		var returnError GenericError
 		returnError.Body.Code = http.StatusBadRequest
