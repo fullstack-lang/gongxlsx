@@ -180,31 +180,31 @@ func (db *DBLite) Updates(instanceDB any) (db.DBInterface, error) {
 		if existing, ok := db.displayselectionDBs[v.ID]; ok {
 			*existing = *v
 		} else {
-			return nil, errors.New("github.com/fullstack-lang/gongxlsx/go, record not found")
+			return nil, errors.New("db DisplaySelection github.com/fullstack-lang/gongxlsx/go, record not found")
 		}
 	case *XLCellDB:
 		if existing, ok := db.xlcellDBs[v.ID]; ok {
 			*existing = *v
 		} else {
-			return nil, errors.New("github.com/fullstack-lang/gongxlsx/go, record not found")
+			return nil, errors.New("db XLCell github.com/fullstack-lang/gongxlsx/go, record not found")
 		}
 	case *XLFileDB:
 		if existing, ok := db.xlfileDBs[v.ID]; ok {
 			*existing = *v
 		} else {
-			return nil, errors.New("github.com/fullstack-lang/gongxlsx/go, record not found")
+			return nil, errors.New("db XLFile github.com/fullstack-lang/gongxlsx/go, record not found")
 		}
 	case *XLRowDB:
 		if existing, ok := db.xlrowDBs[v.ID]; ok {
 			*existing = *v
 		} else {
-			return nil, errors.New("github.com/fullstack-lang/gongxlsx/go, record not found")
+			return nil, errors.New("db XLRow github.com/fullstack-lang/gongxlsx/go, record not found")
 		}
 	case *XLSheetDB:
 		if existing, ok := db.xlsheetDBs[v.ID]; ok {
 			*existing = *v
 		} else {
-			return nil, errors.New("github.com/fullstack-lang/gongxlsx/go, record not found")
+			return nil, errors.New("db XLSheet github.com/fullstack-lang/gongxlsx/go, record not found")
 		}
 	default:
 		return nil, errors.New("github.com/fullstack-lang/gongxlsx/go, unsupported type in Updates")
@@ -221,38 +221,38 @@ func (db *DBLite) Find(instanceDBs any) (db.DBInterface, error) {
 	switch ptr := instanceDBs.(type) {
 	// insertion point find
 	case *[]DisplaySelectionDB:
-        *ptr = make([]DisplaySelectionDB, 0, len(db.displayselectionDBs))
-        for _, v := range db.displayselectionDBs {
-            *ptr = append(*ptr, *v)
-        }
-        return db, nil
+		*ptr = make([]DisplaySelectionDB, 0, len(db.displayselectionDBs))
+		for _, v := range db.displayselectionDBs {
+			*ptr = append(*ptr, *v)
+		}
+		return db, nil
 	case *[]XLCellDB:
-        *ptr = make([]XLCellDB, 0, len(db.xlcellDBs))
-        for _, v := range db.xlcellDBs {
-            *ptr = append(*ptr, *v)
-        }
-        return db, nil
+		*ptr = make([]XLCellDB, 0, len(db.xlcellDBs))
+		for _, v := range db.xlcellDBs {
+			*ptr = append(*ptr, *v)
+		}
+		return db, nil
 	case *[]XLFileDB:
-        *ptr = make([]XLFileDB, 0, len(db.xlfileDBs))
-        for _, v := range db.xlfileDBs {
-            *ptr = append(*ptr, *v)
-        }
-        return db, nil
+		*ptr = make([]XLFileDB, 0, len(db.xlfileDBs))
+		for _, v := range db.xlfileDBs {
+			*ptr = append(*ptr, *v)
+		}
+		return db, nil
 	case *[]XLRowDB:
-        *ptr = make([]XLRowDB, 0, len(db.xlrowDBs))
-        for _, v := range db.xlrowDBs {
-            *ptr = append(*ptr, *v)
-        }
-        return db, nil
+		*ptr = make([]XLRowDB, 0, len(db.xlrowDBs))
+		for _, v := range db.xlrowDBs {
+			*ptr = append(*ptr, *v)
+		}
+		return db, nil
 	case *[]XLSheetDB:
-        *ptr = make([]XLSheetDB, 0, len(db.xlsheetDBs))
-        for _, v := range db.xlsheetDBs {
-            *ptr = append(*ptr, *v)
-        }
-        return db, nil
-    default:
-        return nil, errors.New("github.com/fullstack-lang/gongxlsx/go, Find: unsupported type")
-    }
+		*ptr = make([]XLSheetDB, 0, len(db.xlsheetDBs))
+		for _, v := range db.xlsheetDBs {
+			*ptr = append(*ptr, *v)
+		}
+		return db, nil
+	default:
+		return nil, errors.New("github.com/fullstack-lang/gongxlsx/go, Find: unsupported type")
+	}
 }
 
 // First retrieves the first record of a type from the database
@@ -280,43 +280,53 @@ func (db *DBLite) First(instanceDB any, conds ...any) (db.DBInterface, error) {
 	case *DisplaySelectionDB:
 		tmp, ok := db.displayselectionDBs[uint(i)]
 
+		if !ok {
+			return nil, errors.New(fmt.Sprintf("db.First DisplaySelection Unkown entry %d", i))
+		}
+
 		displayselectionDB, _ := instanceDB.(*DisplaySelectionDB)
 		*displayselectionDB = *tmp
-		if !ok {
-			return nil, errors.New(fmt.Sprintf("Unkown entry %d", i))
-		}
+		
 	case *XLCellDB:
 		tmp, ok := db.xlcellDBs[uint(i)]
 
+		if !ok {
+			return nil, errors.New(fmt.Sprintf("db.First XLCell Unkown entry %d", i))
+		}
+
 		xlcellDB, _ := instanceDB.(*XLCellDB)
 		*xlcellDB = *tmp
-		if !ok {
-			return nil, errors.New(fmt.Sprintf("Unkown entry %d", i))
-		}
+		
 	case *XLFileDB:
 		tmp, ok := db.xlfileDBs[uint(i)]
 
+		if !ok {
+			return nil, errors.New(fmt.Sprintf("db.First XLFile Unkown entry %d", i))
+		}
+
 		xlfileDB, _ := instanceDB.(*XLFileDB)
 		*xlfileDB = *tmp
-		if !ok {
-			return nil, errors.New(fmt.Sprintf("Unkown entry %d", i))
-		}
+		
 	case *XLRowDB:
 		tmp, ok := db.xlrowDBs[uint(i)]
 
+		if !ok {
+			return nil, errors.New(fmt.Sprintf("db.First XLRow Unkown entry %d", i))
+		}
+
 		xlrowDB, _ := instanceDB.(*XLRowDB)
 		*xlrowDB = *tmp
-		if !ok {
-			return nil, errors.New(fmt.Sprintf("Unkown entry %d", i))
-		}
+		
 	case *XLSheetDB:
 		tmp, ok := db.xlsheetDBs[uint(i)]
 
+		if !ok {
+			return nil, errors.New(fmt.Sprintf("db.First XLSheet Unkown entry %d", i))
+		}
+
 		xlsheetDB, _ := instanceDB.(*XLSheetDB)
 		*xlsheetDB = *tmp
-		if !ok {
-			return nil, errors.New(fmt.Sprintf("Unkown entry %d", i))
-		}
+		
 	default:
 		return nil, errors.New("github.com/fullstack-lang/gongxlsx/go, Unkown type")
 	}
