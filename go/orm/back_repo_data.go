@@ -16,6 +16,11 @@ type BackRepoData struct {
 }
 
 func CopyBackRepoToBackRepoData(backRepo *BackRepoStruct, backRepoData *BackRepoData) {
+
+	// wait till backRepo is written by commit
+	backRepo.rwMutex.RLock()
+	defer backRepo.rwMutex.RUnlock()
+
 	// insertion point for slices copies
 	for _, displayselectionDB := range backRepo.BackRepoDisplaySelection.Map_DisplaySelectionDBID_DisplaySelectionDB {
 
