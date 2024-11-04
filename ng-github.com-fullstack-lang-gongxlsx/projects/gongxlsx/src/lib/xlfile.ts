@@ -62,6 +62,11 @@ export function CopyXLFileAPIToXLFile(xlfileAPI: XLFileAPI, xlfile: XLFile, fron
 	// insertion point for pointer fields encoding
 
 	// insertion point for slice of pointers fields encoding
+	if (!Array.isArray(xlfileAPI.XLFilePointersEncoding.Sheets)) {
+		console.error('Rects is not an array:', xlfileAPI.XLFilePointersEncoding.Sheets);
+		return;
+	}
+
 	xlfile.Sheets = new Array<XLSheet>()
 	for (let _id of xlfileAPI.XLFilePointersEncoding.Sheets) {
 		let _xlsheet = frontRepo.map_ID_XLSheet.get(_id)

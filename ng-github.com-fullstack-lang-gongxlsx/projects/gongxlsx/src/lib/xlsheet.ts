@@ -75,6 +75,11 @@ export function CopyXLSheetAPIToXLSheet(xlsheetAPI: XLSheetAPI, xlsheet: XLSheet
 	// insertion point for pointer fields encoding
 
 	// insertion point for slice of pointers fields encoding
+	if (!Array.isArray(xlsheetAPI.XLSheetPointersEncoding.Rows)) {
+		console.error('Rects is not an array:', xlsheetAPI.XLSheetPointersEncoding.Rows);
+		return;
+	}
+
 	xlsheet.Rows = new Array<XLRow>()
 	for (let _id of xlsheetAPI.XLSheetPointersEncoding.Rows) {
 		let _xlrow = frontRepo.map_ID_XLRow.get(_id)
@@ -82,6 +87,11 @@ export function CopyXLSheetAPIToXLSheet(xlsheetAPI: XLSheetAPI, xlsheet: XLSheet
 			xlsheet.Rows.push(_xlrow!)
 		}
 	}
+	if (!Array.isArray(xlsheetAPI.XLSheetPointersEncoding.SheetCells)) {
+		console.error('Rects is not an array:', xlsheetAPI.XLSheetPointersEncoding.SheetCells);
+		return;
+	}
+
 	xlsheet.SheetCells = new Array<XLCell>()
 	for (let _id of xlsheetAPI.XLSheetPointersEncoding.SheetCells) {
 		let _xlcell = frontRepo.map_ID_XLCell.get(_id)

@@ -62,6 +62,11 @@ export function CopyXLRowAPIToXLRow(xlrowAPI: XLRowAPI, xlrow: XLRow, frontRepo:
 	// insertion point for pointer fields encoding
 
 	// insertion point for slice of pointers fields encoding
+	if (!Array.isArray(xlrowAPI.XLRowPointersEncoding.Cells)) {
+		console.error('Rects is not an array:', xlrowAPI.XLRowPointersEncoding.Cells);
+		return;
+	}
+
 	xlrow.Cells = new Array<XLCell>()
 	for (let _id of xlrowAPI.XLRowPointersEncoding.Cells) {
 		let _xlcell = frontRepo.map_ID_XLCell.get(_id)

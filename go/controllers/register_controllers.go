@@ -173,12 +173,13 @@ func (controller *Controller) onWebSocketRequestForBackRepoContent(c *gin.Contex
 	orm.CopyBackRepoToBackRepoData(backRepo, backRepoData)
 
 	err = wsConnection.WriteJSON(backRepoData)
-	// log.Println("Stack github.com/fullstack-lang/gongxlsx/go, onWebSocketRequestForBackRepoContent, first sent back repo of", stackPath)
 	if err != nil {
 		log.Println("github.com/fullstack-lang/gongxlsx/go:\n",
 			"client no longer receiver web socket message, assuming it is no longer alive, closing websocket handler")
 		fmt.Println(err)
 		return
+	} else {
+		log.Println(time.Now().Format(time.RFC3339Nano), "github.com/fullstack-lang/gongxlsx/go: 1st sent backRepoData of stack:", stackPath)
 	}
 	for {
 		select {
@@ -204,7 +205,7 @@ func (controller *Controller) onWebSocketRequestForBackRepoContent(c *gin.Contex
 					cancel() // Cancel the context
 					return
 				} else {
-					log.Println("github.com/fullstack-lang/gongxlsx/go:", stackPath, "sent backRepoData")
+					log.Println(time.Now().Format(time.RFC3339Nano), "github.com/fullstack-lang/gongxlsx/go: sent backRepoData of stack:", stackPath)
 				}
 			}
 		}
