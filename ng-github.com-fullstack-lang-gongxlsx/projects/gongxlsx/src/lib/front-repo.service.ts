@@ -384,9 +384,11 @@ export class FrontRepoService {
 
 		return new Observable(observer => {
 			this.socket!.onmessage = event => {
-				let _this = this
+
 
 				const backRepoData = new BackRepoData(JSON.parse(event.data))
+
+				let frontRepo = new (FrontRepo)
 
 				// 
 				// First Step: init map of instances
@@ -394,62 +396,62 @@ export class FrontRepoService {
 				// init the arrays
 				// insertion point sub template for init 
 				// init the arrays
-				this.frontRepo.array_DisplaySelections = []
-				this.frontRepo.map_ID_DisplaySelection.clear()
+				frontRepo.array_DisplaySelections = []
+				frontRepo.map_ID_DisplaySelection.clear()
 
 				backRepoData.DisplaySelectionAPIs.forEach(
 					displayselectionAPI => {
 						let displayselection = new DisplaySelection
-						this.frontRepo.array_DisplaySelections.push(displayselection)
-						this.frontRepo.map_ID_DisplaySelection.set(displayselectionAPI.ID, displayselection)
+						frontRepo.array_DisplaySelections.push(displayselection)
+						frontRepo.map_ID_DisplaySelection.set(displayselectionAPI.ID, displayselection)
 					}
 				)
 
 				// init the arrays
-				this.frontRepo.array_XLCells = []
-				this.frontRepo.map_ID_XLCell.clear()
+				frontRepo.array_XLCells = []
+				frontRepo.map_ID_XLCell.clear()
 
 				backRepoData.XLCellAPIs.forEach(
 					xlcellAPI => {
 						let xlcell = new XLCell
-						this.frontRepo.array_XLCells.push(xlcell)
-						this.frontRepo.map_ID_XLCell.set(xlcellAPI.ID, xlcell)
+						frontRepo.array_XLCells.push(xlcell)
+						frontRepo.map_ID_XLCell.set(xlcellAPI.ID, xlcell)
 					}
 				)
 
 				// init the arrays
-				this.frontRepo.array_XLFiles = []
-				this.frontRepo.map_ID_XLFile.clear()
+				frontRepo.array_XLFiles = []
+				frontRepo.map_ID_XLFile.clear()
 
 				backRepoData.XLFileAPIs.forEach(
 					xlfileAPI => {
 						let xlfile = new XLFile
-						this.frontRepo.array_XLFiles.push(xlfile)
-						this.frontRepo.map_ID_XLFile.set(xlfileAPI.ID, xlfile)
+						frontRepo.array_XLFiles.push(xlfile)
+						frontRepo.map_ID_XLFile.set(xlfileAPI.ID, xlfile)
 					}
 				)
 
 				// init the arrays
-				this.frontRepo.array_XLRows = []
-				this.frontRepo.map_ID_XLRow.clear()
+				frontRepo.array_XLRows = []
+				frontRepo.map_ID_XLRow.clear()
 
 				backRepoData.XLRowAPIs.forEach(
 					xlrowAPI => {
 						let xlrow = new XLRow
-						this.frontRepo.array_XLRows.push(xlrow)
-						this.frontRepo.map_ID_XLRow.set(xlrowAPI.ID, xlrow)
+						frontRepo.array_XLRows.push(xlrow)
+						frontRepo.map_ID_XLRow.set(xlrowAPI.ID, xlrow)
 					}
 				)
 
 				// init the arrays
-				this.frontRepo.array_XLSheets = []
-				this.frontRepo.map_ID_XLSheet.clear()
+				frontRepo.array_XLSheets = []
+				frontRepo.map_ID_XLSheet.clear()
 
 				backRepoData.XLSheetAPIs.forEach(
 					xlsheetAPI => {
 						let xlsheet = new XLSheet
-						this.frontRepo.array_XLSheets.push(xlsheet)
-						this.frontRepo.map_ID_XLSheet.set(xlsheetAPI.ID, xlsheet)
+						frontRepo.array_XLSheets.push(xlsheet)
+						frontRepo.map_ID_XLSheet.set(xlsheetAPI.ID, xlsheet)
 					}
 				)
 
@@ -462,46 +464,46 @@ export class FrontRepoService {
 				// fill up front objects
 				backRepoData.DisplaySelectionAPIs.forEach(
 					displayselectionAPI => {
-						let displayselection = this.frontRepo.map_ID_DisplaySelection.get(displayselectionAPI.ID)
-						CopyDisplaySelectionAPIToDisplaySelection(displayselectionAPI, displayselection!, this.frontRepo)
+						let displayselection = frontRepo.map_ID_DisplaySelection.get(displayselectionAPI.ID)
+						CopyDisplaySelectionAPIToDisplaySelection(displayselectionAPI, displayselection!, frontRepo)
 					}
 				)
 
 				// fill up front objects
 				backRepoData.XLCellAPIs.forEach(
 					xlcellAPI => {
-						let xlcell = this.frontRepo.map_ID_XLCell.get(xlcellAPI.ID)
-						CopyXLCellAPIToXLCell(xlcellAPI, xlcell!, this.frontRepo)
+						let xlcell = frontRepo.map_ID_XLCell.get(xlcellAPI.ID)
+						CopyXLCellAPIToXLCell(xlcellAPI, xlcell!, frontRepo)
 					}
 				)
 
 				// fill up front objects
 				backRepoData.XLFileAPIs.forEach(
 					xlfileAPI => {
-						let xlfile = this.frontRepo.map_ID_XLFile.get(xlfileAPI.ID)
-						CopyXLFileAPIToXLFile(xlfileAPI, xlfile!, this.frontRepo)
+						let xlfile = frontRepo.map_ID_XLFile.get(xlfileAPI.ID)
+						CopyXLFileAPIToXLFile(xlfileAPI, xlfile!, frontRepo)
 					}
 				)
 
 				// fill up front objects
 				backRepoData.XLRowAPIs.forEach(
 					xlrowAPI => {
-						let xlrow = this.frontRepo.map_ID_XLRow.get(xlrowAPI.ID)
-						CopyXLRowAPIToXLRow(xlrowAPI, xlrow!, this.frontRepo)
+						let xlrow = frontRepo.map_ID_XLRow.get(xlrowAPI.ID)
+						CopyXLRowAPIToXLRow(xlrowAPI, xlrow!, frontRepo)
 					}
 				)
 
 				// fill up front objects
 				backRepoData.XLSheetAPIs.forEach(
 					xlsheetAPI => {
-						let xlsheet = this.frontRepo.map_ID_XLSheet.get(xlsheetAPI.ID)
-						CopyXLSheetAPIToXLSheet(xlsheetAPI, xlsheet!, this.frontRepo)
+						let xlsheet = frontRepo.map_ID_XLSheet.get(xlsheetAPI.ID)
+						CopyXLSheetAPIToXLSheet(xlsheetAPI, xlsheet!, frontRepo)
 					}
 				)
 
 
 
-				observer.next(this.frontRepo)
+				observer.next(frontRepo)
 			}
 			this.socket!.onerror = event => {
 				observer.error(event)
