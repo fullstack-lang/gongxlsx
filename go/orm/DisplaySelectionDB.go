@@ -358,16 +358,44 @@ func (backRepoDisplaySelection *BackRepoDisplaySelectionStruct) CheckoutPhaseTwo
 func (displayselectionDB *DisplaySelectionDB) DecodePointers(backRepo *BackRepoStruct, displayselection *models.DisplaySelection) {
 
 	// insertion point for checkout of pointer encoding
-	// XLFile field
-	displayselection.XLFile = nil
-	if displayselectionDB.XLFileID.Int64 != 0 {
-		displayselection.XLFile = backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr[uint(displayselectionDB.XLFileID.Int64)]
+	// XLFile field	
+	{
+		id := displayselectionDB.XLFileID.Int64
+		if id != 0 {
+			tmp, ok := backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr[uint(id)]
+
+			if !ok {
+				log.Fatalln("DecodePointers: displayselection.XLFile, unknown pointer id", id)
+			}
+
+			// updates only if field has changed
+			if displayselection.XLFile == nil || displayselection.XLFile != tmp {
+				displayselection.XLFile = tmp
+			}
+		} else {
+			displayselection.XLFile = nil
+		}
 	}
-	// XLSheet field
-	displayselection.XLSheet = nil
-	if displayselectionDB.XLSheetID.Int64 != 0 {
-		displayselection.XLSheet = backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[uint(displayselectionDB.XLSheetID.Int64)]
+	
+	// XLSheet field	
+	{
+		id := displayselectionDB.XLSheetID.Int64
+		if id != 0 {
+			tmp, ok := backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[uint(id)]
+
+			if !ok {
+				log.Fatalln("DecodePointers: displayselection.XLSheet, unknown pointer id", id)
+			}
+
+			// updates only if field has changed
+			if displayselection.XLSheet == nil || displayselection.XLSheet != tmp {
+				displayselection.XLSheet = tmp
+			}
+		} else {
+			displayselection.XLSheet = nil
+		}
 	}
+	
 	return
 }
 
