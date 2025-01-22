@@ -364,13 +364,15 @@ func (displayselectionDB *DisplaySelectionDB) DecodePointers(backRepo *BackRepoS
 		if id != 0 {
 			tmp, ok := backRepo.BackRepoXLFile.Map_XLFileDBID_XLFilePtr[uint(id)]
 
+			// if the pointer id is unknown, it is not a problem, maybe the target was removed from the front
 			if !ok {
-				log.Fatalln("DecodePointers: displayselection.XLFile, unknown pointer id", id)
-			}
-
-			// updates only if field has changed
-			if displayselection.XLFile == nil || displayselection.XLFile != tmp {
-				displayselection.XLFile = tmp
+				log.Println("DecodePointers: displayselection.XLFile, unknown pointer id", id)
+				displayselection.XLFile = nil
+			} else {
+				// updates only if field has changed
+				if displayselection.XLFile == nil || displayselection.XLFile != tmp {
+					displayselection.XLFile = tmp
+				}
 			}
 		} else {
 			displayselection.XLFile = nil
@@ -383,13 +385,15 @@ func (displayselectionDB *DisplaySelectionDB) DecodePointers(backRepo *BackRepoS
 		if id != 0 {
 			tmp, ok := backRepo.BackRepoXLSheet.Map_XLSheetDBID_XLSheetPtr[uint(id)]
 
+			// if the pointer id is unknown, it is not a problem, maybe the target was removed from the front
 			if !ok {
-				log.Fatalln("DecodePointers: displayselection.XLSheet, unknown pointer id", id)
-			}
-
-			// updates only if field has changed
-			if displayselection.XLSheet == nil || displayselection.XLSheet != tmp {
-				displayselection.XLSheet = tmp
+				log.Println("DecodePointers: displayselection.XLSheet, unknown pointer id", id)
+				displayselection.XLSheet = nil
+			} else {
+				// updates only if field has changed
+				if displayselection.XLSheet == nil || displayselection.XLSheet != tmp {
+					displayselection.XLSheet = tmp
+				}
 			}
 		} else {
 			displayselection.XLSheet = nil
